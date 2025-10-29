@@ -1,15 +1,3 @@
-# Github Branch Ruleset
-
-## main, dev
-- Require a pull request before merging (PR 필수, 승인 1명)
-- Block force pushes (강제 푸시 금지)
-- Restrict deletions (브랜치 삭제 금지)
-
-## dev
-- Require a pull request before merging (PR 필수, 승인 1명)
-
-&nbsp;
-
 # Unity C# 컨벤션
 - 공식 가이드라인 (https://unity.com/kr/blog/engine-platform/clean-up-your-code-how-to-create-your-own-c-code-style)
 
@@ -78,3 +66,15 @@
   - 변경 사항 2
   - 변경 사항 3
   ```
+
+  &nbsp;
+
+# Github Branch Ruleset
+
+## main, dev
+- Require a pull request before merging (PR 필수, 승인 1명)
+- Block force pushes (강제 푸시 금지)
+- Restrict deletions (브랜치 삭제 금지)
+
+## dev
+- Require a pull request before merging (PR 필수, 승인 1명)
