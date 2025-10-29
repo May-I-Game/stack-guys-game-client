@@ -6,9 +6,7 @@
 
 ~~https://www.youtube.com/watch?v=o7O28SFGWS4시네머신 카메라 추가 -> Follow 플레이어 지정Position Control -> Orbital Follow 설정, Rotation Control -> Rotation Control -> Rotation ComposerOrbital Follow에서 Add Input Controller 추가에셋 폴더에서 Input Actions Editor 클릭Action Maps에서 카메라 컨트롤 생성 -> Actions에서 MouseZoom 생성Mouse 생성 후 Scroll 선택GamepadZoom 생성 후 Value - Axis 선택기본 바인딩 삭제 후 Add Positive/Negative 바인딩 생성1D Axis에서 left Shoulder를 Negative로 Right를 생성~~-
 
-
 - StarterAssets의 카메라와 컨트롤러 그대로 사용
-
 
 &nbsp;
 
@@ -30,7 +28,6 @@ Ctrl + Shift + F - 현재 시점 기준 카메라 이동
 
 줌(Zoom)	Alt + 마우스 오른쪽 버튼 드래그 or 휠 스크롤
 
-
 &nbsp;
 
 ## 에셋
@@ -42,7 +39,6 @@ Ctrl + Shift + F - 현재 시점 기준 카메라 이동
 - 프리팹 언팩 이후 Center Pivot 적용
 
 ### Cinemachine
-
 
 &nbsp;
 
@@ -56,7 +52,15 @@ Ctrl + Shift + F - 현재 시점 기준 카메라 이동
 
 - SupportColored_MESH (21)
 - RegularBarrier_MESH (30)
-- BaseThin_MESH (4)
+- BaseThin_MESH (4) - Y 값 4.6
+
+#### 장애물 1코스
+
+
+#### 장애물 2코스
+
+
+#### 장애물 3코스
 
 
 ### Human Character Dummy
