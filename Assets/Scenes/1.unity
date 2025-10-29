@@ -10891,6 +10891,7 @@ GameObject:
   - component: {fileID: 1862039215}
   - component: {fileID: 1862039214}
   - component: {fileID: 1862039213}
+  - component: {fileID: 1862039219}
   m_Layer: 8
   m_Name: PlayerArmature
   m_TagString: Player
@@ -11094,6 +11095,9 @@ MonoBehaviour:
   BottomClamp: -30
   CameraAngleOverride: 0
   LockCameraPosition: 0
+  RespawnDelay: 2
+  CorpsePrefab: {fileID: 0}
+  CorpseLifetime: 10
   spawnPosition: {x: -3.5, y: 5, z: -750}
 --- !u!143 &1862039217
 CharacterController:
@@ -11142,6 +11146,24 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &1862039219
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1862039211}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce01acce01745484e8b7f7d14305a9cc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  respawnDelay: 2
+  corpsePrefab: {fileID: 0}
+  corpseLifetime: 10
+  characterController: {fileID: 0}
+  isDead: 0
+  spawnPosition: {x: 0, y: 0, z: 0}
 --- !u!1 &1875924852
 GameObject:
   m_ObjectHideFlags: 0
