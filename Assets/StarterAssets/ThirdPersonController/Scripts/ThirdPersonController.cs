@@ -1,4 +1,5 @@
-﻿ using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 #if ENABLE_INPUT_SYSTEM 
 using UnityEngine.InputSystem;
 #endif
@@ -75,6 +76,18 @@ namespace StarterAssets
         [Tooltip("For locking the camera position on all axis")]
         public bool LockCameraPosition = false;
 
+        [Header("Death & Respawn")]
+        [Tooltip("Time to wait before respawning")]
+        public float RespawnDelay = 2f;
+
+        [Tooltip("Corpse prefab (leave empty to auto-generate)")]
+        public GameObject CorpsePrefab;
+
+        [Tooltip("How long corpses stay before being destroyed")]
+        public float CorpseLifetime = 10f;
+
+        public Vector3 spawnPosition;
+
         // cinemachine
         private float _cinemachineTargetYaw;
         private float _cinemachineTargetPitch;
@@ -90,6 +103,9 @@ namespace StarterAssets
         // timeout deltatime
         private float _jumpTimeoutDelta;
         private float _fallTimeoutDelta;
+
+        // death state
+        private bool _isDead = false;
 
         // animation IDs
         private int _animIDSpeed;
@@ -134,8 +150,10 @@ namespace StarterAssets
 
         private void Start()
         {
+            spawnPosition = transform.position;
+
             _cinemachineTargetYaw = CinemachineCameraTarget.transform.rotation.eulerAngles.y;
-            
+
             _hasAnimator = TryGetComponent(out _animator);
             _controller = GetComponent<CharacterController>();
             _input = GetComponent<StarterAssetsInputs>();
@@ -150,6 +168,141 @@ namespace StarterAssets
             // reset our timeouts on start
             _jumpTimeoutDelta = JumpTimeout;
             _fallTimeoutDelta = FallTimeout;
+        }
+
+        // 새로운 Die 메서드 - 시체를 남기고 리스폰
+        public void Die()
+        {
+            if (_isDead) return;
+
+            _isDead = true;
+
+            // 시체 생성
+            CreateCorpse();
+
+            // 플레이어 숨기기
+            HidePlayer();
+
+            // 컨트롤러 비활성화
+            this.enabled = false;
+
+            // 리스폰 코루틴 시작
+            StartCoroutine(RespawnCoroutine());
+        }
+
+        private void CreateCorpse()
+        {
+            if (CorpsePrefab != null)
+            {
+                // 프리팹이 있는 경우
+                GameObject corpse = Instantiate(CorpsePrefab, transform.position, transform.rotation);
+                Destroy(corpse, CorpseLifetime);
+            }
+            else
+            {
+                // 프리팹이 없는 경우 - 플레이어 복제
+                GameObject corpse = Instantiate(gameObject, transform.position, transform.rotation);
+                corpse.name = "PlayerCorpse";
+
+                // 불필요한 컴포넌트 제거
+                Destroy(corpse.GetComponent<ThirdPersonController>());
+                Destroy(corpse.GetComponent<StarterAssetsInputs>());
+                Destroy(corpse.GetComponent<CharacterController>());
+
+#if ENABLE_INPUT_SYSTEM
+                Destroy(corpse.GetComponent<PlayerInput>());
+#endif
+
+                // Rigidbody 추가 (물리 효과)
+                Rigidbody rb = corpse.GetComponent<Rigidbody>();
+                if (rb == null)
+                {
+                    rb = corpse.AddComponent<Rigidbody>();
+                }
+
+                // Collider 확인 및 추가
+                Collider col = corpse.GetComponent<Collider>();
+                if (col == null)
+                {
+                    CapsuleCollider capsule = corpse.AddComponent<CapsuleCollider>();
+                    capsule.height = 2f;
+                    capsule.radius = 0.5f;
+                    capsule.center = new Vector3(0, 1f, 0);
+                }
+
+                // 시체 태그 변경
+                corpse.tag = "Corpse";
+
+                // 일정 시간 후 제거
+                Destroy(corpse, CorpseLifetime);
+            }
+        }
+
+        private void HidePlayer()
+        {
+            // 렌더러 비활성화
+            Renderer[] renderers = GetComponentsInChildren<Renderer>();
+            foreach (Renderer rend in renderers)
+            {
+                rend.enabled = false;
+            }
+
+            // Collider 비활성화
+            Collider[] colliders = GetComponentsInChildren<Collider>();
+            foreach (Collider col in colliders)
+            {
+                col.enabled = false;
+            }
+        }
+
+        private void ShowPlayer()
+        {
+            // 렌더러 활성화
+            Renderer[] renderers = GetComponentsInChildren<Renderer>();
+            foreach (Renderer rend in renderers)
+            {
+                rend.enabled = true;
+            }
+
+            // Collider 활성화
+            Collider[] colliders = GetComponentsInChildren<Collider>();
+            foreach (Collider col in colliders)
+            {
+                col.enabled = true;
+            }
+        }
+
+        private IEnumerator RespawnCoroutine()
+        {
+            // 대기
+            yield return new WaitForSeconds(RespawnDelay);
+
+            // CharacterController 일시 비활성화 (위치 이동 위해)
+            _controller.enabled = false;
+
+            // 스폰 위치로 이동
+            transform.position = spawnPosition;
+            transform.rotation = Quaternion.identity;
+
+            // CharacterController 다시 활성화
+            _controller.enabled = true;
+
+            // 플레이어 다시 보이게
+            ShowPlayer();
+
+            // 속도 초기화
+            _verticalVelocity = 0f;
+            _speed = 0f;
+
+            // 컨트롤러 활성화
+            this.enabled = true;
+
+            _isDead = false;
+        }
+
+        public bool IsDead()
+        {
+            return _isDead;
         }
 
         private void Update()

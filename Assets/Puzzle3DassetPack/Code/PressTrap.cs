@@ -1,74 +1,56 @@
-﻿using UnityEngine;
+﻿using StarterAssets;
+using System.Collections;
+using UnityEngine;
 
 public class PressTrap : MonoBehaviour
 {
-    public Transform pressModel; // 실제로 움직일 프레스 바
-    public float upY = 2f;
-    public float downY = 0.2f;
-    public float speed = 5f;
+    public float upY = 2f;          // 원래 위치
+    public float downY = 0.2f;      // 내려가는 위치
+    public float speed = 5f;        // 이동 속도
     public float stayDownTime = 0.5f;
 
     private bool isPressing = false;
-
-    private void Start()
-    {
-        // 초기 위치 위로
-        Vector3 pos = pressModel.localPosition;
-        pos.y = upY;
-        pressModel.localPosition = pos;
-    }
 
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player") && !isPressing)
         {
-            StartCoroutine(PressRoutine(other.gameObject));
+            StartCoroutine(PressRoutine(other.GetComponent<ThirdPersonController>()));
         }
     }
 
-    private System.Collections.IEnumerator PressRoutine(GameObject player)
+    private IEnumerator PressRoutine(ThirdPersonController player)
     {
         isPressing = true;
 
-        // 아래로 이동
+        // 내려가기
         yield return MovePress(downY);
 
-        // 압사 판정
-        Collider[] hits = Physics.OverlapBox(
-            pressModel.position,
-            new Vector3(0.5f, 0.1f, 0.5f)
-        );
-
-        foreach (var hit in hits)
+        if (player != null)
         {
-            if (hit.CompareTag("Player"))
-            {
-                Debug.Log("플레이어 압사! 💀");
-                // 플레이어 사망 처리 넣기
-                // Destroy(hit.gameObject);
-            }
+            player.Die(); // 여기서 PressTrap의 spawnPoint 사용
         }
 
         yield return new WaitForSeconds(stayDownTime);
 
-        // 위로 이동
+        // 올라가기
         yield return MovePress(upY);
 
         isPressing = false;
     }
 
-    private System.Collections.IEnumerator MovePress(float targetY)
+    private IEnumerator MovePress(float targetY)
     {
-        Vector3 pos = pressModel.localPosition;
+        Vector3 pos = transform.localPosition;
 
         while (Mathf.Abs(pos.y - targetY) > 0.01f)
         {
-            pos.y = Mathf.Lerp(pos.y, targetY, Time.deltaTime * speed);
-            pressModel.localPosition = pos;
+            pos.y = Mathf.MoveTowards(pos.y, targetY, speed * Time.deltaTime);
+            transform.localPosition = pos;
             yield return null;
         }
 
         pos.y = targetY;
-        pressModel.localPosition = pos;
+        transform.localPosition = pos;
     }
 }
