@@ -63,15 +63,33 @@
 
 Ctrl + Shift + F - 현재 시점 기준 카메라 이동
 
+이동(Pan)	마우스 휠 클릭 후 드래그 or Alt + 마우스 오른쪽 버튼 드래그
+
+회전(Orbit)	Alt + 마우스 왼쪽 버튼 드래그
+
+줌(Zoom)	Alt + 마우스 오른쪽 버튼 드래그 or 휠 스크롤
+
+
 &nbsp;
 
 ## 에셋
 
 &nbsp;
 
+### ProBuilder
+
+- 프리팹 언팩 이후 Center Pivot 적용
+
+&nbsp;
+
 ### Platformer 에셋
+
+#### 땅
+
+- BaseThin_MESH (4)
 
 #### 다리
 
 - SupportColored_MESH (21)
--
+- RegularBarrier_MESH (30)
+- BaseThin_MESH (4)
