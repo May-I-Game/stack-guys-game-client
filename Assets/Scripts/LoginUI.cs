@@ -15,6 +15,6 @@ public class LoginUI : MonoBehaviour
 
         PlayerPrefs.SetString("player_name", name);
         PlayerPrefs.Save();
-        SceneManager.LoadScene("DoHoon");
+        SceneManager.LoadScene("GameScene");
     }
 }
