@@ -49,6 +49,26 @@ public class PlayerDeathSystem : MonoBehaviour
         StartCoroutine(RespawnCoroutine());
     }
 
+    // 시체 없이 즉시 리스폰
+    public void Die(string killerTag)
+    {
+        if (isDead) return;
+
+        isDead = true;
+
+        // �÷��̾� �����
+        HidePlayer();
+
+        // ThirdPersonController ��Ȱ��ȭ
+        var controller = GetComponent<StarterAssets.ThirdPersonController>();
+        if (controller != null)
+        {
+            controller.enabled = false;
+        }
+
+        RespawnNow();
+    }
+
     void CreateCorpse()
     {
         if (corpsePrefab != null)
@@ -159,6 +179,31 @@ public class PlayerDeathSystem : MonoBehaviour
         {
             col.enabled = true;
         }
+    }
+
+    public void RespawnNow()
+    {
+        // 스폰 위치로 이동
+        transform.position = spawnPosition;
+        transform.rotation = Quaternion.identity;
+
+        // CharacterController 다시 활성화
+        if (characterController != null)
+        {
+            characterController.enabled = true;
+        }
+
+        // 플레이어 다시 보이게 함
+        ShowPlayer();
+
+        // ThirdPersonController Ȱ��ȭ
+        var controller = GetComponent<StarterAssets.ThirdPersonController>();
+        if (controller != null)
+        {
+            controller.enabled = true;
+        }
+
+        isDead = false;
     }
 
     IEnumerator RespawnCoroutine()
