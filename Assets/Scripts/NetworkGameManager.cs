@@ -5,128 +5,78 @@ using UnityEngine.SceneManagement;
 
 public class NetworkGameManager : MonoBehaviour
 {
-    public static NetworkGameManager Instance { get; private set; }
-
-    [Header("Server Settings")]
-    [SerializeField] private ushort serverPort = 7779;
-
-    [Header("Client Settings")]
-    [SerializeField] private string serverAddress = "127.0.0.1";
-
     private NetworkManager networkManager;
-    private UnityTransport transport;
 
-    private void Awake()
+    private void Start()
     {
-        if (Instance == null)
+        Initialize();
+
+        // 배치 모드에서 실행 시 자동으로 서버 시작
+        if (Application.isBatchMode)
         {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-            Initialize();
+            Debug.Log("--- SERVER BUILD DETECTED (Batch Mode) ---");
+            Debug.Log("     --------  SERVER START  --------     ");
+
+            NetworkManager.Singleton.StartServer();
+            NetworkManager.Singleton.SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
         }
+
         else
         {
-            Destroy(gameObject);
+            Debug.Log("--- CLIENT BUILD DETECTED ---");
         }
     }
+
     private void Initialize()
     {
-        networkManager = GetComponent<NetworkManager>();
-        transport = GetComponent<UnityTransport>();
+        networkManager = NetworkManager.Singleton;
 
         //이벤트 구독
         networkManager.OnClientConnectedCallback += OnClientConnected;
         networkManager.OnClientDisconnectCallback += OnClientDisconnected;
-        networkManager.OnServerStarted += OnServerStarted;
     }
 
-    #region Client Methods
-    public void StartClient(string address, ushort port)
-    {
-        serverAddress = address;
-        serverPort = port;
-
-        //Transport 설정
-        transport.SetConnectionData(serverAddress, serverPort);
-
-        //클라이언트 시작
-        bool success = networkManager.StartClient();
-
-        if (success)
-        {
-            Debug.Log($"Connecting to server at {serverAddress}:{serverPort}...");
-        }
-        else
-        {
-            Debug.LogError("Failed to start client");
-        }
-    }
     private void OnClientConnected(ulong clientId)
     {
-        //로컬 클라이언트가 연결되었을 때
-        if (clientId == networkManager.LocalClientId)
+        // 서버 로그
+        if (networkManager.IsServer)
+        {
+            Debug.Log($"[Server Log] Client connecting... Client ID: {clientId}");
+            Debug.Log($"[Server Log] Total players now: {networkManager.ConnectedClients.Count}");
+        }
+
+        // 클라이언트 로그
+        if (networkManager.IsClient && clientId == networkManager.LocalClientId)
         {
             Debug.Log("Successfully connected to server!");
 
+            // 필요없는 로직 서버에 연결되면 "서버가 있는 씬" 으로 NetworkManager가 자동으로 로드시킴
             //Game 씬으로 이동
-            if (SceneManager.GetActiveScene().name == "Login")
-            {
-                SceneManager.LoadScene("GameScene");
-            }
+            //if (SceneManager.GetActiveScene().name == "Login")
+            //{
+            //    SceneManager.LoadScene("GameScene");
+            //}
         }
     }
+
     private void OnClientDisconnected(ulong clientId)
     {
-        if (clientId == networkManager.LocalClientId)
+        // 서버 로그
+        if (networkManager.IsServer)
+        {
+            Debug.Log($"[Server Log] Client disconnected. Client ID: {clientId}");
+            Debug.Log($"[Server Log] Total players now: {networkManager.ConnectedClients.Count}");
+        }
+
+        // 클라이언트 로그
+        if (networkManager.IsClient && clientId == networkManager.LocalClientId)
         {
             Debug.Log("Disconnected from server");
 
-            // Login 씬으로 돌아가기
-            if (SceneManager.GetActiveScene().name == "GameScene")
-            {
-                SceneManager.LoadScene("Login");
-            }
+            // 어디에 있던 Login 씬으로 돌아가기
+            SceneManager.LoadScene("Login");
         }
     }
-    public void Disconnect()
-    {
-        if (networkManager.IsClient)
-        {
-            networkManager.Shutdown();
-        }
-    }
-    #endregion
-
-    #region Server Methods
-
-    public void StartServer()
-    {
-        //transport 설정
-        transport.SetConnectionData("0.0.0.0", serverPort);
-
-        //서버 시작
-        bool success = networkManager.StartServer();
-
-        if (success)
-        {
-            Debug.Log($"Server started on port {serverPort}");
-        }
-        else
-        {
-            Debug.LogError("Failed to start server!");
-        }
-    }
-    private void OnServerStarted()
-    {
-        Debug.Log("Server is ready for connections");
-
-        //서버는 자동으로 Game 씬 로드
-        if (SceneManager.GetActiveScene().name != "GameScene")
-        {
-            SceneManager.LoadScene("GameScene");
-        }
-    }
-    #endregion
 
     private void OnDestroy()
     {
@@ -134,7 +84,6 @@ public class NetworkGameManager : MonoBehaviour
         {
             networkManager.OnClientConnectedCallback -= OnClientConnected;
             networkManager.OnClientDisconnectCallback -= OnClientDisconnected;
-            networkManager.OnServerStarted -= OnServerStarted;
         }
     }
 }

@@ -1,13 +1,12 @@
-using UnityEngine;
 using TMPro;
+using Unity.Netcode;
+using Unity.Netcode.Transports.UTP;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class LoginUI : MonoBehaviour
 {
     [SerializeField] private TMP_InputField nameInput; // 선택사항: 이름 입력
-
-    [Header("Connection Settings")]
-    private const string SERVER_ADDRESS = "127.0.0.1";
-    private const ushort SERVER_PORT = 7779;
 
     public void OnClickStart()
     {
@@ -25,14 +24,19 @@ public class LoginUI : MonoBehaviour
         PlayerPrefs.Save();
 
         // 서버 연결
-        if (NetworkGameManager.Instance != null)
+        UnityTransport transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
+        string serverAddress = transport.ConnectionData.Address;
+        ushort serverPort = transport.ConnectionData.Port;
+
+        Debug.Log($"Connecting to {serverAddress}:{serverPort}...");
+
+        if (NetworkManager.Singleton != null)
         {
-            Debug.Log($"Connecting to {SERVER_ADDRESS}:{SERVER_PORT}...");
-            NetworkGameManager.Instance.StartClient(SERVER_ADDRESS, SERVER_PORT);
+            NetworkManager.Singleton.StartClient();
         }
         else
         {
-            Debug.LogError("NetworkGameManager not found!");
+            Debug.LogError("NetworkManager not found!");
         }
     }
 }
