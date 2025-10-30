@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: ffc5afb0aa48b4c4997b6c7f9c6d020c
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 16120
+  packageName: Login Module
+  packageVersion: 1.1.3f1
+  assetPath: Assets/Devion Games/Utilities/Scripts/Editor/Collection Editor/NamedVariableCollectionEditor.cs
+  uploadId: 420874

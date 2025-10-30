@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 39d5865b35b06dc47a4fa9496f96a84f
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 16120
+  packageName: Login Module
+  packageVersion: 1.1.3f1
+  assetPath: Assets/Devion Games/Login System/Example/LoginConfigurations.asset
+  uploadId: 420874

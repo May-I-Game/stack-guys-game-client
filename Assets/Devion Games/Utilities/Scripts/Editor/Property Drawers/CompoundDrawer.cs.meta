@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: dd6dd87bf0dcdcd4e85bcb6c629dac3e
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 16120
+  packageName: Login Module
+  packageVersion: 1.1.3f1
+  assetPath: Assets/Devion Games/Utilities/Scripts/Editor/Property Drawers/CompoundDrawer.cs
+  uploadId: 420874

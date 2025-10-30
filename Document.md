@@ -54,15 +54,27 @@ Ctrl + Shift + F - 현재 시점 기준 카메라 이동
 - RegularBarrier_MESH (30)
 - BaseThin_MESH (4) - Y 값 4.6
 
-#### 장애물 1코스
-
-
-#### 장애물 2코스
-
-
-#### 장애물 3코스
-
-
 ### Human Character Dummy
 
 ### StarterAssets
+
+### Login Module
+
+- https://velog.io/@pkoi5088/Unity-%EB%A1%9C%EA%B7%B8%EC%9D%B8-UI
+
+
+## Scene
+
+
+### Login Scene
+
+- https://velog.io/@mystic6113/Unity-%EB%A1%9C%EA%B7%B8%EC%9D%B8-UI-%EB%A7%8C%EB%93%A4%EA%B8%B0-1
+
+
+### Game Scene
+
+#### 장애물 1코스
+
+#### 장애물 2코스
+
+#### 장애물 3코스

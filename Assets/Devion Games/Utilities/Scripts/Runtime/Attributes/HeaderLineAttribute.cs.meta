@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: af678fe0deca4c344ae20c8ac5f4524d
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 16120
+  packageName: Login Module
+  packageVersion: 1.1.3f1
+  assetPath: Assets/Devion Games/Utilities/Scripts/Runtime/Attributes/HeaderLineAttribute.cs
+  uploadId: 420874

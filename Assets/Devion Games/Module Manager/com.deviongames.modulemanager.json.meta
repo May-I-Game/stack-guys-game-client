@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: c4ae6962e5d04ca468afbe6db0942fc5
+TextScriptImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 16120
+  packageName: Login Module
+  packageVersion: 1.1.3f1
+  assetPath: Assets/Devion Games/Module Manager/com.deviongames.modulemanager.json
+  uploadId: 420874
