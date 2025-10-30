@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: dfd583e1733619149b6a6fcc9c20bfc6
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 16120
+  packageName: Login Module
+  packageVersion: 1.1.3f1
+  assetPath: Assets/Devion Games/Utilities/Scripts/Editor/Property Drawers/NamedVariableDrawer.cs
+  uploadId: 420874

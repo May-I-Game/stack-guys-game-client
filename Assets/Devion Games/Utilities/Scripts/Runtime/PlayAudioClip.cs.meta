@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 7fa26901946101a4ea68fda4f7ab7be0
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 16120
+  packageName: Login Module
+  packageVersion: 1.1.3f1
+  assetPath: Assets/Devion Games/Utilities/Scripts/Runtime/PlayAudioClip.cs
+  uploadId: 420874

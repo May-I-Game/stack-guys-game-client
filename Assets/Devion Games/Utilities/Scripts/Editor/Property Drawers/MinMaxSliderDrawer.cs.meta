@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: 93b8cf9f596d7174484eef2a7c929ef4
+timeCreated: 1492978862
+licenseType: Store
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 16120
+  packageName: Login Module
+  packageVersion: 1.1.3f1
+  assetPath: Assets/Devion Games/Utilities/Scripts/Editor/Property Drawers/MinMaxSliderDrawer.cs
+  uploadId: 420874
