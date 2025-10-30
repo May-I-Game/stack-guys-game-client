@@ -1044,6 +1044,7 @@ GameObject:
   - component: {fileID: 560015858}
   - component: {fileID: 560015857}
   - component: {fileID: 560015856}
+  - component: {fileID: 560015863}
   m_Layer: 8
   m_Name: PlayerArmature
   m_TagString: Player
@@ -1314,6 +1315,20 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &560015863
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 560015854}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc9fc672486757c4483be095a1ebc8d3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  label: {fileID: 439453270}
+  worldOffset: {x: 0, y: 2, z: 0}
 --- !u!1 &637269347
 GameObject:
   m_ObjectHideFlags: 0
@@ -2203,7 +2218,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 2}
+  m_AnchoredPosition: {x: 0.3, y: 2}
   m_SizeDelta: {x: 1920, y: 1080}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1279581171
