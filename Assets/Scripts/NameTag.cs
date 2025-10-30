@@ -21,7 +21,7 @@ public class NameTag : MonoBehaviour
     private void LateUpdate()
     {
         // 항상 카메라를 보게 함
-        if (Camera.main)
+        if (Camera.main && label != null)
             transform.LookAt(transform.position + Camera.main.transform.rotation * Vector3.forward,
                 Camera.main.transform.rotation * Vector3.up);
     }
