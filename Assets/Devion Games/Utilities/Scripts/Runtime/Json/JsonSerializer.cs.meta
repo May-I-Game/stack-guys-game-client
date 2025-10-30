@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 0279e0d6bcd1b7642af41c675aa61f31
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 16120
+  packageName: Login Module
+  packageVersion: 1.1.3f1
+  assetPath: Assets/Devion Games/Utilities/Scripts/Runtime/Json/JsonSerializer.cs
+  uploadId: 420874

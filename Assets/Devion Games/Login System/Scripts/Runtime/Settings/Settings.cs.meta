@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 47975b3445377474fb6bdced3d42a984
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 16120
+  packageName: Login Module
+  packageVersion: 1.1.3f1
+  assetPath: Assets/Devion Games/Login System/Scripts/Runtime/Settings/Settings.cs
+  uploadId: 420874
