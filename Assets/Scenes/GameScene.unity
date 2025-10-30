@@ -539,6 +539,8 @@ GameObject:
   - component: {fileID: 29235720}
   - component: {fileID: 29235719}
   - component: {fileID: 29235718}
+  - component: {fileID: 29235721}
+  - component: {fileID: 29235722}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (49)
   m_TagString: Untagged
@@ -614,6 +616,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &29235721
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 29235717}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0, z: 0.2923754}
+--- !u!114 &29235722
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 29235717}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!1001 &37351806
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -981,6 +1017,8 @@ GameObject:
   - component: {fileID: 46246384}
   - component: {fileID: 46246383}
   - component: {fileID: 46246382}
+  - component: {fileID: 46246385}
+  - component: {fileID: 46246386}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (47)
   m_TagString: Untagged
@@ -1056,6 +1094,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &46246385
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 46246381}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0, z: 0.2923754}
+--- !u!114 &46246386
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 46246381}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!1 &52537142
 GameObject:
   m_ObjectHideFlags: 0
@@ -1936,6 +2008,8 @@ GameObject:
   - component: {fileID: 133204469}
   - component: {fileID: 133204468}
   - component: {fileID: 133204467}
+  - component: {fileID: 133204470}
+  - component: {fileID: 133204471}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (33)
   m_TagString: Untagged
@@ -2011,6 +2085,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &133204470
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 133204466}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0, z: 0.2923754}
+--- !u!114 &133204471
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 133204466}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!1 &133330136
 GameObject:
   m_ObjectHideFlags: 0
@@ -2168,6 +2276,8 @@ GameObject:
   - component: {fileID: 140254680}
   - component: {fileID: 140254679}
   - component: {fileID: 140254678}
+  - component: {fileID: 140254681}
+  - component: {fileID: 140254682}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (48)
   m_TagString: Untagged
@@ -2243,6 +2353,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &140254681
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 140254677}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0, z: 0.2923754}
+--- !u!114 &140254682
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 140254677}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!4 &140279690 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5921679343534089647, guid: 4f05738cc852e8446af8ca48a32ca2ea, type: 3}
@@ -2259,6 +2403,8 @@ GameObject:
   - component: {fileID: 140969159}
   - component: {fileID: 140969158}
   - component: {fileID: 140969157}
+  - component: {fileID: 140969160}
+  - component: {fileID: 140969161}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (34)
   m_TagString: Untagged
@@ -2334,6 +2480,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &140969160
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 140969156}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0.0000009536743, z: 0.2923754}
+--- !u!114 &140969161
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 140969156}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!1 &145184461
 GameObject:
   m_ObjectHideFlags: 0
@@ -3270,6 +3450,8 @@ GameObject:
   - component: {fileID: 259684250}
   - component: {fileID: 259684249}
   - component: {fileID: 259684248}
+  - component: {fileID: 259684251}
+  - component: {fileID: 259684252}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (28)
   m_TagString: Untagged
@@ -3345,6 +3527,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &259684251
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 259684247}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0, z: 0.2923754}
+--- !u!114 &259684252
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 259684247}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!1 &272903748
 GameObject:
   m_ObjectHideFlags: 0
@@ -4692,6 +4908,8 @@ GameObject:
   - component: {fileID: 351923469}
   - component: {fileID: 351923468}
   - component: {fileID: 351923467}
+  - component: {fileID: 351923470}
+  - component: {fileID: 351923471}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (35)
   m_TagString: Untagged
@@ -4767,6 +4985,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &351923470
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 351923466}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0, z: 0.2923754}
+--- !u!114 &351923471
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 351923466}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!1001 &354813675
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5308,6 +5560,8 @@ GameObject:
   - component: {fileID: 386300436}
   - component: {fileID: 386300435}
   - component: {fileID: 386300434}
+  - component: {fileID: 386300437}
+  - component: {fileID: 386300438}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (19)
   m_TagString: Untagged
@@ -5383,6 +5637,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &386300437
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 386300433}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0, z: 0.2923754}
+--- !u!114 &386300438
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 386300433}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!1001 &387845489
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6618,6 +6906,8 @@ GameObject:
   - component: {fileID: 504671741}
   - component: {fileID: 504671740}
   - component: {fileID: 504671739}
+  - component: {fileID: 504671742}
+  - component: {fileID: 504671743}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (13)
   m_TagString: Untagged
@@ -6693,6 +6983,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &504671742
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 504671738}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0, z: 0.2923754}
+--- !u!114 &504671743
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 504671738}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!4 &509113872 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5921679343534089647, guid: 4f05738cc852e8446af8ca48a32ca2ea, type: 3}
@@ -6859,6 +7183,8 @@ GameObject:
   - component: {fileID: 522238112}
   - component: {fileID: 522238111}
   - component: {fileID: 522238110}
+  - component: {fileID: 522238113}
+  - component: {fileID: 522238114}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (9)
   m_TagString: Untagged
@@ -6934,6 +7260,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &522238113
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 522238109}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0, z: 0.2923754}
+--- !u!114 &522238114
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 522238109}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!4 &527866367 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5921679343534089647, guid: 4f05738cc852e8446af8ca48a32ca2ea, type: 3}
@@ -7178,6 +7538,8 @@ GameObject:
   - component: {fileID: 559397563}
   - component: {fileID: 559397562}
   - component: {fileID: 559397561}
+  - component: {fileID: 559397564}
+  - component: {fileID: 559397565}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (38)
   m_TagString: Untagged
@@ -7253,6 +7615,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &559397564
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 559397560}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0, z: 0.2923754}
+--- !u!114 &559397565
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 559397560}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!1 &572143981
 GameObject:
   m_ObjectHideFlags: 0
@@ -8372,6 +8768,8 @@ GameObject:
   - component: {fileID: 654497060}
   - component: {fileID: 654497059}
   - component: {fileID: 654497058}
+  - component: {fileID: 654497061}
+  - component: {fileID: 654497062}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (24)
   m_TagString: Untagged
@@ -8447,6 +8845,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &654497061
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 654497057}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0, z: 0.2923754}
+--- !u!114 &654497062
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 654497057}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!1 &671899092
 GameObject:
   m_ObjectHideFlags: 0
@@ -8847,6 +9279,8 @@ GameObject:
   - component: {fileID: 701444754}
   - component: {fileID: 701444753}
   - component: {fileID: 701444752}
+  - component: {fileID: 701444755}
+  - component: {fileID: 701444756}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (15)
   m_TagString: Untagged
@@ -8922,6 +9356,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &701444755
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 701444751}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0.0000009536743, z: 0.2923754}
+--- !u!114 &701444756
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 701444751}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!1 &704188094
 GameObject:
   m_ObjectHideFlags: 0
@@ -9428,6 +9896,8 @@ GameObject:
   - component: {fileID: 756706164}
   - component: {fileID: 756706163}
   - component: {fileID: 756706162}
+  - component: {fileID: 756706165}
+  - component: {fileID: 756706166}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (39)
   m_TagString: Untagged
@@ -9503,6 +9973,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &756706165
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 756706161}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0, z: 0.2923754}
+--- !u!114 &756706166
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 756706161}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!4 &759807718 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5921679343534089647, guid: 4f05738cc852e8446af8ca48a32ca2ea, type: 3}
@@ -9795,6 +10299,8 @@ GameObject:
   - component: {fileID: 786510456}
   - component: {fileID: 786510455}
   - component: {fileID: 786510454}
+  - component: {fileID: 786510457}
+  - component: {fileID: 786510458}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (14)
   m_TagString: Untagged
@@ -9870,6 +10376,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &786510457
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 786510453}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0, z: 0.2923754}
+--- !u!114 &786510458
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 786510453}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!4 &793795558 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6320427374744349285, guid: 379e5d27e7a2d53489a50011e28a20a7, type: 3}
@@ -9923,6 +10463,8 @@ GameObject:
   - component: {fileID: 799912037}
   - component: {fileID: 799912036}
   - component: {fileID: 799912035}
+  - component: {fileID: 799912038}
+  - component: {fileID: 799912039}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (16)
   m_TagString: Untagged
@@ -9998,6 +10540,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &799912038
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 799912034}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0, z: 0.2923754}
+--- !u!114 &799912039
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 799912034}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!4 &807729122 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6320427374744349285, guid: 379e5d27e7a2d53489a50011e28a20a7, type: 3}
@@ -11452,6 +12028,8 @@ GameObject:
   - component: {fileID: 906067926}
   - component: {fileID: 906067925}
   - component: {fileID: 906067924}
+  - component: {fileID: 906067927}
+  - component: {fileID: 906067928}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (20)
   m_TagString: Untagged
@@ -11527,6 +12105,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &906067927
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 906067923}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0, z: 0.2923754}
+--- !u!114 &906067928
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 906067923}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!1 &907984389
 GameObject:
   m_ObjectHideFlags: 0
@@ -13024,6 +13636,8 @@ GameObject:
   - component: {fileID: 1022782928}
   - component: {fileID: 1022782927}
   - component: {fileID: 1022782926}
+  - component: {fileID: 1022782929}
+  - component: {fileID: 1022782930}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (37)
   m_TagString: Untagged
@@ -13099,6 +13713,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &1022782929
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1022782925}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0.0000009536743, z: 0.2923754}
+--- !u!114 &1022782930
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1022782925}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!1 &1025916135
 GameObject:
   m_ObjectHideFlags: 0
@@ -13110,6 +13758,8 @@ GameObject:
   - component: {fileID: 1025916138}
   - component: {fileID: 1025916137}
   - component: {fileID: 1025916136}
+  - component: {fileID: 1025916139}
+  - component: {fileID: 1025916140}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (32)
   m_TagString: Untagged
@@ -13185,6 +13835,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &1025916139
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1025916135}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0, z: 0.2923754}
+--- !u!114 &1025916140
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1025916135}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!4 &1026619070 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6320427374744349285, guid: 379e5d27e7a2d53489a50011e28a20a7, type: 3}
@@ -15791,6 +16475,8 @@ GameObject:
   - component: {fileID: 1247522596}
   - component: {fileID: 1247522595}
   - component: {fileID: 1247522594}
+  - component: {fileID: 1247522597}
+  - component: {fileID: 1247522598}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (23)
   m_TagString: Untagged
@@ -15866,6 +16552,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &1247522597
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1247522593}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0, z: 0.2923754}
+--- !u!114 &1247522598
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1247522593}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!4 &1249230743 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5921679343534089647, guid: 4f05738cc852e8446af8ca48a32ca2ea, type: 3}
@@ -16374,6 +17094,8 @@ GameObject:
   - component: {fileID: 1320984458}
   - component: {fileID: 1320984457}
   - component: {fileID: 1320984456}
+  - component: {fileID: 1320984459}
+  - component: {fileID: 1320984460}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (36)
   m_TagString: Untagged
@@ -16449,6 +17171,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &1320984459
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1320984455}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0, z: 0.2923754}
+--- !u!114 &1320984460
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1320984455}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!1 &1323475060
 GameObject:
   m_ObjectHideFlags: 0
@@ -16759,6 +17515,8 @@ GameObject:
   - component: {fileID: 1339607997}
   - component: {fileID: 1339607996}
   - component: {fileID: 1339607995}
+  - component: {fileID: 1339607998}
+  - component: {fileID: 1339607999}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (51)
   m_TagString: Untagged
@@ -16834,6 +17592,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &1339607998
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1339607994}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0, z: 0.2923754}
+--- !u!114 &1339607999
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1339607994}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!1001 &1347140631
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -18137,6 +18929,8 @@ GameObject:
   - component: {fileID: 1453170169}
   - component: {fileID: 1453170168}
   - component: {fileID: 1453170167}
+  - component: {fileID: 1453170170}
+  - component: {fileID: 1453170171}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (25)
   m_TagString: Untagged
@@ -18212,6 +19006,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &1453170170
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1453170166}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0.0000009536743, z: 0.2923754}
+--- !u!114 &1453170171
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1453170166}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!1 &1475891437
 GameObject:
   m_ObjectHideFlags: 0
@@ -18446,6 +19274,8 @@ GameObject:
   - component: {fileID: 1493933694}
   - component: {fileID: 1493933693}
   - component: {fileID: 1493933692}
+  - component: {fileID: 1493933695}
+  - component: {fileID: 1493933696}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (46)
   m_TagString: Untagged
@@ -18521,6 +19351,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &1493933695
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1493933691}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0, z: 0.2923754}
+--- !u!114 &1493933696
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1493933691}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!1 &1500826257
 GameObject:
   m_ObjectHideFlags: 0
@@ -18532,6 +19396,8 @@ GameObject:
   - component: {fileID: 1500826260}
   - component: {fileID: 1500826259}
   - component: {fileID: 1500826258}
+  - component: {fileID: 1500826261}
+  - component: {fileID: 1500826262}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (31)
   m_TagString: Untagged
@@ -18607,6 +19473,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &1500826261
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1500826257}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0, z: 0.2923754}
+--- !u!114 &1500826262
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1500826257}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!1001 &1504313048
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -18800,6 +19700,8 @@ GameObject:
   - component: {fileID: 1513583322}
   - component: {fileID: 1513583321}
   - component: {fileID: 1513583320}
+  - component: {fileID: 1513583323}
+  - component: {fileID: 1513583324}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (40)
   m_TagString: Untagged
@@ -18875,6 +19777,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &1513583323
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1513583319}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0, z: 0.2923754}
+--- !u!114 &1513583324
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1513583319}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!1 &1516194184
 GameObject:
   m_ObjectHideFlags: 0
@@ -19547,6 +20483,8 @@ GameObject:
   - component: {fileID: 1550376822}
   - component: {fileID: 1550376821}
   - component: {fileID: 1550376820}
+  - component: {fileID: 1550376823}
+  - component: {fileID: 1550376824}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (29)
   m_TagString: Untagged
@@ -19622,6 +20560,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &1550376823
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1550376819}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0.0000009536743, z: 0.2923754}
+--- !u!114 &1550376824
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1550376819}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!1 &1561220826
 GameObject:
   m_ObjectHideFlags: 0
@@ -20716,6 +21688,8 @@ GameObject:
   - component: {fileID: 1639662153}
   - component: {fileID: 1639662152}
   - component: {fileID: 1639662151}
+  - component: {fileID: 1639662154}
+  - component: {fileID: 1639662155}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (42)
   m_TagString: Untagged
@@ -20791,6 +21765,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &1639662154
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1639662150}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0.0000009536743, z: 0.2923754}
+--- !u!114 &1639662155
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1639662150}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!1001 &1649228727
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -21430,6 +22438,8 @@ GameObject:
   - component: {fileID: 1690759398}
   - component: {fileID: 1690759397}
   - component: {fileID: 1690759396}
+  - component: {fileID: 1690759399}
+  - component: {fileID: 1690759400}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (41)
   m_TagString: Untagged
@@ -21505,6 +22515,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &1690759399
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1690759395}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0, z: 0.2923754}
+--- !u!114 &1690759400
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1690759395}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!1001 &1691401190
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -22222,6 +23266,8 @@ GameObject:
   - component: {fileID: 1744441293}
   - component: {fileID: 1744441292}
   - component: {fileID: 1744441291}
+  - component: {fileID: 1744441294}
+  - component: {fileID: 1744441295}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (30)
   m_TagString: Untagged
@@ -22297,6 +23343,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &1744441294
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1744441290}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0, z: 0.2923754}
+--- !u!114 &1744441295
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1744441290}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!4 &1744575786 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5225527868342413860, guid: ff9d027bc1f89e34a8c772b15c87f39a, type: 3}
@@ -22350,6 +23430,8 @@ GameObject:
   - component: {fileID: 1752446659}
   - component: {fileID: 1752446658}
   - component: {fileID: 1752446657}
+  - component: {fileID: 1752446660}
+  - component: {fileID: 1752446661}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (21)
   m_TagString: Untagged
@@ -22425,6 +23507,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &1752446660
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1752446656}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0, z: 0.2923754}
+--- !u!114 &1752446661
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1752446656}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!1 &1755197065
 GameObject:
   m_ObjectHideFlags: 0
@@ -22940,6 +24056,8 @@ GameObject:
   - component: {fileID: 1770609391}
   - component: {fileID: 1770609390}
   - component: {fileID: 1770609389}
+  - component: {fileID: 1770609392}
+  - component: {fileID: 1770609393}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (18)
   m_TagString: Untagged
@@ -23015,6 +24133,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &1770609392
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1770609388}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0.0000009536743, z: 0.2923754}
+--- !u!114 &1770609393
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1770609388}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!1 &1775277280
 GameObject:
   m_ObjectHideFlags: 0
@@ -23135,6 +24287,8 @@ GameObject:
   - component: {fileID: 1778054823}
   - component: {fileID: 1778054822}
   - component: {fileID: 1778054821}
+  - component: {fileID: 1778054824}
+  - component: {fileID: 1778054825}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (45)
   m_TagString: Untagged
@@ -23210,6 +24364,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &1778054824
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1778054820}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0.0000009536743, z: 0.2923754}
+--- !u!114 &1778054825
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1778054820}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!1 &1782996231
 GameObject:
   m_ObjectHideFlags: 0
@@ -23221,6 +24409,8 @@ GameObject:
   - component: {fileID: 1782996234}
   - component: {fileID: 1782996233}
   - component: {fileID: 1782996232}
+  - component: {fileID: 1782996235}
+  - component: {fileID: 1782996236}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (44)
   m_TagString: Untagged
@@ -23296,6 +24486,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &1782996235
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1782996231}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0, z: 0.2923754}
+--- !u!114 &1782996236
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1782996231}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!1 &1783422411
 GameObject:
   m_ObjectHideFlags: 0
@@ -24084,6 +25308,8 @@ GameObject:
   - component: {fileID: 1857687904}
   - component: {fileID: 1857687903}
   - component: {fileID: 1857687902}
+  - component: {fileID: 1857687905}
+  - component: {fileID: 1857687906}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (43)
   m_TagString: Untagged
@@ -24159,6 +25385,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &1857687905
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1857687901}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0, z: 0.2923754}
+--- !u!114 &1857687906
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1857687901}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!1 &1861697806
 GameObject:
   m_ObjectHideFlags: 0
@@ -24170,6 +25430,8 @@ GameObject:
   - component: {fileID: 1861697809}
   - component: {fileID: 1861697808}
   - component: {fileID: 1861697807}
+  - component: {fileID: 1861697810}
+  - component: {fileID: 1861697811}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (17)
   m_TagString: Untagged
@@ -24245,6 +25507,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &1861697810
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1861697806}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0, z: 0.2923754}
+--- !u!114 &1861697811
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1861697806}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!1001 &1866247038
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -24459,6 +25755,8 @@ GameObject:
   - component: {fileID: 1888741812}
   - component: {fileID: 1888741811}
   - component: {fileID: 1888741810}
+  - component: {fileID: 1888741813}
+  - component: {fileID: 1888741814}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (22)
   m_TagString: Untagged
@@ -24534,6 +25832,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &1888741813
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1888741809}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0.0000009536743, z: 0.2923754}
+--- !u!114 &1888741814
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1888741809}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!4 &1892301357 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6320427374744349285, guid: 379e5d27e7a2d53489a50011e28a20a7, type: 3}
@@ -24700,6 +26032,8 @@ GameObject:
   - component: {fileID: 1914359248}
   - component: {fileID: 1914359247}
   - component: {fileID: 1914359246}
+  - component: {fileID: 1914359249}
+  - component: {fileID: 1914359250}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (50)
   m_TagString: Untagged
@@ -24775,6 +26109,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &1914359249
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1914359245}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0.0000009536743, z: 0.2923754}
+--- !u!114 &1914359250
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1914359245}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!1 &1919067111
 GameObject:
   m_ObjectHideFlags: 0
@@ -25036,6 +26404,8 @@ GameObject:
   - component: {fileID: 1926055504}
   - component: {fileID: 1926055503}
   - component: {fileID: 1926055502}
+  - component: {fileID: 1926055505}
+  - component: {fileID: 1926055506}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (26)
   m_TagString: Untagged
@@ -25111,6 +26481,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &1926055505
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1926055501}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0, z: 0.2923754}
+--- !u!114 &1926055506
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1926055501}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!1 &1934580547
 GameObject:
   m_ObjectHideFlags: 0
@@ -27340,6 +28744,8 @@ GameObject:
   - component: {fileID: 2067912376}
   - component: {fileID: 2067912375}
   - component: {fileID: 2067912374}
+  - component: {fileID: 2067912377}
+  - component: {fileID: 2067912378}
   m_Layer: 0
   m_Name: TriangleSupport_MESH (27)
   m_TagString: Untagged
@@ -27415,6 +28821,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1258443259}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!65 &2067912377
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2067912373}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.127901, y: 0.30468923, z: 1.8632531}
+  m_Center: {x: 0, y: 0, z: 0.2923754}
+--- !u!114 &2067912378
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2067912373}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
 --- !u!1 &2069395180
 GameObject:
   m_ObjectHideFlags: 0
