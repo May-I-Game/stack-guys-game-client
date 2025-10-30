@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 2d0cd168447b85c4b945c3284371f0fc
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 16120
+  packageName: Login Module
+  packageVersion: 1.1.3f1
+  assetPath: Assets/Devion Games/Login System/Scripts/Editor/LoginSystemEditor.cs
+  uploadId: 420874
