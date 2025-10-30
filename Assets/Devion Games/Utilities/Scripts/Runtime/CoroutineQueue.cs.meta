@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 1404a4bf811914e4f844b4393caed778
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 16120
+  packageName: Login Module
+  packageVersion: 1.1.3f1
+  assetPath: Assets/Devion Games/Utilities/Scripts/Runtime/CoroutineQueue.cs
+  uploadId: 420874

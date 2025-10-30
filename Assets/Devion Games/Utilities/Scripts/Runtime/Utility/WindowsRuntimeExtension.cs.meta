@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: ca2cef1cc2305064a9731236ac8f84c0
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 16120
+  packageName: Login Module
+  packageVersion: 1.1.3f1
+  assetPath: Assets/Devion Games/Utilities/Scripts/Runtime/Utility/WindowsRuntimeExtension.cs
+  uploadId: 420874
