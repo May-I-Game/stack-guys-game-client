@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 3584aec1c1ba16540bd27f5063d1a426
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 16120
+  packageName: Login Module
+  packageVersion: 1.1.3f1
+  assetPath: Assets/Devion Games/Module Manager/Editor/ModuleManagerWindow.cs
+  uploadId: 420874
