@@ -4,14 +4,14 @@ using UnityEngine;
 public class PlayerDeathSystem : MonoBehaviour
 {
     [Header("Respawn Settings")]
-    [Tooltip("¸®½ºÆù ´ë±â ½Ã°£")]
+    [Tooltip("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Ã°ï¿½")]
     public float respawnDelay = 2f;
 
     [Header("Corpse Settings")]
-    [Tooltip("½ÃÃ¼ ÇÁ¸®ÆÕ (ºñ¿öµÎ¸é ÀÚµ¿ »ı¼º)")]
+    [Tooltip("ï¿½ï¿½Ã¼ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½Î¸ï¿½ ï¿½Úµï¿½ ï¿½ï¿½ï¿½ï¿½)")]
     public GameObject corpsePrefab;
 
-    [Tooltip("½ÃÃ¼°¡ »ç¶óÁö´Â ½Ã°£")]
+    [Tooltip("ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ã°ï¿½")]
     public float corpseLifetime = 10f;
 
     private CharacterController characterController;
@@ -22,7 +22,7 @@ public class PlayerDeathSystem : MonoBehaviour
     {
         characterController = GetComponent<CharacterController>();
 
-        // ½ÃÀÛ À§Ä¡¸¦ ½ºÆù Æ÷ÀÎÆ®·Î ÀúÀå
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         spawnPosition = transform.position;
     }
 
@@ -32,20 +32,20 @@ public class PlayerDeathSystem : MonoBehaviour
 
         isDead = true;
 
-        // ½ÃÃ¼ »ı¼º
+        // ï¿½ï¿½Ã¼ ï¿½ï¿½ï¿½ï¿½
         CreateCorpse();
 
-        // ÇÃ·¹ÀÌ¾î ¼û±â±â
+        // ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½
         HidePlayer();
 
-        // ThirdPersonController ºñÈ°¼ºÈ­
+        // ThirdPersonController ï¿½ï¿½È°ï¿½ï¿½È­
         var controller = GetComponent<StarterAssets.ThirdPersonController>();
         if (controller != null)
         {
             controller.enabled = false;
         }
 
-        // ¸®½ºÆù ½ÃÀÛ
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         StartCoroutine(RespawnCoroutine());
     }
 
@@ -53,17 +53,17 @@ public class PlayerDeathSystem : MonoBehaviour
     {
         if (corpsePrefab != null)
         {
-            // ÇÁ¸®ÆÕÀÌ ÀÖ´Â °æ¿ì
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½
             GameObject corpse = Instantiate(corpsePrefab, transform.position, transform.rotation);
             Destroy(corpse, corpseLifetime);
         }
         else
         {
-            // ÇÁ¸®ÆÕÀÌ ¾ø´Â °æ¿ì - ÇÃ·¹ÀÌ¾î º¹Á¦
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ - ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½
             GameObject corpse = Instantiate(gameObject, transform.position, transform.rotation);
             corpse.name = "PlayerCorpse";
 
-            // ºÒÇÊ¿äÇÑ ÄÄÆ÷³ÍÆ® Á¦°Å
+            // ï¿½ï¿½ï¿½Ê¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½
             Destroy(corpse.GetComponent<StarterAssets.ThirdPersonController>());
             Destroy(corpse.GetComponent<StarterAssets.StarterAssetsInputs>());
             Destroy(corpse.GetComponent<PlayerDeathSystem>());
@@ -77,42 +77,59 @@ public class PlayerDeathSystem : MonoBehaviour
             }
 #endif
 
-            // Rigidbody Ãß°¡ (¹°¸® È¿°ú)
+            // ï¿½ï¿½ï¿½ï¿½ Colliderï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+            Collider[] existingColliders = corpse.GetComponents<Collider>();
+            foreach (Collider col in existingColliders)
+            {
+                Destroy(col);
+            }
+
+            // ï¿½ï¿½ï¿½Î¿ï¿½ CapsuleCollider ï¿½ß°ï¿½
+            CapsuleCollider capsule = corpse.AddComponent<CapsuleCollider>();
+            capsule.height = 2f;
+            capsule.radius = 0.5f;
+            capsule.center = new Vector3(0, 1f, 0);
+
+            // Rigidbody ï¿½ß°ï¿½ (ï¿½ï¿½ï¿½ï¿½ È¿ï¿½ï¿½)
             Rigidbody rb = corpse.GetComponent<Rigidbody>();
             if (rb == null)
             {
                 rb = corpse.AddComponent<Rigidbody>();
             }
             rb.isKinematic = false;
+            rb.mass = 70f; // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+            rb.linearDamping = 0.5f; // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+            rb.angularDamping = 0.5f; // È¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+            
+            // ì‹œì²´ê°€ Ground ë ˆì´ì–´ì™€ ì¶©ëŒí•˜ë„ë¡ ì„¤ì •
+            
+            // ì‹œì²´ ë ˆì´ì–´ë¥¼ Defaultë¡œ ì„¤ì • (Groundì™€ ì¶©ëŒ ê°€ëŠ¥)
+            corpse.layer = LayerMask.NameToLayer("Default");
 
-            // Collider È®ÀÎ ¹× Ãß°¡
-            Collider col = corpse.GetComponent<Collider>();
-            if (col == null)
+            // ìì‹ ì˜¤ë¸Œì íŠ¸ë“¤ë„ ë ˆì´ì–´ ë³€ê²½
+            foreach (Transform child in corpse.GetComponentsInChildren<Transform>())
             {
-                CapsuleCollider capsule = corpse.AddComponent<CapsuleCollider>();
-                capsule.height = 2f;
-                capsule.radius = 0.5f;
-                capsule.center = new Vector3(0, 1f, 0);
+                child.gameObject.layer = LayerMask.NameToLayer("Default");
             }
 
-            // ½ÃÃ¼ ÅÂ±× º¯°æ
+            // ì‹œì²´ íƒœê·¸ ë³€ê²½
             corpse.tag = "Corpse";
 
-            // ÀÏÁ¤ ½Ã°£ ÈÄ Á¦°Å
-            Destroy(corpse, corpseLifetime);
+            // ì¼ì • ì‹œê°„ í›„ ì œê±°
+            //Destroy(corpse, corpseLifetime);
         }
     }
 
     void HidePlayer()
     {
-        // ·»´õ·¯ ºñÈ°¼ºÈ­
+        // ë Œë”ëŸ¬ ë¹„í™œì„±í™”
         Renderer[] renderers = GetComponentsInChildren<Renderer>();
         foreach (Renderer rend in renderers)
         {
             rend.enabled = false;
         }
 
-        // Collider ºñÈ°¼ºÈ­
+        // Collider ë¹„í™œì„±í™”
         Collider[] colliders = GetComponentsInChildren<Collider>();
         foreach (Collider col in colliders)
         {
@@ -122,14 +139,14 @@ public class PlayerDeathSystem : MonoBehaviour
 
     void ShowPlayer()
     {
-        // ·»´õ·¯ È°¼ºÈ­
+        // ë Œë”ëŸ¬ í™œì„±í™”
         Renderer[] renderers = GetComponentsInChildren<Renderer>();
         foreach (Renderer rend in renderers)
         {
             rend.enabled = true;
         }
 
-        // Collider È°¼ºÈ­
+        // Collider í™œì„±í™”
         Collider[] colliders = GetComponentsInChildren<Collider>();
         foreach (Collider col in colliders)
         {
@@ -139,29 +156,29 @@ public class PlayerDeathSystem : MonoBehaviour
 
     IEnumerator RespawnCoroutine()
     {
-        // ÁöÁ¤µÈ ½Ã°£¸¸Å­ ´ë±â
+        // ì§€ì •ëœ ì‹œê°„ë§Œí¼ ëŒ€ê¸°
         yield return new WaitForSeconds(respawnDelay);
 
-        // CharacterController ÀÏ½Ã ºñÈ°¼ºÈ­ (À§Ä¡ ÀÌµ¿À» À§ÇØ)
+        // CharacterController ì¼ì‹œ ë¹„í™œì„±í™” (ìœ„ì¹˜ ì´ë™ì„ ìœ„í•´)
         if (characterController != null)
         {
             characterController.enabled = false;
         }
 
-        // ½ºÆù À§Ä¡·Î ÀÌµ¿
+        // ìŠ¤í° ìœ„ì¹˜ë¡œ ì´ë™
         transform.position = spawnPosition;
         transform.rotation = Quaternion.identity;
 
-        // CharacterController ´Ù½Ã È°¼ºÈ­
+        // CharacterController ë‹¤ì‹œ í™œì„±í™”
         if (characterController != null)
         {
             characterController.enabled = true;
         }
 
-        // ÇÃ·¹ÀÌ¾î ´Ù½Ã º¸ÀÌ°Ô ÇÔ
+        // í”Œë ˆì´ì–´ ë‹¤ì‹œ ë³´ì´ê²Œ í•¨
         ShowPlayer();
 
-        // ThirdPersonController È°¼ºÈ­
+        // ThirdPersonController È°ï¿½ï¿½È­
         var controller = GetComponent<StarterAssets.ThirdPersonController>();
         if (controller != null)
         {
@@ -171,13 +188,13 @@ public class PlayerDeathSystem : MonoBehaviour
         isDead = false;
     }
 
-    // PressTrap¿¡¼­ È£ÃâÇÒ ¼ö ÀÖ´Â °ø°³ ¸Ş¼­µå
+    // PressTrapï¿½ï¿½ï¿½ï¿½ È£ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ş¼ï¿½ï¿½ï¿½
     public bool IsDead()
     {
         return isDead;
     }
 
-    // ½ºÆù À§Ä¡¸¦ º¯°æÇÏ°í ½ÍÀ» ¶§ »ç¿ë
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½
     public void SetSpawnPosition(Vector3 newSpawnPosition)
     {
         spawnPosition = newSpawnPosition;
