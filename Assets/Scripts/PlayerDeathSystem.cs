@@ -69,6 +69,13 @@ public class PlayerDeathSystem : MonoBehaviour
             Destroy(corpse.GetComponent<PlayerDeathSystem>());
             Destroy(corpse.GetComponent<CharacterController>());
 
+            // 이름표 제거
+            NameTag nameTag = corpse.GetComponentInChildren<NameTag>();
+            if (nameTag != null)
+            {
+                Destroy(nameTag.gameObject);
+            }
+
 #if ENABLE_INPUT_SYSTEM
             var playerInput = corpse.GetComponent<UnityEngine.InputSystem.PlayerInput>();
             if (playerInput != null)
