@@ -50,7 +50,7 @@ MonoBehaviour:
   NetworkConfig:
     ProtocolVersion: 0
     NetworkTransport: {fileID: 8173179524884833223}
-    PlayerPrefab: {fileID: 0}
+    PlayerPrefab: {fileID: 8126124964310365460, guid: 6be5a549475b4d248adb86a03f9e99b0, type: 3}
     Prefabs:
       NetworkPrefabsLists:
       - {fileID: 11400000, guid: 5343cf97fe7dbc04a98e22b75d38f099, type: 2}
@@ -72,7 +72,6 @@ MonoBehaviour:
     NetworkTopology: 0
     UseCMBService: 0
     AutoSpawnPlayerPrefabClientSide: 1
-    NetworkMessageMetrics: 1
     NetworkProfilingMetrics: 1
     OldPrefabList: []
   RunInBackground: 1
@@ -118,5 +117,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 18b8a20568e1f0b4fb3fb1cea7d973ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serverPort: 7779
-  serverAddress: 127.0.0.1
