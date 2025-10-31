@@ -1,0 +1,211 @@
+fileFormatVersion: 2
+guid: 2db24f0a5069df240b4defae05915eef
+ModelImporter:
+  serializedVersion: 19301
+  internalIDToNameTable:
+  - first:
+      74: 689727143527590355
+    second: Happy
+  - first:
+      74: -8789071839675277327
+    second: HappyIdle
+  - first:
+      74: 7267397709382041070
+    second: WarriorIdle
+  - first:
+      74: -5252816984213320552
+    second: idle
+  - first:
+      74: 5249470491336795268
+    second: Treading
+  - first:
+      74: -5317887767387918893
+    second: Floating
+  - first:
+      74: -1500354584072067147
+    second: Falling
+  - first:
+      74: -7802160528148137020
+    second: FallingFlat
+  - first:
+      74: -8848240301271078672
+    second: Catwalk
+  - first:
+      74: -1610863427237328480
+    second: Walking
+  - first:
+      74: -5933712378818781917
+    second: Walking2
+  - first:
+      74: -1263303526490775549
+    second: GoffyRunning
+  - first:
+      74: 1431295360424787170
+    second: JogForward
+  - first:
+      74: 3898671758408027237
+    second: RunForward
+  - first:
+      74: 3539032434131936826
+    second: MediumRun
+  - first:
+      74: 7952537194032246720
+    second: ZReactionHit
+  - first:
+      74: 7499963176143599311
+    second: Reaction
+  - first:
+      74: -9047445990513125599
+    second: KnockedOut
+  - first:
+      74: 2489939770423369847
+    second: DeathLeft
+  - first:
+      74: 7837136422212469151
+    second: ZAttack
+  - first:
+      74: -5972857071629272013
+    second: Stabbing1
+  - first:
+      74: -1783430570193328232
+    second: Stabbing2
+  - first:
+      74: -8274311149877961454
+    second: Stabbing3
+  - first:
+      74: -8050132981928642286
+    second: UpwardThrust
+  - first:
+      74: 6719204718095668130
+    second: all
+  - first:
+      74: -6712725380312225458
+    second: Tpose
+  - first:
+      74: -109548765096386504
+    second: Happy01
+  - first:
+      74: -7219213789183977779
+    second: bigyo
+  - first:
+      74: -6079088350439200652
+    second: zzzzz
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Body_01
+    second: {fileID: 2100000, guid: d1a44644fb0dfb349ba0fe9aff1c8b8b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Eye_01
+    second: {fileID: 2100000, guid: a45430cafce1bd948bcdf8f6c6679433, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Eye_05
+    second: {fileID: 2100000, guid: a45430cafce1bd948bcdf8f6c6679433, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Mouth_01
+    second: {fileID: 2100000, guid: 02a9c38a635547c48959fe61724f7cc3, type: 2}
+  materials:
+    materialImportMode: 1
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    rigImportErrors: 
+    rigImportWarnings: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    importConstraints: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    extraUserProperties: []
+    clipAnimations: []
+    isReadable: 0
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    useSRGBMaterialColor: 1
+    sortHierarchyByName: 1
+    importVisibility: 1
+    importBlendShapes: 1
+    importCameras: 1
+    importLights: 1
+    fileIdsGeneration: 2
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    keepQuads: 0
+    weldVertices: 1
+    preserveHierarchy: 0
+    skinWeightsMode: 0
+    maxBonesPerVertex: 4
+    minBoneWeight: 0.001
+    meshOptimizationFlags: -1
+    indexFormat: 0
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalCalculationMode: 4
+    legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
+    blendShapeNormalImportMode: 1
+    normalSmoothingSource: 0
+  referencedClips: []
+  importAnimation: 1
+  humanDescription:
+    serializedVersion: 3
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    globalScale: 1
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+    hasExtraRoot: 1
+    skeletonHasParents: 1
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  autoGenerateAvatarMappingIfUnspecified: 1
+  animationType: 1
+  humanoidOversampling: 1
+  avatarSetup: 0
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 209613
+  packageName: Cute Dolls
+  packageVersion: 1.0
+  assetPath: Assets/Cute Dolls/FBX/Legacy/Doll_ALL.fbx
+  uploadId: 621387
