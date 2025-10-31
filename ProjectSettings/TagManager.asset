@@ -6,6 +6,10 @@ TagManager:
   tags:
   - CinemachineTarget
   - Corpse
+  - Ground
+  - weakObstacles
+  - OtherPlayer
+  - StrongObstacles
   layers:
   - Default
   - TransparentFX
