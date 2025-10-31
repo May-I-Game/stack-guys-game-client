@@ -1,14 +1,7 @@
 {
   "dependencies": {
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-=======
-    "com.amazonaws.gamelift": {
-      "version": "file:C:/Users/kangk/OneDrive/Desktop/amazon-gamelift-plugin-unity-release-3.2.0/com.amazonaws.gamelift-3.2.0.tgz",
-=======
     "com.amazonaws.gamelift": {
       "version": "file:../amazon-gamelift-plugin-unity-release-3.2.0/com.amazonaws.gamelift-3.2.0.tgz",
->>>>>>> dev
       "depth": 0,
       "source": "local-tarball",
       "dependencies": {
@@ -16,11 +9,7 @@
       }
     },
     "com.amazonaws.gameliftserver.sdk": {
-<<<<<<< HEAD
-      "version": "file:C:/Users/kangk/OneDrive/Desktop/amazon-gamelift-plugin-unity-release-3.2.0/com.amazonaws.gameliftserver.sdk-5.4.0.tgz",
-=======
       "version": "file:../amazon-gamelift-plugin-unity-release-3.2.0/com.amazonaws.gameliftserver.sdk-5.4.0.tgz",
->>>>>>> dev
       "depth": 0,
       "source": "local-tarball",
       "dependencies": {
@@ -31,10 +20,6 @@
         "org.nuget.system.configuration.configurationmanager": "7.0.0"
       }
     },
-<<<<<<< HEAD
->>>>>>> Stashed changes
-=======
->>>>>>> dev
     "com.unity.2d.sprite": {
       "version": "1.0.0",
       "depth": 0,
