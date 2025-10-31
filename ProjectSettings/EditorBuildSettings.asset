@@ -8,18 +8,6 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Login.unity
     guid: 72369e134ee2f67458b0b984178c585c
-  - enabled: 1
-    path: Assets/Scenes/GameScene.unity
-    guid: 26b894778761c7145a621f96751485cc
-  - enabled: 0
-    path: Assets/Scenes/DoHoon.unity
-    guid: 96e109a4dc1b50845862bfaa3f3b381e
-  - enabled: 0
-    path: Assets/Scenes/JungHo.unity
-    guid: 6aa69027cf87f7a4f8d755a9c771ec20
-  - enabled: 1
-    path: Assets/Scenes/SeoJeong.unity
-    guid: 824c95ec7b2912d44bc86a75f71dfc2e
   m_configObjects:
     com.unity.input.settings: {fileID: 11400000, guid: 9e7be553448fa2546aea5752021cbcf7, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: cf9b16eaead29564f84d14f7f650ad01, type: 3}
