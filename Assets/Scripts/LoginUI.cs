@@ -22,6 +22,8 @@ public class LoginUI : MonoBehaviour
         }
         PlayerPrefs.Save();
 
+        // 캐릭터 선택된 것도 반영되어야 함. (CharactorCamera localposition.x 를 -2로 나누기 하면 인덱스가 나옴)
+
         // 서버 연결
         UnityTransport transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
         string serverAddress = transport.ConnectionData.Address;
