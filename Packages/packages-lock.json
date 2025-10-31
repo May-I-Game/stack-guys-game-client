@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "com.amazonaws.gamelift": {
-      "version": "file:C:/Users/looka/Downloads/amazon-gamelift-plugin-unity-release-3.2.0/com.amazonaws.gamelift-3.2.0.tgz",
+      "version": "file:../amazon-gamelift-plugin-unity-release-3.2.0/com.amazonaws.gamelift-3.2.0.tgz",
       "depth": 0,
       "source": "local-tarball",
       "dependencies": {
@@ -9,7 +9,7 @@
       }
     },
     "com.amazonaws.gameliftserver.sdk": {
-      "version": "file:C:/Users/looka/Downloads/amazon-gamelift-plugin-unity-release-3.2.0/com.amazonaws.gameliftserver.sdk-5.4.0.tgz",
+      "version": "file:../amazon-gamelift-plugin-unity-release-3.2.0/com.amazonaws.gameliftserver.sdk-5.4.0.tgz",
       "depth": 0,
       "source": "local-tarball",
       "dependencies": {
