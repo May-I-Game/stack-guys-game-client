@@ -1,5 +1,7 @@
 {
   "dependencies": {
+    "com.amazonaws.gamelift": "file:C:/Users/looka/Downloads/amazon-gamelift-plugin-unity-release-3.2.0/com.amazonaws.gamelift-3.2.0.tgz",
+    "com.amazonaws.gameliftserver.sdk": "file:C:/Users/looka/Downloads/amazon-gamelift-plugin-unity-release-3.2.0/com.amazonaws.gameliftserver.sdk-5.4.0.tgz",
     "com.unity.2d.sprite": "1.0.0",
     "com.unity.ai.navigation": "2.0.9",
     "com.unity.burst": "1.8.25",
@@ -62,5 +64,14 @@
     "com.unity.modules.vr": "1.0.0",
     "com.unity.modules.wind": "1.0.0",
     "com.unity.modules.xr": "1.0.0"
-  }
+  },
+  "scopedRegistries": [
+    {
+      "name": "Unity NuGet",
+      "url": "https://unitynuget-registry.openupm.com",
+      "scopes": [
+        "org.nuget"
+      ]
+    }
+  ]
 }
