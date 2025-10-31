@@ -3,15 +3,15 @@ using UnityEngine;
 
 public class SpinY : MonoBehaviour
 {
-    public enum Axis { X, Y, Z}
+    public enum Axis { X, Y, Z }
     public enum SpaceMode { Local, World }
 
     [Header("Spin Settings")]
-    [SerializeField] Axis axis = Axis.Y;                        // È¸Àü ÇÒ Ãà Y
-    [SerializeField] float degreesPerSecond = 180f;             // ÃÊ´ç °¢µµ
-    [SerializeField] SpaceMode spaceMode = SpaceMode.Local;     // ·ÎÄÃ/¿ùµå ±âÁØ
-    [SerializeField] bool clockWise = true;                     // ½Ã°è/¹Ý½Ã°è ±âÁØ
-    [SerializeField] bool randomizeStartAngle = false;          // ½ÃÀÛ °¢µµ ·£´ý
+    [SerializeField] Axis axis = Axis.Y;                        // È¸ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ Y
+    [SerializeField] float degreesPerSecond = 180f;             // ï¿½Ê´ï¿½ ï¿½ï¿½ï¿½ï¿½
+    [SerializeField] SpaceMode spaceMode = SpaceMode.Local;     // ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+    [SerializeField] bool clockWise = true;                     // ï¿½Ã°ï¿½/ï¿½Ý½Ã°ï¿½ ï¿½ï¿½ï¿½ï¿½
+    [SerializeField] bool randomizeStartAngle = false;          // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
     Vector3 axisVector;
 
@@ -39,7 +39,15 @@ public class SpinY : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        float dir = clockWise ? -1f : 1f;           // UnityÀÇ ¿À¸¥¼ÕÁÂÇ¥°è ±âÁØ °¨°¢»ó ½Ã°è/¹Ý½Ã°è º¸Á¤
+        //if (IsServer)
+        //{
+        //    Spin();
+        //}
+    }
+
+    private void Spin()
+    {
+        float dir = clockWise ? -1f : 1f;           // Unityï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç¥ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ã°ï¿½/ï¿½Ý½Ã°ï¿½ ï¿½ï¿½ï¿½ï¿½
         float delta = degreesPerSecond * dir * Time.deltaTime;
 
         if (spaceMode == SpaceMode.Local)
