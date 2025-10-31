@@ -2,7 +2,7 @@ using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
-public class JiggleBallTrap : NetworkBehaviour
+public class JiggleBallTrap : MonoBehaviour
 {
     [Header("Rotate Settings")]
     public float rightZ = 60f;
@@ -17,7 +17,7 @@ public class JiggleBallTrap : NetworkBehaviour
 
     void Start()
     {
-        if (IsServer)
+        if (NetworkManager.Singleton.IsServer)
         {
             if (autoRotate)
             {
