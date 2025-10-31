@@ -1,23 +1,23 @@
 using Unity.Netcode;
 using UnityEngine;
 
+// 테스트: 유니코드(서명없는 UTF-8) 65001
+
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerMove : NetworkBehaviour
 {
-    [Header("�̵� ����")]
-    [SerializeField] float moveSpeed = 5f;   // �̵� �ӵ� (m/s)
+    [SerializeField] float moveSpeed = 5f;
 
-    [Header("ī�޶� ���� �̵�")]
-    [SerializeField] Camera cam;             // ���� ���� ī�޶� �ڵ� �Ҵ�
+    [SerializeField] Camera cam;
 
     Rigidbody rb;
 
-    Vector3 wishDir; // �Է����κ��� ����� ���ϴ� �̵� ����(���� ����)
+    Vector3 wishDir;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
-        rb.constraints = RigidbodyConstraints.FreezeRotation; // ���� ȸ�� ����(�Ѿ����� �ʰ�)
+        rb.constraints = RigidbodyConstraints.FreezeRotation;
         if (!cam) cam = Camera.main;
     }
 
@@ -28,7 +28,6 @@ public class PlayerMove : NetworkBehaviour
 
     void FixedUpdate()
     {
-        // 4) ���� �̵��� FixedUpdate����
         if (IsServer)
         {
             Vector3 targetPos = rb.position + wishDir * moveSpeed * Time.fixedDeltaTime;
@@ -48,11 +47,9 @@ public class PlayerMove : NetworkBehaviour
         float h = Input.GetAxisRaw("Horizontal"); // A/D
         float v = Input.GetAxisRaw("Vertical");   // W/S
 
-        // 2) ī�޶� ���� XZ ��� ���� ��� (ī�޶� ������ ���� ����)
         Vector3 forward = cam ? Vector3.ProjectOnPlane(cam.transform.forward, Vector3.up).normalized : Vector3.forward;
         Vector3 right = cam ? Vector3.ProjectOnPlane(cam.transform.right, Vector3.up).normalized : Vector3.right;
 
-        // 3) ���ϴ� �̵� ����(����ȭ)
         Vector3 dir = (right * h + forward * v);
         Vector3 targetPos = dir.sqrMagnitude > 1e-4f ? dir.normalized : Vector3.zero;
         MoveServerRpc(targetPos);
