@@ -24,7 +24,6 @@ public class PlayerMove : NetworkBehaviour
 
     private Vector3 moveDirection;
     private bool isjumpQueued;
-    private bool isDiveQueued;
 
     private bool isGrounded;
     private bool isHit = false; // 충돌 상태 (이동 불가)
@@ -64,8 +63,6 @@ public class PlayerMove : NetworkBehaviour
             MovePlayer();
             // 점프 처리
             JumpPlayer();
-            // 다이브 처리
-            DivePlayer();
 
             // 애니메이션 업데이트
             UpdateAnimation();
@@ -74,13 +71,6 @@ public class PlayerMove : NetworkBehaviour
 
     void HandleInput()
     {
-        // 충돌 중이거나 다이브 착지 중이면 입력 무시
-        if (isHit || isDiveGrounded)
-        {
-            moveDirection = Vector3.zero;
-            return;
-        }
-
         // WASD 입력 받기
         float horizontal = Input.GetAxisRaw("Horizontal"); // A, D
         float vertical = Input.GetAxisRaw("Vertical");     // W, S
@@ -90,16 +80,7 @@ public class PlayerMove : NetworkBehaviour
         // Space 키로 점프 또는 다이브
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            if (isGrounded)
-            {
-                // 땅에 있을 때: 점프
-                JumpPlayerServerRpc();
-            }
-            else if (canDive && !isDiving)
-            {
-                // 공중에 있을 때: 다이브
-                DivePlayerServerRpc();
-            }
+            JumpPlayerServerRpc();
         }
     }
 
@@ -107,6 +88,13 @@ public class PlayerMove : NetworkBehaviour
     [ServerRpc]
     private void MovePlayerServerRpc(Vector3 direction)
     {
+        // 충돌 중이거나 다이브 착지 중이면 입력 무시
+        if (isHit || isDiveGrounded)
+        {
+            moveDirection = Vector3.zero;
+            return;
+        }
+
         moveDirection = direction;
         // 기본 이동 속도
         currentSpeed = walkSpeed;
@@ -115,13 +103,13 @@ public class PlayerMove : NetworkBehaviour
     [ServerRpc]
     private void JumpPlayerServerRpc()
     {
-        isjumpQueued = true;
-    }
+        // 충돌 중이거나 다이브 착지 중이면 입력 무시
+        if (isHit || isDiveGrounded)
+        {
+            return;
+        }
 
-    [ServerRpc]
-    private void DivePlayerServerRpc()
-    {
-        isDiveQueued = true;
+        isjumpQueued = true;
     }
     #endregion
 
@@ -143,31 +131,36 @@ public class PlayerMove : NetworkBehaviour
     {
         if (isjumpQueued)
         {
-            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-            isGrounded = false; // 점프 시 강제로 false 설정
-            canDive = true; // 점프 후 다이브 가능
+            // 땅에 있을 때: 점프
+            if (isGrounded)
+            {
+                rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+                isGrounded = false; // 점프 시 강제로 false 설정
+                canDive = true; // 점프 후 다이브 가능
+            }
+            // 공중에 있을 때: 다이브
+            else if (canDive && !isDiving)
+            {
+                DivePlayer();
+            }
             isjumpQueued = false;
         }
     }
 
     void DivePlayer()
     {
-        if (isDiveQueued)
+        isDiving = true;
+        canDive = false;
+
+        // 현재 바라보는 방향으로 앞으로 힘 가하기
+        Vector3 diveDirection = transform.forward * diveForce + Vector3.down * diveDownForce;
+        rb.linearVelocity = Vector3.zero; // 기존 속도 초기화
+        rb.AddForce(diveDirection, ForceMode.Impulse);
+
+        // 다이브 애니메이션 실행 (공중)
+        if (animator != null)
         {
-            isDiving = true;
-            canDive = false;
-
-            // 현재 바라보는 방향으로 앞으로 힘 가하기
-            Vector3 diveDirection = transform.forward * diveForce + Vector3.down * diveDownForce;
-            rb.linearVelocity = Vector3.zero; // 기존 속도 초기화
-            rb.AddForce(diveDirection, ForceMode.Impulse);
-
-            // 다이브 애니메이션 실행 (공중)
-            if (animator != null)
-            {
-                animator.SetTrigger("Dive");
-            }
-            isDiveQueued = false;
+            animator.SetTrigger("Dive");
         }
     }
 
