@@ -10,10 +10,10 @@ public class GoalFlag : MonoBehaviour
         {
             string playerName = PlayerPrefs.GetString("player_name", "Player");
 
-            // °ñÀÎÇÑ ÇÃ·¹ÀÌ¾î Áï½Ã Á¤Áö
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
             DisablePlayer(other.gameObject);
 
-            // °ÔÀÓ ¸Å´ÏÀú¿¡°Ô °ñÀÎ ¾Ë¸²
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½Å´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ë¸ï¿½
             GameEndManager gameManager = Object.FindFirstObjectByType<GameEndManager>();
             if (gameManager != null)
             {
@@ -21,28 +21,28 @@ public class GoalFlag : MonoBehaviour
             }
             else
             {
-                Debug.LogError("GameManager¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù! Hierarchy¿¡ GameManager°¡ ÀÖ´ÂÁö È®ÀÎÇÏ¼¼¿ä.");
+                Debug.LogError("GameManagerï¿½ï¿½ Ã£ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½! Hierarchyï¿½ï¿½ GameManagerï¿½ï¿½ ï¿½Ö´ï¿½ï¿½ï¿½ È®ï¿½ï¿½ï¿½Ï¼ï¿½ï¿½ï¿½.");
             }
         }
     }
 
     public static void DisablePlayer(GameObject player)
     {
-        // ThirdPersonController ºñÈ°¼ºÈ­
+        // ThirdPersonController ï¿½ï¿½È°ï¿½ï¿½È­
         var controller = player.GetComponent<StarterAssets.ThirdPersonController>();
         if (controller != null)
         {
             controller.enabled = false;
         }
 
-        // StarterAssetsInputs ºñÈ°¼ºÈ­
+        // StarterAssetsInputs ï¿½ï¿½È°ï¿½ï¿½È­
         var input = player.GetComponent<StarterAssets.StarterAssetsInputs>();
         if (input != null)
         {
             input.enabled = false;
         }
 
-        // CharacterController ºñÈ°¼ºÈ­
+        // CharacterController ï¿½ï¿½È°ï¿½ï¿½È­
         var charController = player.GetComponent<CharacterController>();
         if (charController != null)
         {
@@ -50,7 +50,7 @@ public class GoalFlag : MonoBehaviour
         }
 
 #if ENABLE_INPUT_SYSTEM
-        // PlayerInput ºñÈ°¼ºÈ­
+        // PlayerInput ï¿½ï¿½È°ï¿½ï¿½È­
         var playerInput = player.GetComponent<UnityEngine.InputSystem.PlayerInput>();
         if (playerInput != null)
         {
