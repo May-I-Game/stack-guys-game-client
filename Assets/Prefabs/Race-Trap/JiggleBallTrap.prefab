@@ -17,7 +17,7 @@ GameObject:
   - component: {fileID: 608591907818925671}
   - component: {fileID: 8483400690529011042}
   m_Layer: 0
-  m_Name: JiggleBall
+  m_Name: JiggleBallTrap
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -133,7 +133,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   upY: 2.929
-  downY: 0.6
+  downY: -0.4
   speed: 5
   stayDownTime: 0.5
   randomDelayRange: {x: 0.5, y: 2}
