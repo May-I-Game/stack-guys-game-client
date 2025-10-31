@@ -2528,9 +2528,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 4072926865987321868, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
+      propertyPath: m_IsTrigger
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7595326119421109423, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_Name
       value: TriangleTrap (11)
+      objectReference: {fileID: 0}
+    - target: {fileID: 7595326119421109423, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
+      propertyPath: m_TagString
+      value: Triangle
       objectReference: {fileID: 0}
     - target: {fileID: 8757561124791757463, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_LocalScale.x
@@ -4121,9 +4129,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 4072926865987321868, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
+      propertyPath: m_IsTrigger
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7595326119421109423, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_Name
       value: TriangleTrap (12)
+      objectReference: {fileID: 0}
+    - target: {fileID: 7595326119421109423, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
+      propertyPath: m_TagString
+      value: Triangle
       objectReference: {fileID: 0}
     - target: {fileID: 8757561124791757463, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_LocalScale.x
@@ -11207,9 +11223,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 4072926865987321868, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
+      propertyPath: m_IsTrigger
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7595326119421109423, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_Name
       value: TriangleTrap
+      objectReference: {fileID: 0}
+    - target: {fileID: 7595326119421109423, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
+      propertyPath: m_TagString
+      value: Triangle
       objectReference: {fileID: 0}
     - target: {fileID: 8757561124791757463, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_LocalScale.x
@@ -13823,9 +13847,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 4072926865987321868, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
+      propertyPath: m_IsTrigger
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7595326119421109423, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_Name
       value: TriangleTrap (7)
+      objectReference: {fileID: 0}
+    - target: {fileID: 7595326119421109423, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
+      propertyPath: m_TagString
+      value: Triangle
       objectReference: {fileID: 0}
     - target: {fileID: 8757561124791757463, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_LocalScale.x
@@ -23377,9 +23409,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 4072926865987321868, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
+      propertyPath: m_IsTrigger
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7595326119421109423, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_Name
       value: TriangleTrap (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 7595326119421109423, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
+      propertyPath: m_TagString
+      value: Triangle
       objectReference: {fileID: 0}
     - target: {fileID: 8757561124791757463, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_LocalScale.x
@@ -28535,9 +28575,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 4072926865987321868, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
+      propertyPath: m_IsTrigger
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7595326119421109423, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_Name
       value: TriangleTrap (10)
+      objectReference: {fileID: 0}
+    - target: {fileID: 7595326119421109423, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
+      propertyPath: m_TagString
+      value: Triangle
       objectReference: {fileID: 0}
     - target: {fileID: 8757561124791757463, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_LocalScale.x
@@ -39778,9 +39826,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 4072926865987321868, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
+      propertyPath: m_IsTrigger
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7595326119421109423, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_Name
       value: TriangleTrap (9)
+      objectReference: {fileID: 0}
+    - target: {fileID: 7595326119421109423, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
+      propertyPath: m_TagString
+      value: Triangle
       objectReference: {fileID: 0}
     - target: {fileID: 8757561124791757463, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_LocalScale.x
@@ -42682,9 +42738,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 4072926865987321868, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
+      propertyPath: m_IsTrigger
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7595326119421109423, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_Name
       value: TriangleTrap (8)
+      objectReference: {fileID: 0}
+    - target: {fileID: 7595326119421109423, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
+      propertyPath: m_TagString
+      value: Triangle
       objectReference: {fileID: 0}
     - target: {fileID: 8757561124791757463, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_LocalScale.x
@@ -44167,9 +44231,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 4072926865987321868, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
+      propertyPath: m_IsTrigger
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7595326119421109423, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_Name
       value: TriangleTrap (3)
+      objectReference: {fileID: 0}
+    - target: {fileID: 7595326119421109423, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
+      propertyPath: m_TagString
+      value: Triangle
       objectReference: {fileID: 0}
     - target: {fileID: 8757561124791757463, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_LocalScale.x
@@ -45142,9 +45214,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 4072926865987321868, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
+      propertyPath: m_IsTrigger
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7595326119421109423, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_Name
       value: TriangleTrap (4)
+      objectReference: {fileID: 0}
+    - target: {fileID: 7595326119421109423, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
+      propertyPath: m_TagString
+      value: Triangle
       objectReference: {fileID: 0}
     - target: {fileID: 8757561124791757463, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_LocalScale.x
@@ -50013,9 +50093,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 4072926865987321868, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
+      propertyPath: m_IsTrigger
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7595326119421109423, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_Name
       value: TriangleTrap (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 7595326119421109423, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
+      propertyPath: m_TagString
+      value: Triangle
       objectReference: {fileID: 0}
     - target: {fileID: 8757561124791757463, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_LocalScale.x
@@ -56464,9 +56552,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 4072926865987321868, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
+      propertyPath: m_IsTrigger
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7595326119421109423, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_Name
       value: TriangleTrap (5)
+      objectReference: {fileID: 0}
+    - target: {fileID: 7595326119421109423, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
+      propertyPath: m_TagString
+      value: Triangle
       objectReference: {fileID: 0}
     - target: {fileID: 8757561124791757463, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_LocalScale.x
@@ -60060,9 +60156,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 4072926865987321868, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
+      propertyPath: m_IsTrigger
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7595326119421109423, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_Name
       value: TriangleTrap (6)
+      objectReference: {fileID: 0}
+    - target: {fileID: 7595326119421109423, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
+      propertyPath: m_TagString
+      value: Triangle
       objectReference: {fileID: 0}
     - target: {fileID: 8757561124791757463, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_LocalScale.x

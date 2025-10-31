@@ -10,6 +10,7 @@ TagManager:
   - weakObstacles
   - OtherPlayer
   - StrongObstacles
+  - Triangle
   layers:
   - Default
   - TransparentFX
