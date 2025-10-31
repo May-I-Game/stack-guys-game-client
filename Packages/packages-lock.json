@@ -1,5 +1,28 @@
 {
   "dependencies": {
+<<<<<<< Updated upstream
+=======
+    "com.amazonaws.gamelift": {
+      "version": "file:C:/Users/kangk/OneDrive/Desktop/amazon-gamelift-plugin-unity-release-3.2.0/com.amazonaws.gamelift-3.2.0.tgz",
+      "depth": 0,
+      "source": "local-tarball",
+      "dependencies": {
+        "com.unity.nuget.newtonsoft-json": "3.2.1"
+      }
+    },
+    "com.amazonaws.gameliftserver.sdk": {
+      "version": "file:C:/Users/kangk/OneDrive/Desktop/amazon-gamelift-plugin-unity-release-3.2.0/com.amazonaws.gameliftserver.sdk-5.4.0.tgz",
+      "depth": 0,
+      "source": "local-tarball",
+      "dependencies": {
+        "com.unity.nuget.newtonsoft-json": "3.2.1",
+        "org.nuget.log4net": "2.0.15",
+        "org.nuget.polly": "7.2.3",
+        "org.nuget.websocketsharp.core": "1.0.0",
+        "org.nuget.system.configuration.configurationmanager": "7.0.0"
+      }
+    },
+>>>>>>> Stashed changes
     "com.unity.2d.sprite": {
       "version": "1.0.0",
       "depth": 0,

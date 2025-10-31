@@ -1,5 +1,10 @@
 {
   "dependencies": {
+<<<<<<< Updated upstream
+=======
+    "com.amazonaws.gamelift": "file:C:/Users/kangk/OneDrive/Desktop/amazon-gamelift-plugin-unity-release-3.2.0/com.amazonaws.gamelift-3.2.0.tgz",
+    "com.amazonaws.gameliftserver.sdk": "file:C:/Users/kangk/OneDrive/Desktop/amazon-gamelift-plugin-unity-release-3.2.0/com.amazonaws.gameliftserver.sdk-5.4.0.tgz",
+>>>>>>> Stashed changes
     "com.unity.2d.sprite": "1.0.0",
     "com.unity.ai.navigation": "2.0.9",
     "com.unity.burst": "1.8.25",
