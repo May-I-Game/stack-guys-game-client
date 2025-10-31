@@ -18,7 +18,7 @@ public class PlayerMove : NetworkBehaviour
 
     private float weakHitDuration = 2f;    // weakHit 애니메이션 길이
     private float strongHitDuration = 2.4f; // StrongHit 애니메이션 길이
-    private float diveGroundedDuration = 0.867f; // 다이브 착지 애니메이션 길이
+    private float diveGroundedDuration = 0.65f; // 다이브 착지 애니메이션 길이
 
     private Rigidbody rb;
 
@@ -75,7 +75,7 @@ public class PlayerMove : NetworkBehaviour
         float horizontal = Input.GetAxisRaw("Horizontal"); // A, D
         float vertical = Input.GetAxisRaw("Vertical");     // W, S
 
-        MovePlayerServerRpc(new Vector3(horizontal, 0f, vertical).normalized);
+        MovePlayerServerRpc(new Vector3(vertical, 0f, -horizontal).normalized);
 
         // Space 키로 점프 또는 다이브
         if (Input.GetKeyDown(KeyCode.Space))
@@ -213,12 +213,16 @@ public class PlayerMove : NetworkBehaviour
                     OnDiveLand();
                 }
 
-                isGrounded = true;
-
-                // 땅에 닿으면 다이브 불가능 상태로 초기화
-                if (canDive)
+                // 수직 속도가 거의 0이거나 아래로 떨어지는 중일 때만 착지로 판단
+                if (rb.linearVelocity.y <= 0.1f)
                 {
-                    canDive = false;
+                    isGrounded = true;
+
+                    // 땅에 닿으면 다이브 불가능 상태로 초기화
+                    if (canDive)
+                    {
+                        canDive = false;
+                    }
                 }
 
                 return;
