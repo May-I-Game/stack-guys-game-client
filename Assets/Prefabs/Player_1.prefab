@@ -1226,8 +1226,8 @@ GameObject:
   - component: {fileID: 964459002660691872}
   - component: {fileID: 4012969670928917173}
   - component: {fileID: 7839709260095116719}
-  - component: {fileID: 4422993982241243552}
   - component: {fileID: -7203480982915365540}
+  - component: {fileID: 4422993982241243552}
   - component: {fileID: 2417491111524222058}
   m_Layer: 0
   m_Name: Player_1
@@ -1328,24 +1328,6 @@ CapsuleCollider:
   m_Height: 1.85
   m_Direction: 1
   m_Center: {x: 0, y: 0.9, z: 0}
---- !u!114 &4422993982241243552
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5785324236016558479}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 41ec7eeb0c0cacf4e885a2d57ca8d28a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  walkSpeed: 4
-  rotationSpeed: 10
-  jumpForce: 3
-  diveForce: 4
-  diveDownForce: 1
-  animator: {fileID: 964459002660691872}
 --- !u!114 &-7203480982915365540
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1371,6 +1353,25 @@ MonoBehaviour:
   AutoObjectParentSync: 1
   SyncOwnerTransformWhenParented: 1
   AllowOwnerToParent: 0
+--- !u!114 &4422993982241243552
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5785324236016558479}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 41ec7eeb0c0cacf4e885a2d57ca8d28a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  walkSpeed: 4
+  rotationSpeed: 10
+  jumpForce: 3
+  diveForce: 4
+  diveDownForce: 1
+  animator: {fileID: 964459002660691872}
 --- !u!114 &2417491111524222058
 MonoBehaviour:
   m_ObjectHideFlags: 0
