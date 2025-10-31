@@ -54,9 +54,6 @@ public class PlayerMove : NetworkBehaviour
             // 입력 받기
             HandleInput();
         }
-
-        // 애니메이션 업데이트
-        UpdateAnimation();
     }
 
     void FixedUpdate()
@@ -69,6 +66,9 @@ public class PlayerMove : NetworkBehaviour
             JumpPlayer();
             // 다이브 처리
             DivePlayer();
+
+            // 애니메이션 업데이트
+            UpdateAnimation();
         }
     }
 
@@ -85,10 +85,7 @@ public class PlayerMove : NetworkBehaviour
         float horizontal = Input.GetAxisRaw("Horizontal"); // A, D
         float vertical = Input.GetAxisRaw("Vertical");     // W, S
 
-        moveDirection = new Vector3(horizontal, 0f, vertical).normalized;
-
-        // 기본 이동 속도
-        currentSpeed = walkSpeed;
+        MovePlayerServerRpc(new Vector3(horizontal, 0f, vertical).normalized);
 
         // Space 키로 점프 또는 다이브
         if (Input.GetKeyDown(KeyCode.Space))
@@ -96,15 +93,37 @@ public class PlayerMove : NetworkBehaviour
             if (isGrounded)
             {
                 // 땅에 있을 때: 점프
-                isjumpQueued = true;
+                JumpPlayerServerRpc();
             }
             else if (canDive && !isDiving)
             {
                 // 공중에 있을 때: 다이브
-                isDiveQueued = true;
+                DivePlayerServerRpc();
             }
         }
     }
+
+    #region ServerRPCs
+    [ServerRpc]
+    private void MovePlayerServerRpc(Vector3 direction)
+    {
+        moveDirection = direction;
+        // 기본 이동 속도
+        currentSpeed = walkSpeed;
+    }
+
+    [ServerRpc]
+    private void JumpPlayerServerRpc()
+    {
+        isjumpQueued = true;
+    }
+
+    [ServerRpc]
+    private void DivePlayerServerRpc()
+    {
+        isDiveQueued = true;
+    }
+    #endregion
 
     void MovePlayer()
     {
@@ -182,6 +201,8 @@ public class PlayerMove : NetworkBehaviour
     // Collider로 땅 감지
     private void OnCollisionStay(Collision collision)
     {
+        if (!IsServer) return;
+
         // 점프 직후에는 땅 체크 안 함
         if (canDive && !isDiving)
         {
@@ -214,12 +235,16 @@ public class PlayerMove : NetworkBehaviour
 
     private void OnCollisionExit(Collision collision)
     {
+        if (!IsServer) return;
+
         isGrounded = false;
     }
 
     // 특정 물체와 충돌할 때
     private void OnCollisionEnter(Collision collision)
     {
+        if (!IsServer) return;
+
         // Tag로 구분하여 다른 애니메이션 재생
         switch (collision.gameObject.tag)
         {
@@ -316,73 +341,3 @@ public class PlayerMove : NetworkBehaviour
     }
 
 }
-
-/*
-using Unity.Netcode;
-using UnityEngine;
-
-// 테스트: 유니코드(서명없는 UTF-8) 65001
-
-[RequireComponent(typeof(Rigidbody))]
-public class PlayerMove : NetworkBehaviour
-{
-    [SerializeField] float moveSpeed = 5f;
-
-    [SerializeField] Camera cam;
-
-    Rigidbody rb;
-
-    Vector3 wishDir;
-
-    void Awake()
-    {
-        rb = GetComponent<Rigidbody>();
-        rb.constraints = RigidbodyConstraints.FreezeRotation;
-        if (!cam) cam = Camera.main;
-    }
-
-    void Update()
-    {
-        if (IsOwner)
-        {
-            Move();
-        }
-    }
-
-    void FixedUpdate()
-    {
-        if (IsServer)
-        {
-            Vector3 targetPos = rb.position + wishDir * moveSpeed * Time.fixedDeltaTime;
-            rb.MovePosition(targetPos);
-
-            if (wishDir.sqrMagnitude > 0.01f)
-            {
-                Quaternion targetRot = Quaternion.LookRotation(wishDir, Vector3.up);
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, 0.2f);
-            }
-        }
-    }
-
-    private void Move()
-    {
-        // 1)  Է   ޱ 
-        float h = Input.GetAxisRaw("Horizontal"); // A/D
-        float v = Input.GetAxisRaw("Vertical");   // W/S
-
-        Vector3 forward = cam ? Vector3.ProjectOnPlane(cam.transform.forward, Vector3.up).normalized : Vector3.forward;
-        Vector3 right = cam ? Vector3.ProjectOnPlane(cam.transform.right, Vector3.up).normalized : Vector3.right;
-
-        Vector3 dir = (right * h + forward * v);
-        Vector3 targetPos = dir.sqrMagnitude > 1e-4f ? dir.normalized : Vector3.zero;
-        MoveServerRpc(targetPos);
-    }
-
-    [ServerRpc]
-    private void MoveServerRpc(Vector3 targetPos)
-    {
-        wishDir = targetPos;
-    }
-}
-
- */
