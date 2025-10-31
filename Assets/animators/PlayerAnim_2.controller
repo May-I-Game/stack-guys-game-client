@@ -352,7 +352,7 @@ AnimatorController:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: PlayerAnim
+  m_Name: PlayerAnim_2
   serializedVersion: 5
   m_AnimatorParameters:
   - m_Name: IsGrounded
@@ -488,7 +488,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 97f8a684a5a291a429f570f309f751a2, type: 2}
+  m_Motion: {fileID: 7400000, guid: 283bfe59e5800094fb334e47131416ad, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -594,7 +594,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 9fb189e51f7098b45a1efeedcf134fa3, type: 2}
+  m_Motion: {fileID: 7400000, guid: 94b3c7b9da37a9c469ea7ef55da828a4, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
