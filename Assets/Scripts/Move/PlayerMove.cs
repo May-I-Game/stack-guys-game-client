@@ -1,51 +1,66 @@
-// CapsuleMover.cs
+using Unity.Netcode;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
-public class CapsuleMover : MonoBehaviour
+public class PlayerMove : NetworkBehaviour
 {
-    [Header("ÀÌµ¿ ¼³Á¤")]
-    [SerializeField] float moveSpeed = 5f;   // ÀÌµ¿ ¼Óµµ (m/s)
+    [Header("ï¿½Ìµï¿½ ï¿½ï¿½ï¿½ï¿½")]
+    [SerializeField] float moveSpeed = 5f;   // ï¿½Ìµï¿½ ï¿½Óµï¿½ (m/s)
 
-    [Header("Ä«¸Þ¶ó ±âÁØ ÀÌµ¿")]
-    [SerializeField] Camera cam;             // ºñ¿ì¸é ¸ÞÀÎ Ä«¸Þ¶ó ÀÚµ¿ ÇÒ´ç
+    [Header("Ä«ï¿½Þ¶ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ìµï¿½")]
+    [SerializeField] Camera cam;             // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Ä«ï¿½Þ¶ï¿½ ï¿½Úµï¿½ ï¿½Ò´ï¿½
 
     Rigidbody rb;
-    Vector3 wishDir; // ÀÔ·ÂÀ¸·ÎºÎÅÍ °è»êÇÑ ¿øÇÏ´Â ÀÌµ¿ ¹æÇâ(¿ùµå ±âÁØ)
+
+    Vector3 wishDir; // ï¿½Ô·ï¿½ï¿½ï¿½ï¿½Îºï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½Ìµï¿½ ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
 
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
-        rb.constraints = RigidbodyConstraints.FreezeRotation; // ¹°¸® È¸Àü °íÁ¤(³Ñ¾îÁöÁö ¾Ê°Ô)
+        rb.constraints = RigidbodyConstraints.FreezeRotation; // ï¿½ï¿½ï¿½ï¿½ È¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½(ï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê°ï¿½)
         if (!cam) cam = Camera.main;
     }
 
     void Update()
     {
-        // 1) ÀÔ·Â ¹Þ±â
-        float h = Input.GetAxisRaw("Horizontal"); // A/D
-        float v = Input.GetAxisRaw("Vertical");   // W/S
-
-        // 2) Ä«¸Þ¶ó ±âÁØ XZ Æò¸é ¹æÇâ °è»ê (Ä«¸Þ¶ó°¡ ¾øÀ¸¸é ¿ùµå ±âÁØ)
-        Vector3 forward = cam ? Vector3.ProjectOnPlane(cam.transform.forward, Vector3.up).normalized : Vector3.forward;
-        Vector3 right = cam ? Vector3.ProjectOnPlane(cam.transform.right, Vector3.up).normalized : Vector3.right;
-
-        // 3) ¿øÇÏ´Â ÀÌµ¿ ¹æÇâ(Á¤±ÔÈ­)
-        Vector3 dir = (right * h + forward * v);
-        wishDir = dir.sqrMagnitude > 1e-4f ? dir.normalized : Vector3.zero;
-
-        // (¼±ÅÃ) ÀÌµ¿ ¹æÇâÀ» ¹Ù¶óº¸°Ô È¸Àü
-        if (wishDir.sqrMagnitude > 0.0001f)
-        {
-            Quaternion targetRot = Quaternion.LookRotation(wishDir, Vector3.up);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, 0.2f);
-        }
+        Move();
     }
 
     void FixedUpdate()
     {
-        // 4) ¹°¸® ÀÌµ¿Àº FixedUpdate¿¡¼­
-        Vector3 targetPos = rb.position + wishDir * moveSpeed * Time.fixedDeltaTime;
-        rb.MovePosition(targetPos);
+        // 4) ï¿½ï¿½ï¿½ï¿½ ï¿½Ìµï¿½ï¿½ï¿½ FixedUpdateï¿½ï¿½ï¿½ï¿½
+        if (IsServer)
+        {
+            Vector3 targetPos = rb.position + wishDir * moveSpeed * Time.fixedDeltaTime;
+            rb.MovePosition(targetPos);
+
+            if (wishDir.sqrMagnitude > 0.01f)
+            {
+                Quaternion targetRot = Quaternion.LookRotation(wishDir, Vector3.up);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, 0.2f);
+            }
+        }
+    }
+
+    private void Move()
+    {
+        // 1) ï¿½Ô·ï¿½ ï¿½Þ±ï¿½
+        float h = Input.GetAxisRaw("Horizontal"); // A/D
+        float v = Input.GetAxisRaw("Vertical");   // W/S
+
+        // 2) Ä«ï¿½Þ¶ï¿½ ï¿½ï¿½ï¿½ï¿½ XZ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ (Ä«ï¿½Þ¶ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
+        Vector3 forward = cam ? Vector3.ProjectOnPlane(cam.transform.forward, Vector3.up).normalized : Vector3.forward;
+        Vector3 right = cam ? Vector3.ProjectOnPlane(cam.transform.right, Vector3.up).normalized : Vector3.right;
+
+        // 3) ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½Ìµï¿½ ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½È­)
+        Vector3 dir = (right * h + forward * v);
+        Vector3 targetPos = dir.sqrMagnitude > 1e-4f ? dir.normalized : Vector3.zero;
+        MoveServerRpc(targetPos);
+    }
+
+    [ServerRpc]
+    private void MoveServerRpc(Vector3 targetPos)
+    {
+        wishDir = targetPos;
     }
 }

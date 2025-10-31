@@ -6,6 +6,8 @@ using UnityEngine.SceneManagement;
 public class NetworkGameManager : MonoBehaviour
 {
     private NetworkManager networkManager;
+    [SerializeField]
+    private string gameSceneName = "GameScene";
 
     private void Start()
     {
@@ -18,7 +20,7 @@ public class NetworkGameManager : MonoBehaviour
             Debug.Log("     --------  SERVER START  --------     ");
 
             NetworkManager.Singleton.StartServer();
-            NetworkManager.Singleton.SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
+            NetworkManager.Singleton.SceneManager.LoadScene(gameSceneName, LoadSceneMode.Single);
         }
 
         else
