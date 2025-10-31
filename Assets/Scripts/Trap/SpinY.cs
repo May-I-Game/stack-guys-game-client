@@ -1,21 +1,38 @@
+using Unity.Netcode;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class SpinY : MonoBehaviour
+public class SpinY : NetworkBehaviour
 {
     public enum Axis { X, Y, Z }
     public enum SpaceMode { Local, World }
 
     [Header("Spin Settings")]
-    [SerializeField] Axis axis = Axis.Y;                        // ȸ�� �� �� Y
-    [SerializeField] float degreesPerSecond = 180f;             // �ʴ� ����
-    [SerializeField] SpaceMode spaceMode = SpaceMode.Local;     // ����/���� ����
-    [SerializeField] bool clockWise = true;                     // �ð�/�ݽð� ����
-    [SerializeField] bool randomizeStartAngle = false;          // ���� ���� ����
+    [SerializeField] Axis axis = Axis.Y;
+    [SerializeField] float degreesPerSecond = 180f;
+    [SerializeField] SpaceMode spaceMode = SpaceMode.Local;
+    [SerializeField] bool clockWise = true;
+    [SerializeField] bool randomizeStartAngle = false;
 
     Vector3 axisVector;
 
-    private void Awake()
+    private void Start()
+    {
+        if (IsServer)
+        {
+            Init();
+        }
+    }
+
+    private void Update()
+    {
+        if (IsServer)
+        {
+            Spin();
+        }
+    }
+
+    private void Init()
     {
         axisVector = axis switch
         {
@@ -35,19 +52,9 @@ public class SpinY : MonoBehaviour
         }
     }
 
-
-    // Update is called once per frame
-    void Update()
-    {
-        //if (IsServer)
-        //{
-        //    Spin();
-        //}
-    }
-
     private void Spin()
     {
-        float dir = clockWise ? -1f : 1f;           // Unity�� ��������ǥ�� ���� ������ �ð�/�ݽð� ����
+        float dir = clockWise ? -1f : 1f;
         float delta = degreesPerSecond * dir * Time.deltaTime;
 
         if (spaceMode == SpaceMode.Local)
