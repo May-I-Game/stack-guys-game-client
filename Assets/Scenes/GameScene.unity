@@ -5667,6 +5667,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2085620803700363646, guid: 586a903ec9562dc4988ab58e3c34c796, type: 3}
+      propertyPath: destination
+      value: 
+      objectReference: {fileID: 920767428}
     - target: {fileID: 7643525955220695912, guid: 586a903ec9562dc4988ab58e3c34c796, type: 3}
       propertyPath: m_Name
       value: Portal (2)
@@ -7671,6 +7675,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2085620803700363646, guid: 586a903ec9562dc4988ab58e3c34c796, type: 3}
+      propertyPath: destination
+      value: 
+      objectReference: {fileID: 1217556155}
     - target: {fileID: 7643525955220695912, guid: 586a903ec9562dc4988ab58e3c34c796, type: 3}
       propertyPath: m_Name
       value: Portal
@@ -11861,6 +11869,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2085620803700363646, guid: 586a903ec9562dc4988ab58e3c34c796, type: 3}
+      propertyPath: destination
+      value: 
+      objectReference: {fileID: 1327144229}
     - target: {fileID: 7643525955220695912, guid: 586a903ec9562dc4988ab58e3c34c796, type: 3}
       propertyPath: m_Name
       value: Portal (1)
