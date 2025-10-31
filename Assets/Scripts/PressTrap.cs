@@ -4,39 +4,37 @@ using UnityEngine;
 public class PressTrap : MonoBehaviour
 {
     [Header("Press Settings")]
-    public float upY = 2f;          // 원래 위치
-    public float downY = 0.2f;      // 내려가는 위치
-    public float speed = 5f;        // 이동 속도
-    public float stayDownTime = 0.5f; // 눌린 상태 유지 시간
+    public float upY = 2f;                 // 올라간 위치 (절대좌표)
+    public float downY = 0.2f;             // 내려간 위치 (절대좌표)
+    public float speed = 5f;               // 이동 속도
+    public float stayDownTime = 0.5f;      // 눌린 상태 유지 시간
+    public Vector2 randomDelayRange = new Vector2(1f, 4f); // 랜덤 타이밍
 
     private bool isPressing = false;
 
-    void OnTriggerEnter(Collider other)
+    private void Start()
     {
-        if (other.CompareTag("Player") && !isPressing)
-        {
-            PlayerDeathSystem deathSystem = other.GetComponent<PlayerDeathSystem>();
+        // 무한 루프로 랜덤 타이밍 작동
+        StartCoroutine(RandomPressLoop());
+    }
 
-            if (deathSystem != null && !deathSystem.IsDead())
-            {
-                // 함정 작동 및 플레이어 죽이기
-                StartCoroutine(PressRoutine(deathSystem));
-            }
+    private IEnumerator RandomPressLoop()
+    {
+        while (true)
+        {
+            float waitTime = Random.Range(randomDelayRange.x, randomDelayRange.y);
+            yield return new WaitForSeconds(waitTime);
+
+            yield return PressRoutine();
         }
     }
 
-    private IEnumerator PressRoutine(PlayerDeathSystem deathSystem)
+    private IEnumerator PressRoutine()
     {
         isPressing = true;
 
         // 내려가기
         yield return MovePress(downY);
-
-        // 플레이어 죽이기
-        if (deathSystem != null && !deathSystem.IsDead())
-        {
-            deathSystem.Die();
-        }
 
         // 눌린 상태 유지
         yield return new WaitForSeconds(stayDownTime);
@@ -60,5 +58,17 @@ public class PressTrap : MonoBehaviour
 
         pos.y = targetY;
         transform.localPosition = pos;
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            PlayerDeathSystem deathSystem = other.GetComponent<PlayerDeathSystem>();
+            if (deathSystem != null && !deathSystem.IsDead())
+            {
+                deathSystem.Die();
+            }
+        }
     }
 }
