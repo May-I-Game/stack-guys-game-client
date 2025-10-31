@@ -1709,7 +1709,7 @@ PrefabInstance:
     - target: {fileID: 5713682770668714786, guid: 00c867f2cb4a53640817173a50d98cde, type: 3}
       propertyPath: NetworkConfig.PlayerPrefab
       value: 
-      objectReference: {fileID: 8613828990555585583, guid: 40bc58b1367542a429531834509ea33d, type: 3}
+      objectReference: {fileID: 5785324236016558479, guid: a43ef8e1e961de34fb719499a2851b9a, type: 3}
     - target: {fileID: 7482282829181974814, guid: 00c867f2cb4a53640817173a50d98cde, type: 3}
       propertyPath: gameSceneName
       value: SeoJeong
