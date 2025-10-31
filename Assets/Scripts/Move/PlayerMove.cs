@@ -32,7 +32,20 @@ public class PlayerMove : NetworkBehaviour
     private bool isHit = false; // 충돌 상태 (이동 불가)
     private bool canDive = false; // 다이브 가능 상태 (점프 중)
 
-    void Start()
+    public override void OnNetworkSpawn()
+    {
+        if (IsServer)
+        {
+            transform.position = new Vector3(0f, 0f, 0f);
+        }
+
+        if (IsOwner)
+        {
+            Camera.main.GetComponent<CameraFollow>().target = this.transform;
+        }
+    }
+
+    private void Start()
     {
         rb = GetComponent<Rigidbody>();
 
@@ -47,7 +60,7 @@ public class PlayerMove : NetworkBehaviour
         }
     }
 
-    void Update()
+    private void Update()
     {
         if (IsOwner)
         {
@@ -58,7 +71,7 @@ public class PlayerMove : NetworkBehaviour
         UpdateAnimation();
     }
 
-    void FixedUpdate()
+    private void FixedUpdate()
     {
         if (IsServer)
         {
