@@ -32,12 +32,19 @@ public class PlayerMove : NetworkBehaviour
     private bool isHit = false; // 충돌 상태 (이동 불가)
     private bool canDive = false; // 다이브 가능 상태 (점프 중)
 
+    // 최초 스폰 자리 저장 (서버 전용)
+    private Vector3 _initialSpawnPosition;
+
     public override void OnNetworkSpawn()
     {
         if (IsServer)
         {
             transform.position = new Vector3(0f, 0f, 0f);
+
+            // 최초 스폰 위치 저장
+            _initialSpawnPosition = transform.position;
         }
+
 
         if (IsOwner)
         {
@@ -255,6 +262,11 @@ public class PlayerMove : NetworkBehaviour
         // Tag로 구분하여 다른 애니메이션 재생
         switch (collision.gameObject.tag)
         {
+            case "Triangle":
+                // 최초 스폰 자리로 텔레포트 (회전은 초기화)
+                DoRespawn(_initialSpawnPosition, Quaternion.identity);
+                break;
+
             case "weakObstacles":
                 // 장애물에 부딪힘
                 PlayHitAnimation("weakHit", weakHitDuration);
@@ -351,6 +363,36 @@ public class PlayerMove : NetworkBehaviour
             // 수직 속도를 애니메이터에 전달 (점프/낙하 애니메이션용)
             animator.SetFloat("VerticalVelocity", netVerticalVelocity.Value);
         }
+    }
+
+    // 서버 권위 리스폰
+    private void DoRespawn(Vector3 pos, Quaternion rot)
+    {
+        if (!IsServer) return;
+
+        if (rb != null)
+        {
+            rb.isKinematic = true;
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+
+        transform.SetPositionAndRotation(pos, rot);
+
+        if (rb != null)
+        {
+            rb.isKinematic = false;
+        }
+
+        // 이동/점프 관련 상태 최소 초기화
+        netMoveDirection.Value = Vector3.zero;
+        netCurrentSpeed.Value = 0f;
+        netIsGrounded.Value = true;
+        netIsDiving.Value = false;
+        netIsDiveGrounded.Value = false;
+        canDive = false;
+        isjumpQueued = false;
+        isHit = false;
     }
 
     #region ClientRPCs
