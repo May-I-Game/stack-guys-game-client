@@ -393,6 +393,9 @@ public class PlayerController : NetworkBehaviour
         canDive = false;
         isjumpQueued = false;
         isHit = false;
+
+        // 애니메이터도 각 클라에서 리셋
+        ResetDiveAnimClientRpc();
     }
 
     #region ClientRPCs
@@ -403,6 +406,14 @@ public class PlayerController : NetworkBehaviour
         {
             animator.SetTrigger(triggerName);
         }
+    }
+
+    [ClientRpc]
+    private void ResetDiveAnimClientRpc()
+    {
+        if (animator == null) return;
+
+        animator.Rebind();                                  // 바인딩 초기화
     }
     #endregion
 }
