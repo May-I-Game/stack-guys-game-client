@@ -504,6 +504,7 @@ MonoBehaviour:
   followY: 1
   followZ: 1
   smoothSpeed: 5
+  velocity: {x: 0, y: 0, z: 0}
 --- !u!1 &1461047826
 GameObject:
   m_ObjectHideFlags: 0
