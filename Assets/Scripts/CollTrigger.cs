@@ -6,6 +6,7 @@ public class CollTrigger : MonoBehaviour
     [SerializeField]
     string playerTag = "Player";
 
+
     private void OnTriggerEnter(Collider other)
     {
         PlayerDeathSystem deathSystem = other.GetComponent<PlayerDeathSystem>();
