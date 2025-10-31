@@ -214,10 +214,10 @@ public class PlayerMove : NetworkBehaviour
         if (!IsServer) return;
 
         // 점프 직후에는 땅 체크 안 함
-        if (canDive && !netIsDiving.Value)
-        {
-            return;
-        }
+        //if (canDive && !netIsDiving.Value)
+        //{
+        //    return;
+        //}
 
         // 충돌한 오브젝트가 아래쪽에 있으면 땅으로 판단
         foreach (ContactPoint contact in collision.contacts)
