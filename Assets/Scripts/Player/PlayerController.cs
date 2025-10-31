@@ -1,7 +1,7 @@
 using Unity.Netcode;
 using UnityEngine;
 
-public class PlayerMove : NetworkBehaviour
+public class PlayerController : NetworkBehaviour
 {
     [Header("Movement Settings")]
     public float walkSpeed = 4f;
@@ -214,10 +214,10 @@ public class PlayerMove : NetworkBehaviour
         if (!IsServer) return;
 
         // 점프 직후에는 땅 체크 안 함
-        if (canDive && !netIsDiving.Value)
-        {
-            return;
-        }
+        //if (canDive && !netIsDiving.Value)
+        //{
+        //    return;
+        //}
 
         // 충돌한 오브젝트가 아래쪽에 있으면 땅으로 판단
         foreach (ContactPoint contact in collision.contacts)
@@ -393,6 +393,9 @@ public class PlayerMove : NetworkBehaviour
         canDive = false;
         isjumpQueued = false;
         isHit = false;
+
+        // 애니메이터도 각 클라에서 리셋
+        ResetDiveAnimClientRpc();
     }
 
     #region ClientRPCs
@@ -403,6 +406,14 @@ public class PlayerMove : NetworkBehaviour
         {
             animator.SetTrigger(triggerName);
         }
+    }
+
+    [ClientRpc]
+    private void ResetDiveAnimClientRpc()
+    {
+        if (animator == null) return;
+
+        animator.Rebind();                                  // 바인딩 초기화
     }
     #endregion
 }
