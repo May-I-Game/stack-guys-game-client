@@ -1003,6 +1003,7 @@ GameObject:
   - component: {fileID: 7839709260095116719}
   - component: {fileID: 1284978446447141405}
   - component: {fileID: 6527736572461110196}
+  - component: {fileID: 2654030186129884178}
   - component: {fileID: 4422993982241243552}
   m_Layer: 0
   m_Name: Player_1
@@ -1174,6 +1175,21 @@ MonoBehaviour:
   SwitchTransformSpaceWhenParented: 0
   Interpolate: 1
   SlerpPosition: 0
+--- !u!114 &2654030186129884178
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5785324236016558479}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8d0727d5ae3244e3b569694d3912374, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  TransitionStateInfoList: []
+  m_Animator: {fileID: 964459002660691872}
 --- !u!114 &4422993982241243552
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1186,6 +1202,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 41ec7eeb0c0cacf4e885a2d57ca8d28a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
   walkSpeed: 5
   rotationSpeed: 10
   jumpForce: 5
