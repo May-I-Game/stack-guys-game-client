@@ -4,13 +4,13 @@ using UnityEngine;
 public class PlayerMove : NetworkBehaviour
 {
     [Header("Movement Settings")]
-    public float walkSpeed = 3f;
+    public float walkSpeed = 4f;
     public float rotationSpeed = 10f;
 
     [Header("Jump Settings")]
-    public float jumpForce = 5f;
-    public float diveForce = 10f; // 다이브할 때 앞으로 가는 힘
-    public float diveDownForce = 3f; // 다이브할 때 아래로 가는 힘
+    public float jumpForce = 3f;
+    public float diveForce = 4f; // 다이브할 때 앞으로 가는 힘
+    public float diveDownForce = 1f; // 다이브할 때 아래로 가는 힘
 
     [Header("Animation")]
     public Animator animator;
