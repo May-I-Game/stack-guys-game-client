@@ -23,7 +23,10 @@ public class PlayerMove : NetworkBehaviour
 
     void Update()
     {
-        Move();
+        if (IsOwner)
+        {
+            Move();
+        }
     }
 
     void FixedUpdate()
