@@ -10,7 +10,7 @@ TagManager:
   - weakObstacles
   - OtherPlayer
   - StrongObstacles
-  - Triangle
+  - Death
   layers:
   - Default
   - TransparentFX
