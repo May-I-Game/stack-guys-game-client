@@ -2,7 +2,7 @@ using Unity.Netcode;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class SpinY : NetworkBehaviour
+public class SpinY : MonoBehaviour
 {
     public enum Axis { X, Y, Z }
     public enum SpaceMode { Local, World }
@@ -18,7 +18,7 @@ public class SpinY : NetworkBehaviour
 
     private void Start()
     {
-        if (IsServer)
+        if (NetworkManager.Singleton.IsServer)
         {
             Init();
         }
@@ -26,7 +26,7 @@ public class SpinY : NetworkBehaviour
 
     private void Update()
     {
-        if (IsServer)
+        if (NetworkManager.Singleton.IsServer)
         {
             Spin();
         }
