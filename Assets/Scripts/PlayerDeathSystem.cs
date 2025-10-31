@@ -4,14 +4,11 @@ using UnityEngine;
 public class PlayerDeathSystem : MonoBehaviour
 {
     [Header("Respawn Settings")]
-    [Tooltip("������ ��� �ð�")]
     public float respawnDelay = 2f;
 
     [Header("Corpse Settings")]
-    [Tooltip("��ü ������ (����θ� �ڵ� ����)")]
     public GameObject corpsePrefab;
 
-    [Tooltip("��ü�� ������� �ð�")]
     public float corpseLifetime = 10f;
 
     private CharacterController characterController;
@@ -22,7 +19,6 @@ public class PlayerDeathSystem : MonoBehaviour
     {
         characterController = GetComponent<CharacterController>();
 
-        // ���� ��ġ�� ���� ����Ʈ�� ����
         spawnPosition = transform.position;
     }
 
@@ -32,20 +28,16 @@ public class PlayerDeathSystem : MonoBehaviour
 
         isDead = true;
 
-        // ��ü ����
         CreateCorpse();
 
-        // �÷��̾� �����
         HidePlayer();
 
-        // ThirdPersonController ��Ȱ��ȭ
         var controller = GetComponent<StarterAssets.ThirdPersonController>();
         if (controller != null)
         {
             controller.enabled = false;
         }
 
-        // ������ ����
         StartCoroutine(RespawnCoroutine());
     }
 
@@ -56,10 +48,8 @@ public class PlayerDeathSystem : MonoBehaviour
 
         isDead = true;
 
-        // �÷��̾� �����
         HidePlayer();
 
-        // ThirdPersonController ��Ȱ��ȭ
         var controller = GetComponent<StarterAssets.ThirdPersonController>();
         if (controller != null)
         {
@@ -73,17 +63,14 @@ public class PlayerDeathSystem : MonoBehaviour
     {
         if (corpsePrefab != null)
         {
-            // �������� �ִ� ���
             GameObject corpse = Instantiate(corpsePrefab, transform.position, transform.rotation);
             Destroy(corpse, corpseLifetime);
         }
         else
         {
-            // �������� ���� ��� - �÷��̾� ����
             GameObject corpse = Instantiate(gameObject, transform.position, transform.rotation);
             corpse.name = "PlayerCorpse";
 
-            // ���ʿ��� ������Ʈ ����
             Destroy(corpse.GetComponent<StarterAssets.ThirdPersonController>());
             Destroy(corpse.GetComponent<StarterAssets.StarterAssetsInputs>());
             Destroy(corpse.GetComponent<PlayerDeathSystem>());
@@ -104,29 +91,26 @@ public class PlayerDeathSystem : MonoBehaviour
             }
 #endif
 
-            // ���� Collider�� ��� ����
             Collider[] existingColliders = corpse.GetComponents<Collider>();
             foreach (Collider col in existingColliders)
             {
                 Destroy(col);
             }
 
-            // ���ο� CapsuleCollider �߰�
             CapsuleCollider capsule = corpse.AddComponent<CapsuleCollider>();
             capsule.height = 2f;
             capsule.radius = 0.5f;
             capsule.center = new Vector3(0, 1f, 0);
 
-            // Rigidbody �߰� (���� ȿ��)
             Rigidbody rb = corpse.GetComponent<Rigidbody>();
             if (rb == null)
             {
                 rb = corpse.AddComponent<Rigidbody>();
             }
             rb.isKinematic = false;
-            rb.mass = 70f; // ��� ����
-            rb.linearDamping = 0.5f; // ���� ����
-            rb.angularDamping = 0.5f; // ȸ�� ����
+            rb.mass = 70f; 
+            rb.linearDamping = 0.5f; 
+            rb.angularDamping = 0.5f; 
             
             // 시체가 Ground 레이어와 충돌하도록 설정
             
@@ -196,7 +180,6 @@ public class PlayerDeathSystem : MonoBehaviour
         // 플레이어 다시 보이게 함
         ShowPlayer();
 
-        // ThirdPersonController Ȱ��ȭ
         var controller = GetComponent<StarterAssets.ThirdPersonController>();
         if (controller != null)
         {
@@ -240,13 +223,11 @@ public class PlayerDeathSystem : MonoBehaviour
         isDead = false;
     }
 
-    // PressTrap���� ȣ���� �� �ִ� ���� �޼���
     public bool IsDead()
     {
         return isDead;
     }
 
-    // ���� ��ġ�� �����ϰ� ���� �� ���
     public void SetSpawnPosition(Vector3 newSpawnPosition)
     {
         spawnPosition = newSpawnPosition;

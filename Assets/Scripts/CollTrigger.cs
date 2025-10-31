@@ -13,6 +13,7 @@ public class CollTrigger : MonoBehaviour
 
         if (deathSystem != null && !deathSystem.IsDead())
         {
+            Debug.Log("성공");
             if (other.CompareTag(playerTag))
                 deathSystem.Die(playerTag);
         }
