@@ -262,7 +262,7 @@ public class PlayerMove : NetworkBehaviour
         // Tag로 구분하여 다른 애니메이션 재생
         switch (collision.gameObject.tag)
         {
-            case "Triangle":
+            case "Death":
                 // 최초 스폰 자리로 텔레포트 (회전은 초기화)
                 DoRespawn(_initialSpawnPosition, Quaternion.identity);
                 break;
