@@ -843,7 +843,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerTag: Player
 --- !u!65 &21635658
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2538,7 +2537,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7595326119421109423, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_TagString
-      value: Triangle
+      value: Death
       objectReference: {fileID: 0}
     - target: {fileID: 8757561124791757463, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_LocalScale.x
@@ -2766,7 +2765,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerTag: Player
 --- !u!65 &86616802
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -4144,7 +4142,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7595326119421109423, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_TagString
-      value: Triangle
+      value: Death
       objectReference: {fileID: 0}
     - target: {fileID: 8757561124791757463, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_LocalScale.x
@@ -11179,7 +11177,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7595326119421109423, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_TagString
-      value: Triangle
+      value: Death
       objectReference: {fileID: 0}
     - target: {fileID: 8757561124791757463, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_LocalScale.x
@@ -12451,7 +12449,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerTag: Player
 --- !u!65 &407772173
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -13682,7 +13679,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7595326119421109423, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_TagString
-      value: Triangle
+      value: Death
       objectReference: {fileID: 0}
     - target: {fileID: 8757561124791757463, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_LocalScale.x
@@ -22904,7 +22901,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -23323,7 +23320,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7595326119421109423, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_TagString
-      value: Triangle
+      value: Death
       objectReference: {fileID: 0}
     - target: {fileID: 8757561124791757463, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_LocalScale.x
@@ -28304,7 +28301,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7595326119421109423, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_TagString
-      value: Triangle
+      value: Death
       objectReference: {fileID: 0}
     - target: {fileID: 8757561124791757463, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_LocalScale.x
@@ -37571,7 +37568,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerTag: Player
 --- !u!65 &1307693900
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -39558,7 +39554,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7595326119421109423, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_TagString
-      value: Triangle
+      value: Death
       objectReference: {fileID: 0}
     - target: {fileID: 8757561124791757463, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_LocalScale.x
@@ -42475,7 +42471,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7595326119421109423, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_TagString
-      value: Triangle
+      value: Death
       objectReference: {fileID: 0}
     - target: {fileID: 8757561124791757463, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_LocalScale.x
@@ -43973,7 +43969,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7595326119421109423, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_TagString
-      value: Triangle
+      value: Death
       objectReference: {fileID: 0}
     - target: {fileID: 8757561124791757463, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_LocalScale.x
@@ -44961,7 +44957,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7595326119421109423, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_TagString
-      value: Triangle
+      value: Death
       objectReference: {fileID: 0}
     - target: {fileID: 8757561124791757463, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_LocalScale.x
@@ -49845,7 +49841,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7595326119421109423, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_TagString
-      value: Triangle
+      value: Death
       objectReference: {fileID: 0}
     - target: {fileID: 8757561124791757463, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_LocalScale.x
@@ -50653,7 +50649,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerTag: Player
 --- !u!65 &1762444606
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -54327,6 +54322,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SpikeTrap
       objectReference: {fileID: 0}
+    - target: {fileID: 1800071538502535592, guid: 9617bc9bf065240478ce5e37281fcf92, type: 3}
+      propertyPath: m_TagString
+      value: Death
+      objectReference: {fileID: 0}
     - target: {fileID: 9026907854346171100, guid: 9617bc9bf065240478ce5e37281fcf92, type: 3}
       propertyPath: m_LocalPosition.x
       value: 242.26
@@ -56314,7 +56313,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7595326119421109423, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_TagString
-      value: Triangle
+      value: Death
       objectReference: {fileID: 0}
     - target: {fileID: 8757561124791757463, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_LocalScale.x
@@ -59797,7 +59796,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7595326119421109423, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_TagString
-      value: Triangle
+      value: Death
       objectReference: {fileID: 0}
     - target: {fileID: 8757561124791757463, guid: 11190f7192e3ca846bcb781d4a05ce24, type: 3}
       propertyPath: m_LocalScale.x
@@ -61838,7 +61837,7 @@ GameObject:
   - component: {fileID: 3248128659438124569}
   m_Layer: 0
   m_Name: BaseThin_MESH
-  m_TagString: Untagged
+  m_TagString: Death
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -65724,7 +65723,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9cecde6ed8a94b9478a72857013a6bf2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerTag: Player
 --- !u!33 &3248128659502585550
 MeshFilter:
   m_ObjectHideFlags: 0
