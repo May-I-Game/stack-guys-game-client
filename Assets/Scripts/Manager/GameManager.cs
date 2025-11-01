@@ -2,9 +2,17 @@ using System.Collections;
 using TMPro;
 using Unity.Collections;
 using Unity.Netcode;
+using Unity.Netcode.Components;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+
+public enum GameState
+{
+    Lobby,
+    Playing,
+    Ended
+}
 
 public class GameManager : NetworkBehaviour
 {
@@ -17,14 +25,23 @@ public class GameManager : NetworkBehaviour
     [SerializeField] Button lobbyButton;
 
     [Header("Settings")]
-    [SerializeField] float countdownTime = 10f;
-    [SerializeField] string lobbySceneName = "LobbyScene";
+    [SerializeField] int minPlayersToStart = 5;
+    [SerializeField] float startCountdownTime = 5f;
+    [SerializeField] float endCountdownTime = 10f;
+    [SerializeField] string mainSceneName = "LoginScene";
+
+    [Header("Spawn Points")]
+    [SerializeField] private Transform lobbySpawnPoint;
+    [SerializeField] private Transform[] gameSpawnPoints;
+
+    public bool IsGame => currentGameState.Value == GameState.Playing;
 
     private bool isCountingDown = false;
+    private Coroutine countdownCoroutine;
 
-    public NetworkVariable<bool> gameEnded = new NetworkVariable<bool>(false);
-    public NetworkVariable<float> remainingTime = new NetworkVariable<float>(0f);
-    public NetworkList<FixedString32Bytes> rankings;
+    private NetworkVariable<GameState> currentGameState = new NetworkVariable<GameState>(GameState.Lobby);
+    private NetworkVariable<float> remainingTime = new NetworkVariable<float>(0f);
+    private NetworkList<FixedString32Bytes> rankings;
 
     public static GameManager instance;
 
@@ -52,13 +69,21 @@ public class GameManager : NetworkBehaviour
             resultPanel.SetActive(false);
         // 버튼 이벤트 연결
         if (lobbyButton != null)
-            lobbyButton.onClick.AddListener(GoToLobby);
+            lobbyButton.onClick.AddListener(GoToMain);
 
         // 커서 관리
         //Cursor.lockState = CursorLockMode.Locked;
         //Cursor.visible = false;
 
-        if (!IsServer)
+        if (IsServer)
+        {
+            currentGameState.Value = GameState.Lobby;
+
+            NetworkManager.Singleton.OnClientConnectedCallback += HandleClientConnected;
+            NetworkManager.Singleton.OnClientDisconnectCallback += HandleClientDisconnected;
+        }
+
+        if (IsClient)
         {
             remainingTime.OnValueChanged += UpdateCountDownUI;
         }
@@ -66,21 +91,76 @@ public class GameManager : NetworkBehaviour
 
     public override void OnNetworkDespawn()
     {
-        if (!IsServer)
+        if (IsServer)
+        {
+            NetworkManager.Singleton.OnClientConnectedCallback -= HandleClientConnected;
+            NetworkManager.Singleton.OnClientDisconnectCallback -= HandleClientDisconnected;
+        }
+
+        if (IsClient)
         {
             remainingTime.OnValueChanged -= UpdateCountDownUI;
+        }
+    }
+
+    private void HandleClientConnected(ulong clientId)
+    {
+        // 새로 접속한 플레이어를 로비 스폰 지점으로 이동
+        MovePlayerToLobby(clientId);
+        CheckPlayerCount();
+    }
+
+    private void HandleClientDisconnected(ulong clientId)
+    {
+        CheckPlayerCount();
+    }
+
+    private void MovePlayerToLobby(ulong clientId)
+    {
+        NetworkObject playerObject = NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject;
+        if (playerObject == null) return;
+
+        NetworkTransform nt = playerObject.GetComponent<NetworkTransform>();
+        if (nt != null)
+        {
+            nt.Teleport(lobbySpawnPoint.transform.position, Quaternion.identity, playerObject.transform.localScale);
+        }
+    }
+
+    private void CheckPlayerCount()
+    {
+        if (!IsServer) return;
+
+        int playerCount = NetworkManager.Singleton.ConnectedClientsList.Count;
+        if (playerCount >= minPlayersToStart && !isCountingDown)
+        {
+            // 카운트다운 시작
+            isCountingDown = true;
+            ShowCountDownClientRpc(true);
+            countdownCoroutine = StartCoroutine(StartCountdown());
+        }
+        else if (playerCount < minPlayersToStart && isCountingDown)
+        {
+            isCountingDown = false;
+            ShowCountDownClientRpc(false);
+            // 카운트다운 중지
+            if (countdownCoroutine != null)
+            {
+                StopCoroutine(countdownCoroutine);
+            }
         }
     }
 
     [ServerRpc(RequireOwnership = false)]
     public void PlayerReachedGoalServerRpc(string playerName, ulong clientId)
     {
-        foreach (var player in FindObjectsByType<PlayerController>(FindObjectsSortMode.None))
+        NetworkObject playerObject = NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject;
+        if (playerObject == null) return;
+
+        PlayerController player = playerObject.GetComponent<PlayerController>();
+        if (player != null)
         {
-            if (player.OwnerClientId == clientId)
-            {
-                player.enabled = false;
-            }
+            player.enabled = false;
         }
 
         // 순위에 추가
@@ -89,35 +169,80 @@ public class GameManager : NetworkBehaviour
         // 첫 번째 플레이어가 골인하면 카운트다운 시작
         if (rankings.Count == 1 && !isCountingDown)
         {
-            StartCoroutine(CountdownRoutine());
+            StartCoroutine(EndCountdown());
         }
     }
 
-    private IEnumerator CountdownRoutine()
+    private IEnumerator StartCountdown()
     {
         isCountingDown = true;
+        ShowCountDownClientRpc(true);
 
-        ShowCountDownClientRpc();
-
-        // 10초 카운트다운
-        remainingTime.Value = countdownTime;
+        // 게임 시작 카운트다운
+        remainingTime.Value = startCountdownTime;
         while (remainingTime.Value > 0)
         {
             remainingTime.Value -= Time.deltaTime;
             yield return null;
         }
 
-        HideCountDownClientRpc();
+        isCountingDown = false;
+        ShowCountDownClientRpc(false);
+
+        // 게임 시작 처리
+        StartGame();
+    }
+
+    private IEnumerator EndCountdown()
+    {
+        isCountingDown = true;
+        ShowCountDownClientRpc(true);
+
+        // 게임 종료 카운트다운
+        remainingTime.Value = endCountdownTime;
+        while (remainingTime.Value > 0)
+        {
+            remainingTime.Value -= Time.deltaTime;
+            yield return null;
+        }
+
+        isCountingDown = false;
+        ShowCountDownClientRpc(false);
 
         // 게임 종료 처리
         EndGame();
+    }
+
+    private void StartGame()
+    {
+        if (!IsServer) return;
+
+        currentGameState.Value = GameState.Playing;
+
+        int i = 0;
+        foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
+        {
+            NetworkObject playerObject = client.PlayerObject;
+            if (playerObject == null) continue;
+
+            NetworkTransform nt = playerObject.GetComponent<NetworkTransform>();
+            if (nt == null) continue;
+
+            // 순환하면서 스폰 위치 지정
+            Vector3 spawnPos = gameSpawnPoints[i % gameSpawnPoints.Length].position;
+
+            // 해당 플레이어에게 텔레포트 명령
+            nt.Teleport(spawnPos, Quaternion.identity, playerObject.transform.localScale);
+
+            i++;
+        }
     }
 
     private void EndGame()
     {
         if (!IsServer) return;
 
-        gameEnded.Value = true;
+        currentGameState.Value = GameState.Ended;
 
         // 모든 플레이어 컨트롤 비활성화
         foreach (var player in FindObjectsByType<PlayerController>(FindObjectsSortMode.None))
@@ -130,22 +255,12 @@ public class GameManager : NetworkBehaviour
     }
 
     [ClientRpc]
-    private void ShowCountDownClientRpc()
+    private void ShowCountDownClientRpc(bool active)
     {
         // 카운트다운 텍스트 표시
         if (countdownText != null)
         {
-            countdownText.gameObject.SetActive(true);
-        }
-    }
-
-    [ClientRpc]
-    private void HideCountDownClientRpc()
-    {
-        // 카운트다운 종료
-        if (countdownText != null)
-        {
-            countdownText.gameObject.SetActive(false);
+            countdownText.gameObject.SetActive(active);
         }
     }
 
@@ -204,10 +319,10 @@ public class GameManager : NetworkBehaviour
         }
     }
 
-    private void GoToLobby()
+    private void GoToMain()
     {
         NetworkManager.Singleton.Shutdown();
-        SceneManager.LoadScene(lobbySceneName);
+        SceneManager.LoadScene(mainSceneName);
     }
 
 }

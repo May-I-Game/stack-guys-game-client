@@ -33,14 +33,17 @@ public class PressTrap : MonoBehaviour
 
     private IEnumerator PressRoutine()
     {
-        // 내려가기
-        yield return MovePress(downY);
+        while (GameManager.instance.IsGame)
+        {
+            // 내려가기
+            yield return MovePress(downY);
 
-        // 눌린 상태 유지
-        yield return new WaitForSeconds(stayDownTime);
+            // 눌린 상태 유지
+            yield return new WaitForSeconds(stayDownTime);
 
-        // 올라가기
-        yield return MovePress(upY);
+            // 올라가기
+            yield return MovePress(upY);
+        }
     }
 
     private IEnumerator MovePress(float targetY)
