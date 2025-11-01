@@ -22,7 +22,12 @@ public class PressTrap : MonoBehaviour
 
     private IEnumerator RandomPressLoop()
     {
-        while (true)
+        while (GameManager.instance.IsLobby)
+        {
+            yield return null;
+        }
+
+        while (GameManager.instance.IsGame)
         {
             float waitTime = Random.Range(randomDelayRange.x, randomDelayRange.y);
             yield return new WaitForSeconds(waitTime);
@@ -33,17 +38,14 @@ public class PressTrap : MonoBehaviour
 
     private IEnumerator PressRoutine()
     {
-        while (GameManager.instance.IsGame)
-        {
-            // 내려가기
-            yield return MovePress(downY);
+        // 내려가기
+        yield return MovePress(downY);
 
-            // 눌린 상태 유지
-            yield return new WaitForSeconds(stayDownTime);
+        // 눌린 상태 유지
+        yield return new WaitForSeconds(stayDownTime);
 
-            // 올라가기
-            yield return MovePress(upY);
-        }
+        // 올라가기
+        yield return MovePress(upY);
     }
 
     private IEnumerator MovePress(float targetY)

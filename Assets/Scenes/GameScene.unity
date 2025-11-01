@@ -25764,10 +25764,10 @@ MonoBehaviour:
   secondPlaceText: {fileID: 661559683}
   thirdPlaceText: {fileID: 869097097}
   mainButton: {fileID: 0}
-  minPlayersToStart: 5
+  minPlayersToStart: 2
   startCountdownTime: 5
   endCountdownTime: 10
-  mainSceneName: LoginScene
+  mainSceneName: Login
   lobbySpawnPoint: {fileID: 400974738}
   gameSpawnPoints:
   - {fileID: 1095758525}
