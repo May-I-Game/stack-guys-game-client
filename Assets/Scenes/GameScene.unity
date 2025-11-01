@@ -12669,26 +12669,14 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 705635348}
-  - component: {fileID: 705635347}
+  - component: {fileID: 705635349}
   m_Layer: 0
-  m_Name: CursorManager
+  m_Name: GameManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &705635347
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 705635346}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fcae315b3ad58ef42a403612617e388d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!4 &705635348
 Transform:
   m_ObjectHideFlags: 0
@@ -12704,6 +12692,26 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &705635349
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 705635346}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3aa4e28f21a5474ca414303ab1d634e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  countdownText: {fileID: 0}
+  resultPanel: {fileID: 0}
+  firstPlaceText: {fileID: 0}
+  secondPlaceText: {fileID: 0}
+  thirdPlaceText: {fileID: 0}
+  lobbyButton: {fileID: 0}
+  countdownTime: 10
+  lobbySceneName: LobbyScene
 --- !u!1001 &708822856
 PrefabInstance:
   m_ObjectHideFlags: 0
