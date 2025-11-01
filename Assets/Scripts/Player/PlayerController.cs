@@ -1,12 +1,14 @@
 using Unity.Netcode;
 using Unity.Netcode.Components;
 using UnityEngine;
-
+using UnityEngine.InputSystem;
 public class PlayerController : NetworkBehaviour
 {
     [Header("Movement Settings")]
     public float walkSpeed = 4f;
     public float rotationSpeed = 10f;
+
+    public Vector2 inputVec;
 
     [Header("Jump Settings")]
     public float jumpForce = 3f;
