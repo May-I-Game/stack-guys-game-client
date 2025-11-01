@@ -13,6 +13,13 @@ public class PlayerController : NetworkBehaviour
     public float diveForce = 4f; // 다이브할 때 앞으로 가는 힘
     public float diveDownForce = 1f; // 다이브할 때 아래로 가는 힘
 
+    [Header("Grap Settings")]
+    public float grabRange = 1f; // 잡기 범위
+    public float holdHeight = 0.5f; // 머리 위 높이
+    public float holdDistance = 0.1f; // 플레이어 앞쪽 거리
+    public float throwForce = 5f; // 던지기 힘
+    public int escapeRequiredJumps = 5; // 탈출에 필요한 점프 횟수
+
     [Header("Animation")]
     public Animator animator;
 
@@ -33,8 +40,16 @@ public class PlayerController : NetworkBehaviour
     private bool isHit = false; // 충돌 상태 (이동 불가)
     private bool canDive = false; // 다이브 가능 상태 (점프 중)
 
-    NetworkTransform nt;
+    // 잡기 관련 변수
+    private NetworkVariable<bool> netIsHolding = new NetworkVariable<bool>(false); // 무언가를 들고 있는지
+    private NetworkVariable<bool> netIsGrabbed = new NetworkVariable<bool>(false); // 잡혀있는지
+    private NetworkVariable<ulong> netGrabberId = new NetworkVariable<ulong>(0); // 누가 잡고 있는지
+    private NetworkVariable<ulong> netHoldingTargetId = new NetworkVariable<ulong>(0); // 누구를 잡고 있는지
 
+    private GameObject holdingObject = null; // 실제로 들고 있는 오브젝트
+    private int escapeJumpCount = 0; // 탈출 시도 횟수
+
+    NetworkTransform nt;
     // 최초 스폰 자리 저장 (서버 전용)
     private Vector3 _initialSpawnPosition;
 
@@ -45,7 +60,6 @@ public class PlayerController : NetworkBehaviour
             // 최초 스폰 위치 저장
             _initialSpawnPosition = transform.position;
         }
-
 
         if (IsOwner)
         {
@@ -94,6 +108,8 @@ public class PlayerController : NetworkBehaviour
             MovePlayer();
             // 점프 처리
             JumpPlayer();
+            // 들기 처리
+            HeldPlayer();
 
             // 애니메이션 업데이트
             SyncAnimationState();
@@ -112,6 +128,19 @@ public class PlayerController : NetworkBehaviour
         if (Input.GetKeyDown(KeyCode.Space))
         {
             JumpPlayerServerRpc();
+        }
+
+        // E 키로 잡기 또는 던지기
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            if (!netIsHolding.Value)
+            {
+                GrapPlayerServerRpc();
+            }
+            else
+            {
+                ThrowPlayerServerRpc();
+            }
         }
     }
 
@@ -134,13 +163,115 @@ public class PlayerController : NetworkBehaviour
     [ServerRpc]
     private void JumpPlayerServerRpc()
     {
-        // 충돌 중이거나 다이브 착지 중이면 입력 무시
-        if (isHit || netIsDiveGrounded.Value)
+        // 잡혔으면 탈출시도
+        if (netIsGrabbed.Value)
+        {
+            escapeJumpCount++;
+            if (escapeJumpCount >= escapeRequiredJumps)
+            {
+                EscapeFromGrap();
+            }
+        }
+
+        // 이외에는 점프시도
+        else
+        {
+            // 충돌 중이거나 다이브 착지 중이면 입력 무시
+            if (isHit || netIsDiveGrounded.Value)
+            {
+                return;
+            }
+
+            isjumpQueued = true;
+        }
+    }
+
+    [ServerRpc]
+    private void GrapPlayerServerRpc()
+    {
+        if (isHit || netIsDiveGrounded.Value || netIsHolding.Value || netIsGrabbed.Value)
         {
             return;
         }
 
-        isjumpQueued = true;
+        // 범위 내 잡을 수 있는 오브젝트에 잡기시도
+        Collider[] colliders = Physics.OverlapSphere(transform.position, grabRange);
+        foreach (Collider col in colliders)
+        {
+            // 자기자신 제외
+            if (col.gameObject == this.gameObject) continue;
+
+            // TODO: GrabbableObject 체크
+            //GrabbableObject grabbable = col.GetComponent<GrabbableObject>();
+            //if (grabbable != null && !grabbable.IsGrabbed())
+            //{
+            //    GrabObject(col.gameObject);
+            //    return;
+            //}
+
+            // 다른 플레이어 체크
+            PlayerController otherPlayer = col.GetComponent<PlayerController>();
+            if (otherPlayer != null && !otherPlayer.netIsGrabbed.Value && !otherPlayer.netIsHolding.Value)
+            {
+                GrabPlayer(otherPlayer);
+                return;
+            }
+        }
+    }
+
+    private void GrabPlayer(PlayerController target)
+    {
+        holdingObject = target.gameObject;
+        netIsHolding.Value = true;
+        netHoldingTargetId.Value = target.NetworkObjectId;
+
+        // 상대방 상태 변경
+        target.netIsGrabbed.Value = true;
+        target.netGrabberId.Value = this.NetworkObjectId;
+        target.escapeJumpCount = 0;
+
+        // 상대방 물리 비활성화
+        if (target.rb != null)
+        {
+            target.rb.isKinematic = true;
+        }
+
+        SetTriggerClientRpc("Grab");
+        target.SetTriggerClientRpc("Grabbed");
+        Debug.Log($"[잡기] 플레이어를 잡았습니다: {target.gameObject.name}");
+    }
+
+    [ServerRpc]
+    private void ThrowPlayerServerRpc()
+    {
+        // 잡기 중 아니면 입력 무시
+        if (!netIsHolding.Value || holdingObject == null)
+        {
+            return;
+        }
+
+        // 던지기 방향 계산 (앞쪽 + 약간 위)
+        Vector3 throwDirection = (transform.forward + Vector3.up * 0.5f).normalized;
+
+        // 플레이어를 던지는 경우
+        PlayerController targetPlayer = holdingObject.GetComponent<PlayerController>();
+        if (targetPlayer != null)
+        {
+            ThrowPlayer(targetPlayer, throwDirection);
+        }
+
+        // TODO: 오브젝트를 던지는 경우
+        //else
+        //{
+        //    ThrowObject(holdingObject, throwDirection);
+        //}
+
+        holdingObject = null;
+        netIsHolding.Value = false;
+        netHoldingTargetId.Value = 0;
+
+        SetTriggerClientRpc("Throw");
+        Debug.Log("[잡기] 오브젝트를 던졌습니다");
     }
     #endregion
 
@@ -170,7 +301,7 @@ public class PlayerController : NetworkBehaviour
                 canDive = true; // 점프 후 다이브 가능
             }
             // 공중에 있을 때: 다이브
-            else if (canDive && !netIsDiving.Value)
+            else if (canDive && !netIsDiving.Value && !netIsGrabbed.Value)
             {
                 DivePlayer();
             }
@@ -214,6 +345,93 @@ public class PlayerController : NetworkBehaviour
     {
         yield return new WaitForSeconds(diveGroundedDuration);
         netIsDiveGrounded.Value = false;
+    }
+
+    private void HeldPlayer()
+    {
+        if (!netIsHolding.Value || holdingObject == null)
+        {
+            return;
+        }
+
+        // 머리 위 위치 계산
+        Vector3 targetPosition = transform.position
+            + transform.forward * holdDistance
+            + Vector3.up * holdHeight;
+
+        holdingObject.transform.position = targetPosition;
+
+        // 플레이어를 들고 있는 경우 회전도 맞춤
+        PlayerController heldPlayer = holdingObject.GetComponent<PlayerController>();
+        if (heldPlayer != null)
+        {
+            holdingObject.transform.rotation = transform.rotation;
+        }
+    }
+
+    private void ThrowPlayer(PlayerController target, Vector3 throwDirection)
+    {
+        target.netIsGrabbed.Value = false;
+        target.netGrabberId.Value = 0;
+        target.escapeJumpCount = 0;
+
+        // 물리 재활성화 및 힘 가하기
+        if (target.rb != null)
+        {
+            target.rb.isKinematic = false;
+            target.rb.AddForce(throwDirection * throwForce, ForceMode.Impulse);
+        }
+    }
+
+    private void ThrowObject(GameObject target, Vector3 throwDirection)
+    {
+        // TODO:
+        //Rigidbody targetRb = target.GetComponent<Rigidbody>();
+        //if (targetRb != null)
+        //{
+        //    targetRb.isKinematic = false;
+        //    targetRb.AddForce(throwDirection * throwForce, ForceMode.Impulse);
+        //}
+
+        //GrabbableObject grabbable = target.GetComponent<GrabbableObject>();
+        //if (grabbable != null)
+        //{
+        //    grabbable.OnReleased();
+        //}
+    }
+
+    private void EscapeFromGrap()
+    {
+        if (netGrabberId.Value == 0) return;
+
+        PlayerController grabbedBy = NetworkManager.Singleton.ConnectedClients[netGrabberId.Value].PlayerObject.GetComponent<PlayerController>();
+        if (grabbedBy == null)
+        {
+            netIsGrabbed.Value = false;
+            netGrabberId.Value = 0;
+            rb.isKinematic = false;
+            return;
+        }
+
+        // 잡고 있던 플레이어의 상태 해제
+        grabbedBy.holdingObject = null;
+        grabbedBy.netIsHolding.Value = false;
+        grabbedBy.netHoldingTargetId.Value = 0;
+
+        // 내 상태 해제
+        netIsGrabbed.Value = false;
+        netGrabberId.Value = 0;
+        escapeJumpCount = 0;
+
+        // 물리 재활성화 및 점프
+        if (rb != null)
+        {
+            rb.isKinematic = false;
+            rb.AddForce(Vector3.up * jumpForce * 1.5f, ForceMode.Impulse);
+        }
+
+        SetTriggerClientRpc("Escape");
+        Debug.Log("[탈출] 성공적으로 탈출했습니다!");
     }
 
     // Collider로 땅 감지
@@ -297,6 +515,7 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
+    #region Animation
     // 애니메이션 재생 함수
     private void PlayHitAnimation(string triggerName, float duration)
     {
@@ -358,25 +577,27 @@ public class PlayerController : NetworkBehaviour
             // 이동 속도를 애니메이터에 전달
             float speed = netMoveDirection.Value.magnitude * netCurrentSpeed.Value;
             animator.SetFloat("Speed", speed);
-
             // 점프 상태를 애니메이터에 전달
             animator.SetBool("IsGrounded", netIsGrounded.Value);
-
             // 다이브 상태를 애니메이터에 전달
             animator.SetBool("IsDiving", netIsDiving.Value);
-
             // 다이브 착지 상태를 애니메이터에 전달
             animator.SetBool("IsDiveGrounded", netIsDiveGrounded.Value);
-
             // 수직 속도를 애니메이터에 전달 (점프/낙하 애니메이션용)
             animator.SetFloat("VerticalVelocity", netVerticalVelocity.Value);
+
+            // 잡힌 상태를 애니메이터에 전달
+            animator.SetBool("IsGrabbed", netIsGrabbed.Value);
         }
     }
+    #endregion
 
     // 서버 권위 리스폰
     public void DoRespawn()
     {
         if (!IsServer) return;
+
+        ReleaseGrab();
 
         // 이동/회전 속도 초기화
         if (rb != null)
@@ -409,6 +630,8 @@ public class PlayerController : NetworkBehaviour
     {
         if (!IsServer) return;
 
+        ReleaseGrab();
+
         // 이동/회전 속도 초기화
         if (rb != null)
         {
@@ -434,6 +657,53 @@ public class PlayerController : NetworkBehaviour
 
         // 애니메이터도 각 클라에서 리셋
         ResetDiveAnimClientRpc();
+    }
+
+    private void ReleaseGrab()
+    {
+        // 내가 무언가를 들고 있었다면
+        if (netIsHolding.Value && holdingObject != null)
+        {
+            PlayerController heldPlayer = holdingObject.GetComponent<PlayerController>();
+            if (heldPlayer != null)
+            {
+                heldPlayer.netIsGrabbed.Value = false;
+                heldPlayer.netGrabberId.Value = 0;
+                if (heldPlayer.rb != null)
+                {
+                    heldPlayer.rb.isKinematic = false;
+                }
+            }
+            //TODO:
+            //else
+            //{
+            //    GrabbableObject grabbable = holdingObject.GetComponent<GrabbableObject>();
+            //    if (grabbable != null)
+            //    {
+            //        grabbable.OnReleased();
+            //    }
+            //}
+
+            holdingObject = null;
+        }
+
+        // 내가 잡혀있었다면
+        if (netIsGrabbed.Value)
+        {
+            PlayerController grabbedBy = NetworkManager.Singleton.ConnectedClients[netGrabberId.Value].PlayerObject.GetComponent<PlayerController>();
+            if (grabbedBy != null)
+            {
+                grabbedBy.holdingObject = null;
+                grabbedBy.netIsHolding.Value = false;
+                grabbedBy.netHoldingTargetId.Value = 0;
+            }
+        }
+
+        netIsHolding.Value = false;
+        netHoldingTargetId.Value = 0;
+        netIsGrabbed.Value = false;
+        netGrabberId.Value = 0;
+        escapeJumpCount = 0;
     }
 
     // 오른쪽 버튼 클릭시 커서 토글
