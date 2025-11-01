@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using TMPro;
 using Unity.Collections;
 using Unity.Netcode;
@@ -55,8 +55,8 @@ public class GameManager : NetworkBehaviour
             lobbyButton.onClick.AddListener(GoToLobby);
 
         // 커서 관리
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        //Cursor.lockState = CursorLockMode.Locked;
+        //Cursor.visible = false;
 
         if (!IsServer)
         {
