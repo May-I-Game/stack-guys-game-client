@@ -42,7 +42,7 @@ public class PlayerController : NetworkBehaviour
     {
         if (IsServer)
         {
-            transform.position = new Vector3(0f, 0f, 0f);
+            transform.position = new Vector3(0f, 0f, 600f);
 
             // 최초 스폰 위치 저장
             _initialSpawnPosition = transform.position;

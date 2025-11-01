@@ -28,7 +28,7 @@ public class JiggleBallTrap : MonoBehaviour
 
     private IEnumerator AutoRotateRoutine()
     {
-        while (true)
+        while (GameManager.instance.IsGame)
         {
             yield return RotateTo(leftZ);
             yield return new WaitForSeconds(stayTime);

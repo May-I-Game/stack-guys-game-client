@@ -30,7 +30,10 @@ public class SpinY : MonoBehaviour
 
         if (NetworkManager.Singleton.IsServer)
         {
-            Spin();
+            if (GameManager.instance.IsGame)
+            {
+                Spin();
+            }
         }
     }
 
