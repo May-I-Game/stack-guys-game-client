@@ -6606,6 +6606,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 359168753}
+  - component: {fileID: 359168754}
   m_Layer: 0
   m_Name: MobileUI
   m_TagString: Untagged
@@ -6635,6 +6636,23 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &359168754
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 359168752}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df4c0ff9e98121d409d1d0f45291d3a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  background: {fileID: 1714850024}
+  handle: {fileID: 77682161}
+  jumpButton: {fileID: 1804400862}
+  handleRange: 50
+  deadZone: 0.1
 --- !u!1001 &361909980
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -9329,7 +9347,7 @@ GameObject:
   - component: {fileID: 565985959}
   - component: {fileID: 565985958}
   m_Layer: 5
-  m_Name: Lobby
+  m_Name: Main
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -33968,7 +33986,6 @@ GameObject:
   - component: {fileID: 1714850024}
   - component: {fileID: 1714850027}
   - component: {fileID: 1714850026}
-  - component: {fileID: 1714850025}
   m_Layer: 0
   m_Name: JoysitckMoveBackground
   m_TagString: Untagged
@@ -33996,18 +34013,6 @@ RectTransform:
   m_AnchoredPosition: {x: -840, y: -280}
   m_SizeDelta: {x: 300, y: 300}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1714850025
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1714850023}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 65264ae1b2c151749a596dc211423083, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &1714850026
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -39375,6 +39380,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1930709952}
+  - component: {fileID: 1930709954}
   - component: {fileID: 1930709953}
   m_Layer: 0
   m_Name: GameEndManager
@@ -39416,13 +39422,38 @@ MonoBehaviour:
   firstPlaceText: {fileID: 821991016}
   secondPlaceText: {fileID: 1334394428}
   thirdPlaceText: {fileID: 416377996}
-  MainButton: {fileID: 0}
-  countdownTime: 10
-  MainSceneName: Login
-  gameEnded:
-    m_InternalValue: 0
-  remainingTime:
-    m_InternalValue: 0
+  mainButton: {fileID: 565985958}
+  minPlayersToStart: 5
+  startCountdownTime: 5
+  endCountdownTime: 10
+  mainSceneName: LoginScene
+  lobbySpawnPoint: {fileID: 0}
+  gameSpawnPoints: []
+--- !u!114 &1930709954
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1930709951}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 3637313419
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
 --- !u!1001 &1931259518
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -43398,7 +43429,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Lobby
+  m_Text: Main
 --- !u!222 &2143295767
 CanvasRenderer:
   m_ObjectHideFlags: 0
