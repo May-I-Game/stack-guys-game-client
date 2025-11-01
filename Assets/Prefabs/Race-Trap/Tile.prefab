@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 9157477402662238025}
   - component: {fileID: 8708221903229110451}
   - component: {fileID: 2257395179983155048}
-  - component: {fileID: 752609065959319256}
+  - component: {fileID: 8676823820317145917}
   m_Layer: 3
   m_Name: Tile
   m_TagString: Ground
@@ -30,7 +30,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1.36, y: 1.36, z: 1.36}
-  m_ConstrainProportionsScale: 1
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -87,8 +87,8 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &752609065959319256
-MeshCollider:
+--- !u!65 &8676823820317145917
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -105,7 +105,6 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -6552519540344657623, guid: 7a00f7b94f1ed0f41acff92d1d9e119e, type: 3}
+  serializedVersion: 3
+  m_Size: {x: 3, y: 0.100000486, z: 3}
+  m_Center: {x: 0, y: -0.0000002477318, z: -1.5}
