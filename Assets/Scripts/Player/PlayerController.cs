@@ -4,6 +4,12 @@ using UnityEngine;
 
 public class PlayerController : NetworkBehaviour
 {
+#if UNITY_ANDROID || UNITY_IOS
+    [Header("Mobile Input")]
+    public VirtualJoystick virtualJoystick;
+    public UnityEngine.UI.Button jumpButton;
+#endif
+
     [Header("Movement Settings")]
     public float walkSpeed = 4f;
     public float rotationSpeed = 10f;
@@ -67,6 +73,14 @@ public class PlayerController : NetworkBehaviour
                 animator = GetComponentInChildren<Animator>();
             }
         }
+
+        #if UNITY_ANDROID || UNITY_IOS
+            if (IsOwner && virtualJoystick != null)
+            {
+                // 점프 버튼 클릭 시 서버에 점프 명령 보내기
+                virtualJoystick.OnJumpPressed += () => JumpPlayerServerRpc();
+            }
+        #endif
     }
 
     private void Update()
@@ -102,7 +116,9 @@ public class PlayerController : NetworkBehaviour
 
     void HandleInput()
     {
-        // WASD 입력 받기
+
+#if UNITY_STANDALONE || UNITY_EDITOR
+        // ============ PC: 기존 키보드 입력 ============ // WASD 입력 받기
         float horizontal = Input.GetAxisRaw("Horizontal"); // A, D
         float vertical = Input.GetAxisRaw("Vertical");     // W, S
 
@@ -113,7 +129,20 @@ public class PlayerController : NetworkBehaviour
         {
             JumpPlayerServerRpc();
         }
+
+#elif UNITY_ANDROID || UNITY_IOS
+        // ============ 모바일: 가상 조이스틱 ============
+        if (virtualJoystick != null)
+        {
+            Vector2 input = virtualJoystick.GetInputVector();
+            direction = new Vector3(input.y, 0f, -input.x).normalized;
+        }
+        // 공통: 이동 명령 전송
+        MovePlayerServerRpc(direction);
+        // 점프는 UI 버튼으로 처리 (Start에서 연결)
+#endif
     }
+
 
     #region ServerRPCs
     [ServerRpc]
