@@ -373,7 +373,7 @@ Animator:
   m_GameObject: {fileID: 2754731792468365018}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: de90ff47c0e327e46a2239f0d5a621a1, type: 2}
+  m_Controller: {fileID: 9100000, guid: 92bb5bf559174d74fbb0e77965dc10a5, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -428,6 +428,11 @@ MonoBehaviour:
   jumpForce: 3
   diveForce: 4
   diveDownForce: 1
+  grabRange: 1
+  holdHeight: 0.5
+  holdDistance: 0.1
+  throwForce: 5
+  escapeRequiredJumps: 5
   animator: {fileID: 2683077748279760156}
 --- !u!54 &3481650729852714311
 Rigidbody:
