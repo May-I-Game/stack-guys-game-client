@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TMPro;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
@@ -6,7 +7,7 @@ using UnityEngine;
 public class LoginUI : MonoBehaviour
 {
     [SerializeField] private TMP_InputField nameInput; // 선택사항: 이름 입력
-
+    [SerializeField] private Camera characterSelectCamera;
     public void OnClickStart()
     {
         // 이름 저장 (선택사항)
@@ -22,7 +23,8 @@ public class LoginUI : MonoBehaviour
         }
         PlayerPrefs.Save();
 
-        // 캐릭터 선택된 것도 반영되어야 함. (CharactorCamera localposition.x 를 -2로 나누기 하면 인덱스가 나옴)
+        // 선택한 캐릭터 인덱스 가져오기
+        int selectedCharacterIndex = PlayerPrefs.GetInt("selected_character", 0);
 
         // 서버 연결
         UnityTransport transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
@@ -33,6 +35,11 @@ public class LoginUI : MonoBehaviour
 
         if (NetworkManager.Singleton != null)
         {
+            // ConnectionData에 캐릭터 인덱스 포함
+            byte[] payload = new byte[1];
+            payload[0] = (byte)selectedCharacterIndex;
+            NetworkManager.Singleton.NetworkConfig.ConnectionData = payload;
+
             NetworkManager.Singleton.StartClient();
         }
         else
