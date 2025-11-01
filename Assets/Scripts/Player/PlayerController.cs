@@ -77,6 +77,9 @@ public class PlayerController : NetworkBehaviour
         {
             // 입력 받기
             HandleInput();
+
+            // 오른쪽 버튼 커서 토글 부분
+            ToggleCursorWithRMB();
         }
 
         UpdateAnimation();
@@ -430,6 +433,19 @@ public class PlayerController : NetworkBehaviour
 
         // 애니메이터도 각 클라에서 리셋
         ResetDiveAnimClientRpc();
+    }
+
+    // 오른쪽 버튼 클릭시 커서 토글
+    public void ToggleCursorWithRMB()
+    {
+        if (!IsClient) return;
+
+        if (Input.GetMouseButtonDown(1)) // RMB 클릭 시
+        {
+            bool willUnlock = (Cursor.lockState == CursorLockMode.Locked);
+            Cursor.lockState = willUnlock ? CursorLockMode.None : CursorLockMode.Locked;
+            Cursor.visible = willUnlock;
+        }
     }
 
     #region ClientRPCs
