@@ -77,9 +77,6 @@ public class PlayerController : NetworkBehaviour
         {
             // 입력 받기
             HandleInput();
-
-            // 오른쪽 버튼 커서 토글 부분
-            ToggleCursorWithRMB();
         }
 
         UpdateAnimation();
@@ -270,8 +267,8 @@ public class PlayerController : NetworkBehaviour
         switch (collision.gameObject.tag)
         {
             case "Death":
-                // 최초 스폰 자리로 텔레포트 (회전은 초기화)
-                DoRespawn(_initialSpawnPosition, Quaternion.identity);
+                // 최초 스폰 자리로 텔레포트
+                DoRespawn();
                 break;
 
             case "weakObstacles":
@@ -373,6 +370,46 @@ public class PlayerController : NetworkBehaviour
     }
 
     // 서버 권위 리스폰
+    public void DoRespawn()
+    {
+        if (!IsServer) return;
+
+        if (rb != null)
+        {
+            // 물리 시뮬레이션 중단
+            rb.isKinematic = true;
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+
+        // 캐릭터 텔레포트
+        if (nt != null)
+        {
+            nt.Teleport(_initialSpawnPosition, Quaternion.identity, transform.localScale);
+        }
+
+        // 텔레포트 레거시 코드
+        // transform.SetPositionAndRotation(pos, rot);
+
+        if (rb != null)
+        {
+            rb.isKinematic = false;
+        }
+
+        // 이동/점프 관련 상태 최소 초기화
+        netMoveDirection.Value = Vector3.zero;
+        netCurrentSpeed.Value = 0f;
+        netIsGrounded.Value = true;
+        netIsDiving.Value = false;
+        netIsDiveGrounded.Value = false;
+        canDive = false;
+        isjumpQueued = false;
+        isHit = false;
+
+        // 애니메이터도 각 클라에서 리셋
+        ResetDiveAnimClientRpc();
+    }
+
     public void DoRespawn(Vector3 pos, Quaternion rot)
     {
         if (!IsServer) return;
@@ -411,19 +448,6 @@ public class PlayerController : NetworkBehaviour
 
         // 애니메이터도 각 클라에서 리셋
         ResetDiveAnimClientRpc();
-    }
-
-    // 오른쪽 버튼 클릭시 커서 토글
-    public void ToggleCursorWithRMB()
-    {
-        if (!IsClient) return;
-
-        if (Input.GetMouseButtonDown(1)) // RMB 클릭 시
-        {
-            bool willUnlock = (Cursor.lockState == CursorLockMode.Locked);
-            Cursor.lockState = willUnlock ? CursorLockMode.None : CursorLockMode.Locked;
-            Cursor.visible = willUnlock;
-        }
     }
 
     #region ClientRPCs
