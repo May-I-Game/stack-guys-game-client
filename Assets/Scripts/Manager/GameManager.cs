@@ -1,12 +1,12 @@
-﻿using Amazon.GameLift.Model;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections;
 using TMPro;
+using Unity.Collections;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class GameManager : MonoBehaviour
+public class GameManager : NetworkBehaviour
 {
     [Header("UI References")]
     [SerializeField] TMP_Text countdownText; // 화면 중앙의 카운트다운
@@ -20,9 +20,11 @@ public class GameManager : MonoBehaviour
     [SerializeField] float countdownTime = 10f;
     [SerializeField] string lobbySceneName = "LobbyScene";
 
-    private List<string> rankings = new List<string>();
     private bool isCountingDown = false;
-    public bool gameEnded { get; private set; } = false;
+
+    public NetworkVariable<bool> gameEnded = new NetworkVariable<bool>(false);
+    public NetworkVariable<float> remainingTime = new NetworkVariable<float>(0f);
+    public NetworkList<FixedString32Bytes> rankings;
 
     public static GameManager instance;
 
@@ -32,42 +34,46 @@ public class GameManager : MonoBehaviour
         if (instance == null)
         {
             instance = this;
-            DontDestroyOnLoad(gameObject);
         }
         else
         {
             Destroy(gameObject);
         }
+
+        rankings = new NetworkList<FixedString32Bytes>();
     }
 
-    void Start()
+    public override void OnNetworkSpawn()
     {
-        // 초기 UI 숨기기
+        // UI 초기 숨기기
         if (countdownText != null)
             countdownText.gameObject.SetActive(false);
-
         if (resultPanel != null)
             resultPanel.SetActive(false);
-
         // 버튼 이벤트 연결
         if (lobbyButton != null)
             lobbyButton.onClick.AddListener(GoToLobby);
-    }
 
-    // 커서 관리
-    private void OnEnable()
-    {
+        // 커서 관리
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+
+        if (!IsServer)
+        {
+            remainingTime.OnValueChanged += UpdateCountDownUI;
+        }
     }
 
-    private void OnDisable()
+    public override void OnNetworkDespawn()
     {
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
+        if (!IsServer)
+        {
+            remainingTime.OnValueChanged -= UpdateCountDownUI;
+        }
     }
 
-    public void PlayerReachedGoal(string playerName)
+    [ServerRpc(RequireOwnership = false)]
+    public void PlayerReachedGoalServerRpc(string playerName)
     {
         // 순위에 추가
         rankings.Add(playerName);
@@ -83,30 +89,17 @@ public class GameManager : MonoBehaviour
     {
         isCountingDown = true;
 
-        // 카운트다운 텍스트 표시
-        if (countdownText != null)
-        {
-            countdownText.gameObject.SetActive(true);
-        }
+        ShowCountDownClientRpc();
 
         // 10초 카운트다운
-        float remainingTime = countdownTime;
-        while (remainingTime > 0)
+        remainingTime.Value = countdownTime;
+        while (remainingTime.Value > 0)
         {
-            if (countdownText != null)
-            {
-                countdownText.text = Mathf.Ceil(remainingTime).ToString();
-            }
-
-            remainingTime -= Time.deltaTime;
+            remainingTime.Value -= Time.deltaTime;
             yield return null;
         }
 
-        // 카운트다운 종료
-        if (countdownText != null)
-        {
-            countdownText.gameObject.SetActive(false);
-        }
+        HideCountDownClientRpc();
 
         // 게임 종료 처리
         EndGame();
@@ -114,9 +107,50 @@ public class GameManager : MonoBehaviour
 
     private void EndGame()
     {
-        // 모든 플레이어 컨트롤 비활성화
-        DisableAllPlayerControls();
+        if (!IsServer) return;
 
+        gameEnded.Value = true;
+
+        // 모든 플레이어 컨트롤 비활성화
+        DisableAllPlayerControlsClientRpc();
+        // 클라에 결과 화면 표시
+        ShowResultsClientRpc();
+    }
+
+    [ClientRpc]
+    private void DisableAllPlayerControlsClientRpc()
+    {
+        // PlayerController 비활성화
+        PlayerController[] pcPlayers = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
+        foreach (var player in pcPlayers)
+        {
+            player.enabled = false;
+        }
+    }
+
+    [ClientRpc]
+    private void ShowCountDownClientRpc()
+    {
+        // 카운트다운 텍스트 표시
+        if (countdownText != null)
+        {
+            countdownText.gameObject.SetActive(true);
+        }
+    }
+
+    [ClientRpc]
+    private void HideCountDownClientRpc()
+    {
+        // 카운트다운 종료
+        if (countdownText != null)
+        {
+            countdownText.gameObject.SetActive(false);
+        }
+    }
+
+    [ClientRpc]
+    private void ShowResultsClientRpc()
+    {
         // 결과 화면 표시
         if (resultPanel != null)
         {
@@ -128,20 +162,19 @@ public class GameManager : MonoBehaviour
         Cursor.visible = true;
 
         // 순위 표시
-        DisplayRankings();
+        UpdateRankingUI();
     }
 
-    private void DisableAllPlayerControls()
+    private void UpdateCountDownUI(float prviousValue, float newValue)
     {
-        // PlayerController 비활성화
-        PlayerController[] pcPlayers = Object.FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
-        foreach (var player in pcPlayers)
+        // 카운트 다운
+        if (countdownText != null)
         {
-            player.enabled = false;
+            countdownText.text = Mathf.Ceil(newValue).ToString();
         }
     }
 
-    private void DisplayRankings()
+    private void UpdateRankingUI()
     {
         // 1등
         if (rankings.Count > 0 && firstPlaceText != null)
@@ -172,8 +205,7 @@ public class GameManager : MonoBehaviour
 
     private void GoToLobby()
     {
-        gameEnded = false;
-        SceneManager.LoadScene(lobbySceneName);
+        NetworkManager.SceneManager.LoadScene(lobbySceneName, LoadSceneMode.Single);
     }
 
 }
