@@ -56,8 +56,15 @@ public class PlayerController : NetworkBehaviour
     private int escapeJumpCount = 0; // 탈출 시도 횟수
 
     NetworkTransform nt;
+
     // 최초 스폰 자리 저장 (서버 전용)
     private Vector3 _initialSpawnPosition;
+
+    // 리스폰 구역 Index 값
+    public NetworkVariable<int> RespawnId = new(
+        0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
+    [SerializeField] private RespawnManager respawnManager;     // 리스폰 리스트를 사용하기 위하여 선언
 
     public override void OnNetworkSpawn()
     {
@@ -77,6 +84,7 @@ public class PlayerController : NetworkBehaviour
     {
         rb = GetComponent<Rigidbody>();
         nt = GetComponent<NetworkTransform>();
+        respawnManager = FindFirstObjectByType<RespawnManager>();
 
         // Animator가 설정되지 않았다면 자동으로 찾기
         if (animator == null)
@@ -519,8 +527,8 @@ public class PlayerController : NetworkBehaviour
         switch (collision.gameObject.tag)
         {
             case "Death":
-                // 최초 스폰 자리로 텔레포트
-                DoRespawn();
+                // 캐릭터가 가지고 있는 리스폰 인덱스로 이동
+                DoRespawn(RespawnId.Value);
                 break;
 
             case "weakObstacles":
@@ -622,7 +630,7 @@ public class PlayerController : NetworkBehaviour
     }
     #endregion
 
-    // 서버 권위 리스폰
+    // 기본 자리 리스폰
     public void DoRespawn()
     {
         if (!IsServer) return;
@@ -656,6 +664,46 @@ public class PlayerController : NetworkBehaviour
         ResetDiveAnimClientRpc();
     }
 
+    // 리스트를 이용한 텔레포트
+    public void DoRespawn(int index)
+    {
+
+        if (!IsServer) return;
+
+        // 리스폰 리스트 가져오기
+        var dest = respawnManager.respawnPoints[index];
+        if (!dest) { Debug.LogWarning("Respawn Transform null"); return; }
+
+        ReleaseGrab();
+
+        // 이동/회전 속도 초기화
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+
+        // 캐릭터 텔레포트
+        if (nt != null)
+        {
+            nt.Teleport(dest.position, dest.rotation, transform.localScale);
+        }
+
+        // 이동/점프 관련 상태 최소 초기화
+        netMoveDirection.Value = Vector3.zero;
+        netCurrentSpeed.Value = 0f;
+        netIsGrounded.Value = true;
+        netIsDiving.Value = false;
+        netIsDiveGrounded.Value = false;
+        canDive = false;
+        isjumpQueued = false;
+        isHit = false;
+
+        // 애니메이터도 각 클라에서 리셋
+        ResetDiveAnimClientRpc();
+    }
+
+    // 좌표를 이용한 리스폰
     public void DoRespawn(Vector3 pos, Quaternion rot)
     {
         if (!IsServer) return;
