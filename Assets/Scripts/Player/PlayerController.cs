@@ -374,10 +374,9 @@ public class PlayerController : NetworkBehaviour
     {
         if (!IsServer) return;
 
+        // 이동/회전 속도 초기화
         if (rb != null)
         {
-            // 물리 시뮬레이션 중단
-            rb.isKinematic = true;
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
         }
@@ -386,14 +385,6 @@ public class PlayerController : NetworkBehaviour
         if (nt != null)
         {
             nt.Teleport(_initialSpawnPosition, Quaternion.identity, transform.localScale);
-        }
-
-        // 텔레포트 레거시 코드
-        // transform.SetPositionAndRotation(pos, rot);
-
-        if (rb != null)
-        {
-            rb.isKinematic = false;
         }
 
         // 이동/점프 관련 상태 최소 초기화
@@ -414,10 +405,9 @@ public class PlayerController : NetworkBehaviour
     {
         if (!IsServer) return;
 
+        // 이동/회전 속도 초기화
         if (rb != null)
         {
-            // 물리 시뮬레이션 중단
-            rb.isKinematic = true;
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
         }
@@ -426,14 +416,6 @@ public class PlayerController : NetworkBehaviour
         if (nt != null)
         {
             nt.Teleport(pos, rot, transform.localScale);
-        }
-
-        // 텔레포트 레거시 코드
-        // transform.SetPositionAndRotation(pos, rot);
-
-        if (rb != null)
-        {
-            rb.isKinematic = false;
         }
 
         // 이동/점프 관련 상태 최소 초기화
