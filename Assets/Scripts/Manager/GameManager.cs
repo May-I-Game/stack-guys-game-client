@@ -1,11 +1,12 @@
-﻿using System.Collections;
+﻿using Amazon.GameLift.Model;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class GameEndManager : MonoBehaviour
+public class GameManager : MonoBehaviour
 {
     [Header("UI References")]
     [SerializeField] TMP_Text countdownText; // 화면 중앙의 카운트다운
@@ -21,6 +22,23 @@ public class GameEndManager : MonoBehaviour
 
     private List<string> rankings = new List<string>();
     private bool isCountingDown = false;
+    public bool gameEnded { get; private set; } = false;
+
+    public static GameManager instance;
+
+    private void Awake()
+    {
+        // 싱글톤 패턴
+        if (instance == null)
+        {
+            instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
 
     void Start()
     {
@@ -34,6 +52,19 @@ public class GameEndManager : MonoBehaviour
         // 버튼 이벤트 연결
         if (lobbyButton != null)
             lobbyButton.onClick.AddListener(GoToLobby);
+    }
+
+    // 커서 관리
+    private void OnEnable()
+    {
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+    }
+
+    private void OnDisable()
+    {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 
     public void PlayerReachedGoal(string playerName)
@@ -102,35 +133,12 @@ public class GameEndManager : MonoBehaviour
 
     private void DisableAllPlayerControls()
     {
-        // ThirdPersonController 비활성화
-        StarterAssets.ThirdPersonController[] players = Object.FindObjectsByType<StarterAssets.ThirdPersonController>(FindObjectsSortMode.None);
-        foreach (var player in players)
+        // PlayerController 비활성화
+        PlayerController[] pcPlayers = Object.FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
+        foreach (var player in pcPlayers)
         {
             player.enabled = false;
         }
-
-        // StarterAssetsInputs 비활성화 (입력 차단)
-        StarterAssets.StarterAssetsInputs[] inputs = Object.FindObjectsByType<StarterAssets.StarterAssetsInputs>(FindObjectsSortMode.None);
-        foreach (var input in inputs)
-        {
-            input.enabled = false;
-        }
-
-        // CharacterController 비활성화 (움직임 차단)
-        CharacterController[] controllers = Object.FindObjectsByType<CharacterController>(FindObjectsSortMode.None);
-        foreach (var controller in controllers)
-        {
-            controller.enabled = false;
-        }
-
-#if ENABLE_INPUT_SYSTEM
-        // PlayerInput 비활성화 (New Input System 차단)
-        UnityEngine.InputSystem.PlayerInput[] playerInputs = Object.FindObjectsByType<UnityEngine.InputSystem.PlayerInput>(FindObjectsSortMode.None);
-        foreach (var playerInput in playerInputs)
-        {
-            playerInput.enabled = false;
-        }
-#endif
     }
 
     private void DisplayRankings()
@@ -162,9 +170,10 @@ public class GameEndManager : MonoBehaviour
         }
     }
 
-    public void GoToLobby()
+    private void GoToLobby()
     {
-        GoalFlag.ResetGame();
+        gameEnded = false;
         SceneManager.LoadScene(lobbySceneName);
     }
+
 }
