@@ -14,11 +14,11 @@ public class GameManager : NetworkBehaviour
     [SerializeField] TMP_Text firstPlaceText;
     [SerializeField] TMP_Text secondPlaceText;
     [SerializeField] TMP_Text thirdPlaceText;
-    [SerializeField] Button lobbyButton;
+    [SerializeField] Button MainButton;
 
     [Header("Settings")]
     [SerializeField] float countdownTime = 10f;
-    [SerializeField] string lobbySceneName = "LobbyScene";
+    [SerializeField] string MainSceneName = "Login";
 
     private bool isCountingDown = false;
 
@@ -51,8 +51,8 @@ public class GameManager : NetworkBehaviour
         if (resultPanel != null)
             resultPanel.SetActive(false);
         // 버튼 이벤트 연결
-        if (lobbyButton != null)
-            lobbyButton.onClick.AddListener(GoToLobby);
+        if (MainButton != null)
+            MainButton.onClick.AddListener(GoToLobby);
 
         // 커서 관리
         //Cursor.lockState = CursorLockMode.Locked;
@@ -207,7 +207,7 @@ public class GameManager : NetworkBehaviour
     private void GoToLobby()
     {
         NetworkManager.Singleton.Shutdown();
-        SceneManager.LoadScene(lobbySceneName);
+        SceneManager.LoadScene(MainSceneName);
     }
 
 }
