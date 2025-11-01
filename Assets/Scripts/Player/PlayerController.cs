@@ -370,7 +370,7 @@ public class PlayerController : NetworkBehaviour
     }
 
     // 서버 권위 리스폰
-    private void DoRespawn(Vector3 pos, Quaternion rot)
+    public void DoRespawn(Vector3 pos, Quaternion rot)
     {
         if (!IsServer) return;
 
