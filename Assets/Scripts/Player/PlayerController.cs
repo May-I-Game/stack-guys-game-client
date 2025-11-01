@@ -42,8 +42,6 @@ public class PlayerController : NetworkBehaviour
     {
         if (IsServer)
         {
-            transform.position = new Vector3(0f, 0f, 0f);
-
             // 최초 스폰 위치 저장
             _initialSpawnPosition = transform.position;
         }
@@ -75,8 +73,14 @@ public class PlayerController : NetworkBehaviour
     {
         if (IsOwner)
         {
-            // 입력 받기
-            HandleInput();
+            // 로비/게임 중에만 입력 받기
+            if (GameManager.instance.IsLobby || GameManager.instance.IsGame)
+            {
+                HandleInput();
+            }
+
+            // 오른쪽 버튼 커서 토글 부분
+            ToggleCursorWithRMB();
         }
 
         UpdateAnimation();
@@ -267,8 +271,8 @@ public class PlayerController : NetworkBehaviour
         switch (collision.gameObject.tag)
         {
             case "Death":
-                // 최초 스폰 자리로 텔레포트 (회전은 초기화)
-                DoRespawn(_initialSpawnPosition, Quaternion.identity);
+                // 최초 스폰 자리로 텔레포트
+                DoRespawn();
                 break;
 
             case "weakObstacles":
@@ -370,14 +374,13 @@ public class PlayerController : NetworkBehaviour
     }
 
     // 서버 권위 리스폰
-    public void DoRespawn(Vector3 pos, Quaternion rot)
+    public void DoRespawn()
     {
         if (!IsServer) return;
 
+        // 이동/회전 속도 초기화
         if (rb != null)
         {
-            // 물리 시뮬레이션 중단
-            rb.isKinematic = true;
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
         }
@@ -385,15 +388,7 @@ public class PlayerController : NetworkBehaviour
         // 캐릭터 텔레포트
         if (nt != null)
         {
-            nt.Teleport(pos, rot, transform.localScale);
-        }
-
-        // 텔레포트 레거시 코드
-        // transform.SetPositionAndRotation(pos, rot);
-
-        if (rb != null)
-        {
-            rb.isKinematic = false;
+            nt.Teleport(_initialSpawnPosition, Quaternion.identity, transform.localScale);
         }
 
         // 이동/점프 관련 상태 최소 초기화
@@ -408,6 +403,50 @@ public class PlayerController : NetworkBehaviour
 
         // 애니메이터도 각 클라에서 리셋
         ResetDiveAnimClientRpc();
+    }
+
+    public void DoRespawn(Vector3 pos, Quaternion rot)
+    {
+        if (!IsServer) return;
+
+        // 이동/회전 속도 초기화
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+
+        // 캐릭터 텔레포트
+        if (nt != null)
+        {
+            nt.Teleport(pos, rot, transform.localScale);
+        }
+
+        // 이동/점프 관련 상태 최소 초기화
+        netMoveDirection.Value = Vector3.zero;
+        netCurrentSpeed.Value = 0f;
+        netIsGrounded.Value = true;
+        netIsDiving.Value = false;
+        netIsDiveGrounded.Value = false;
+        canDive = false;
+        isjumpQueued = false;
+        isHit = false;
+
+        // 애니메이터도 각 클라에서 리셋
+        ResetDiveAnimClientRpc();
+    }
+
+    // 오른쪽 버튼 클릭시 커서 토글
+    public void ToggleCursorWithRMB()
+    {
+        if (!IsClient) return;
+
+        if (Input.GetMouseButtonDown(1)) // RMB 클릭 시
+        {
+            bool willUnlock = (Cursor.lockState == CursorLockMode.Locked);
+            Cursor.lockState = willUnlock ? CursorLockMode.None : CursorLockMode.Locked;
+            Cursor.visible = willUnlock;
+        }
     }
 
     #region ClientRPCs
