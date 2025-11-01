@@ -1625,6 +1625,11 @@ MonoBehaviour:
   jumpForce: 3
   diveForce: 4
   diveDownForce: 1
+  grabRange: 1
+  holdHeight: 0.5
+  holdDistance: 0.1
+  throwForce: 5
+  escapeRequiredJumps: 5
   animator: {fileID: 964459002660691872}
 --- !u!114 &2417491111524222058
 MonoBehaviour:
