@@ -22,7 +22,7 @@ public class GameManager : NetworkBehaviour
     [SerializeField] TMP_Text firstPlaceText;
     [SerializeField] TMP_Text secondPlaceText;
     [SerializeField] TMP_Text thirdPlaceText;
-    [SerializeField] Button lobbyButton;
+    [SerializeField] Button MainButton;
 
     [Header("Settings")]
     [SerializeField] int minPlayersToStart = 5;
