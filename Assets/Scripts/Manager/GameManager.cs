@@ -28,7 +28,7 @@ public class GameManager : NetworkBehaviour
     [SerializeField] private int minPlayersToStart = 5;
     [SerializeField] private float startCountdownTime = 5f;
     [SerializeField] private float endCountdownTime = 10f;
-    [SerializeField] private string mainSceneName = "LoginScene";
+    [SerializeField] private string mainSceneName = "Login";
 
     [Header("Spawn Points")]
     [SerializeField] private Transform lobbySpawnPoint;

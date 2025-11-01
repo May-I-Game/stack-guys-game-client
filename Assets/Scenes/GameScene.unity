@@ -25763,7 +25763,7 @@ MonoBehaviour:
   firstPlaceText: {fileID: 1724983002}
   secondPlaceText: {fileID: 661559683}
   thirdPlaceText: {fileID: 869097097}
-  mainButton: {fileID: 0}
+  mainButton: {fileID: 2073482333}
   minPlayersToStart: 2
   startCountdownTime: 5
   endCountdownTime: 10
@@ -47105,5 +47105,5 @@ SceneRoots:
   - {fileID: 1274606981}
   - {fileID: 1642401340}
   - {fileID: 601939313}
-  - {fileID: 594070954}
   - {fileID: 1658457190}
+  - {fileID: 594070954}
