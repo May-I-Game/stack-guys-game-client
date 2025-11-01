@@ -1,4 +1,5 @@
 using System.Collections;
+using Unity.Netcode;
 using UnityEngine;
 
 public class PressTrap : MonoBehaviour
@@ -10,12 +11,13 @@ public class PressTrap : MonoBehaviour
     public float stayDownTime = 0.5f;      // 눌린 상태 유지 시간
     public Vector2 randomDelayRange = new Vector2(1f, 4f); // 랜덤 타이밍
 
-    private bool isPressing = false;
-
     private void Start()
     {
-        // 무한 루프로 랜덤 타이밍 작동
-        StartCoroutine(RandomPressLoop());
+        if (NetworkManager.Singleton.IsServer)
+        {
+            // 무한 루프로 랜덤 타이밍 작동
+            StartCoroutine(RandomPressLoop());
+        }
     }
 
     private IEnumerator RandomPressLoop()
@@ -31,8 +33,6 @@ public class PressTrap : MonoBehaviour
 
     private IEnumerator PressRoutine()
     {
-        isPressing = true;
-
         // 내려가기
         yield return MovePress(downY);
 
@@ -41,8 +41,6 @@ public class PressTrap : MonoBehaviour
 
         // 올라가기
         yield return MovePress(upY);
-
-        isPressing = false;
     }
 
     private IEnumerator MovePress(float targetY)
@@ -62,13 +60,12 @@ public class PressTrap : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        if (!NetworkManager.Singleton.IsServer) return;
+
         if (other.CompareTag("Player"))
         {
-            PlayerDeathSystem deathSystem = other.GetComponent<PlayerDeathSystem>();
-            if (deathSystem != null && !deathSystem.IsDead())
-            {
-                deathSystem.Die();
-            }
+            PlayerController player = other.GetComponent<PlayerController>();
+            player.DoRespawn();
         }
     }
 }
