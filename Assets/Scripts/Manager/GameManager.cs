@@ -73,8 +73,16 @@ public class GameManager : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership = false)]
-    public void PlayerReachedGoalServerRpc(string playerName)
+    public void PlayerReachedGoalServerRpc(string playerName, ulong clientId)
     {
+        foreach (var player in FindObjectsByType<PlayerController>(FindObjectsSortMode.None))
+        {
+            if (player.OwnerClientId == clientId)
+            {
+                player.enabled = false;
+            }
+        }
+
         // 순위에 추가
         rankings.Add(playerName);
 
@@ -112,20 +120,13 @@ public class GameManager : NetworkBehaviour
         gameEnded.Value = true;
 
         // 모든 플레이어 컨트롤 비활성화
-        DisableAllPlayerControlsClientRpc();
-        // 클라에 결과 화면 표시
-        ShowResultsClientRpc();
-    }
-
-    [ClientRpc]
-    private void DisableAllPlayerControlsClientRpc()
-    {
-        // PlayerController 비활성화
-        PlayerController[] pcPlayers = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
-        foreach (var player in pcPlayers)
+        foreach (var player in FindObjectsByType<PlayerController>(FindObjectsSortMode.None))
         {
             player.enabled = false;
         }
+
+        // 클라에 결과 화면 표시
+        ShowResultsClientRpc();
     }
 
     [ClientRpc]
@@ -205,7 +206,8 @@ public class GameManager : NetworkBehaviour
 
     private void GoToLobby()
     {
-        NetworkManager.SceneManager.LoadScene(lobbySceneName, LoadSceneMode.Single);
+        NetworkManager.Singleton.Shutdown();
+        SceneManager.LoadScene(lobbySceneName);
     }
 
 }

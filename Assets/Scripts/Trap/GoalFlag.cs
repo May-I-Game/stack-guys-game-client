@@ -1,3 +1,4 @@
+using Amazon.GameLift.Model.Internal.MarshallTransformations;
 using UnityEngine;
 
 public class GoalFlag : MonoBehaviour
@@ -13,9 +14,7 @@ public class GoalFlag : MonoBehaviour
         var player = other.GetComponent<PlayerController>();
         if (player == null || !player.IsOwner) return;
 
-        player.enabled = false;
-
         string playerName = PlayerPrefs.GetString("player_name", "Player");
-        GameManager.instance.PlayerReachedGoalServerRpc(playerName);
+        GameManager.instance.PlayerReachedGoalServerRpc(playerName, player.OwnerClientId);
     }
 }
