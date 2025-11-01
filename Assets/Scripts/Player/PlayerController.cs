@@ -42,8 +42,6 @@ public class PlayerController : NetworkBehaviour
     {
         if (IsServer)
         {
-            transform.position = new Vector3(0f, 0f, 600f);
-
             // 최초 스폰 위치 저장
             _initialSpawnPosition = transform.position;
         }
@@ -75,8 +73,11 @@ public class PlayerController : NetworkBehaviour
     {
         if (IsOwner)
         {
-            // 입력 받기
-            HandleInput();
+            // 로비/게임 중에만 입력 받기
+            if (GameManager.instance.IsLobby || GameManager.instance.IsGame)
+            {
+                HandleInput();
+            }
 
             // 오른쪽 버튼 커서 토글 부분
             ToggleCursorWithRMB();

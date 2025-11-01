@@ -17,23 +17,24 @@ public enum GameState
 public class GameManager : NetworkBehaviour
 {
     [Header("UI References")]
-    [SerializeField] TMP_Text countdownText; // 화면 중앙의 카운트다운
-    [SerializeField] GameObject resultPanel; // 하얀 결과 화면
-    [SerializeField] TMP_Text firstPlaceText;
-    [SerializeField] TMP_Text secondPlaceText;
-    [SerializeField] TMP_Text thirdPlaceText;
-    [SerializeField] Button MainButton;
+    [SerializeField] private TMP_Text countdownText; // 화면 중앙의 카운트다운
+    [SerializeField] private GameObject resultPanel; // 하얀 결과 화면
+    [SerializeField] private TMP_Text firstPlaceText;
+    [SerializeField] private TMP_Text secondPlaceText;
+    [SerializeField] private TMP_Text thirdPlaceText;
+    [SerializeField] private Button mainButton;
 
     [Header("Settings")]
-    [SerializeField] int minPlayersToStart = 5;
-    [SerializeField] float startCountdownTime = 5f;
-    [SerializeField] float endCountdownTime = 10f;
-    [SerializeField] string mainSceneName = "LoginScene";
+    [SerializeField] private int minPlayersToStart = 5;
+    [SerializeField] private float startCountdownTime = 5f;
+    [SerializeField] private float endCountdownTime = 10f;
+    [SerializeField] private string mainSceneName = "LoginScene";
 
     [Header("Spawn Points")]
     [SerializeField] private Transform lobbySpawnPoint;
     [SerializeField] private Transform[] gameSpawnPoints;
 
+    public bool IsLobby => currentGameState.Value == GameState.Lobby;
     public bool IsGame => currentGameState.Value == GameState.Playing;
 
     private bool isCountingDown = false;
@@ -68,8 +69,8 @@ public class GameManager : NetworkBehaviour
         if (resultPanel != null)
             resultPanel.SetActive(false);
         // 버튼 이벤트 연결
-        if (lobbyButton != null)
-            lobbyButton.onClick.AddListener(GoToMain);
+        if (mainButton != null)
+            mainButton.onClick.AddListener(GoToMain);
 
         // 커서 관리
         //Cursor.lockState = CursorLockMode.Locked;
@@ -129,7 +130,8 @@ public class GameManager : NetworkBehaviour
 
     private void CheckPlayerCount()
     {
-        if (!IsServer) return;
+        // 로비에서만 실행
+        if (currentGameState.Value != GameState.Lobby) return;
 
         int playerCount = NetworkManager.Singleton.ConnectedClientsList.Count;
         if (playerCount >= minPlayersToStart && !isCountingDown)
@@ -137,7 +139,7 @@ public class GameManager : NetworkBehaviour
             // 카운트다운 시작
             isCountingDown = true;
             ShowCountDownClientRpc(true);
-            countdownCoroutine = StartCoroutine(StartCountdown());
+            countdownCoroutine = StartCoroutine(StartGameCountdown());
         }
         else if (playerCount < minPlayersToStart && isCountingDown)
         {
@@ -154,6 +156,8 @@ public class GameManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void PlayerReachedGoalServerRpc(string playerName, ulong clientId)
     {
+        if (currentGameState.Value != GameState.Playing) return;
+
         NetworkObject playerObject = NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject;
         if (playerObject == null) return;
 
@@ -169,11 +173,11 @@ public class GameManager : NetworkBehaviour
         // 첫 번째 플레이어가 골인하면 카운트다운 시작
         if (rankings.Count == 1 && !isCountingDown)
         {
-            StartCoroutine(EndCountdown());
+            StartCoroutine(EndGameCountdown());
         }
     }
 
-    private IEnumerator StartCountdown()
+    private IEnumerator StartGameCountdown()
     {
         isCountingDown = true;
         ShowCountDownClientRpc(true);
@@ -193,7 +197,7 @@ public class GameManager : NetworkBehaviour
         StartGame();
     }
 
-    private IEnumerator EndCountdown()
+    private IEnumerator EndGameCountdown()
     {
         isCountingDown = true;
         ShowCountDownClientRpc(true);
@@ -243,12 +247,6 @@ public class GameManager : NetworkBehaviour
         if (!IsServer) return;
 
         currentGameState.Value = GameState.Ended;
-
-        // 모든 플레이어 컨트롤 비활성화
-        foreach (var player in FindObjectsByType<PlayerController>(FindObjectsSortMode.None))
-        {
-            player.enabled = false;
-        }
 
         // 클라에 결과 화면 표시
         ShowResultsClientRpc();
