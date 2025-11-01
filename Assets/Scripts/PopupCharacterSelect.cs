@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using Unity.Netcode;
+using System.Collections.Generic;
 public class PopupCharacterSelect : MonoBehaviour
 {
     [Header("References")]
@@ -8,6 +10,7 @@ public class PopupCharacterSelect : MonoBehaviour
     public Camera characterCamera; // 이동할 카메라
 
     private int currentSelectedIndex = 0;
+    [SerializeField] private List<GameObject> characterPrefab = new List<GameObject>();
 
     void OnEnable()
     {
@@ -39,11 +42,20 @@ public class PopupCharacterSelect : MonoBehaviour
 
     void OnCharacterSelected(int index)
     {
-
         currentSelectedIndex = index;
 
         // 카메라 X 위치 변경: -2 * index
         characterCamera.transform.localPosition = new Vector3(-2f * index, 0, 0);
+
+        // PlayerPrefs에 선택한 캐릭터 저장
+        PlayerPrefs.SetInt("selected_character", index);
+        PlayerPrefs.Save();
+
+        // 클라이언트 전용 모드 호환성 유지
+        if (NetworkManager.Singleton != null)
+        {
+            NetworkManager.Singleton.NetworkConfig.PlayerPrefab = characterPrefab[index];
+        }
 
         // 팝업 닫기
         gameObject.SetActive(false);
