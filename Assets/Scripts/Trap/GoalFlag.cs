@@ -2,65 +2,20 @@ using UnityEngine;
 
 public class GoalFlag : MonoBehaviour
 {
-    private static bool gameEnded = false;
+    private bool hasFinished = false;
 
-    void OnTriggerEnter(Collider other)
+    private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player") && !gameEnded)
-        {
-            string playerName = PlayerPrefs.GetString("player_name", "Player");
+        // 태그 및 게임상태 확인
+        if (hasFinished || !other.CompareTag("Player") || GameManager.instance.gameEnded.Value) return;
 
-            // ������ �÷��̾� ��� ����
-            DisablePlayer(other.gameObject);
+        // 플레이어 여부 및 내거인지 확인
+        var player = other.GetComponent<PlayerController>();
+        if (player == null || !player.IsOwner) return;
 
-            // ���� �Ŵ������� ���� �˸�
-            GameEndManager gameManager = Object.FindFirstObjectByType<GameEndManager>();
-            if (gameManager != null)
-            {
-                gameManager.PlayerReachedGoal(playerName);
-            }
-            else
-            {
-                Debug.LogError("GameManager�� ã�� �� �����ϴ�! Hierarchy�� GameManager�� �ִ��� Ȯ���ϼ���.");
-            }
-        }
-    }
+        player.enabled = false;
 
-    public static void DisablePlayer(GameObject player)
-    {
-        // ThirdPersonController ��Ȱ��ȭ
-        var controller = player.GetComponent<StarterAssets.ThirdPersonController>();
-        if (controller != null)
-        {
-            controller.enabled = false;
-        }
-
-        // StarterAssetsInputs ��Ȱ��ȭ
-        var input = player.GetComponent<StarterAssets.StarterAssetsInputs>();
-        if (input != null)
-        {
-            input.enabled = false;
-        }
-
-        // CharacterController ��Ȱ��ȭ
-        var charController = player.GetComponent<CharacterController>();
-        if (charController != null)
-        {
-            charController.enabled = false;
-        }
-
-#if ENABLE_INPUT_SYSTEM
-        // PlayerInput ��Ȱ��ȭ
-        var playerInput = player.GetComponent<UnityEngine.InputSystem.PlayerInput>();
-        if (playerInput != null)
-        {
-            playerInput.enabled = false;
-        }
-#endif
-    }
-
-    public static void ResetGame()
-    {
-        gameEnded = false;
+        string playerName = PlayerPrefs.GetString("player_name", "Player");
+        GameManager.instance.PlayerReachedGoalServerRpc(playerName);
     }
 }
