@@ -70,7 +70,9 @@ public class PressTrap : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             PlayerController player = other.GetComponent<PlayerController>();
-            player.DoRespawn();
+
+            // 리스폰 인덱스를 이용한 텔레포트
+            player.DoRespawn(player.RespawnId.Value);
         }
     }
 }
