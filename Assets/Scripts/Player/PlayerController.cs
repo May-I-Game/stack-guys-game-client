@@ -158,7 +158,7 @@ public class PlayerController : NetworkBehaviour
                 ThrowPlayerServerRpc();
             }
         }
-        
+
 #elif UNITY_ANDROID || UNITY_IOS
         // ============ 모바일: 가상 조이스틱 ============
         if (virtualJoystick != null)
@@ -195,6 +195,7 @@ public class PlayerController : NetworkBehaviour
         // 잡혔으면 탈출시도
         if (netIsGrabbed.Value)
         {
+            Debug.Log($"[잡기] 플레이어 탈출 시도: {escapeJumpCount}");
             escapeJumpCount++;
             if (escapeJumpCount >= escapeRequiredJumps)
             {
@@ -265,7 +266,6 @@ public class PlayerController : NetworkBehaviour
             target.rb.isKinematic = true;
         }
 
-        SetTriggerClientRpc("Grab");
         target.SetTriggerClientRpc("Grabbed");
         Debug.Log($"[잡기] 플레이어를 잡았습니다: {target.gameObject.name}");
     }
@@ -330,7 +330,7 @@ public class PlayerController : NetworkBehaviour
                 canDive = true; // 점프 후 다이브 가능
             }
             // 공중에 있을 때: 다이브
-            else if (canDive && !netIsDiving.Value && !netIsGrabbed.Value)
+            else if (canDive && !netIsDiving.Value && !netIsHolding.Value)
             {
                 DivePlayer();
             }
@@ -433,14 +433,15 @@ public class PlayerController : NetworkBehaviour
     {
         if (netGrabberId.Value == 0) return;
 
-        PlayerController grabbedBy = NetworkManager.Singleton.ConnectedClients[netGrabberId.Value].PlayerObject.GetComponent<PlayerController>();
-        if (grabbedBy == null)
+        if (!NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(netGrabberId.Value, out NetworkObject grabberObject))
         {
             netIsGrabbed.Value = false;
             netGrabberId.Value = 0;
             rb.isKinematic = false;
             return;
         }
+
+        PlayerController grabbedBy = grabberObject.GetComponent<PlayerController>();
 
         // 잡고 있던 플레이어의 상태 해제
         grabbedBy.holdingObject = null;
@@ -719,12 +720,15 @@ public class PlayerController : NetworkBehaviour
         // 내가 잡혀있었다면
         if (netIsGrabbed.Value)
         {
-            PlayerController grabbedBy = NetworkManager.Singleton.ConnectedClients[netGrabberId.Value].PlayerObject.GetComponent<PlayerController>();
-            if (grabbedBy != null)
+            if (!NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(netGrabberId.Value, out NetworkObject grabberObject))
             {
-                grabbedBy.holdingObject = null;
-                grabbedBy.netIsHolding.Value = false;
-                grabbedBy.netHoldingTargetId.Value = 0;
+                PlayerController grabbedBy = grabberObject.GetComponent<PlayerController>();
+                if (grabbedBy != null)
+                {
+                    grabbedBy.holdingObject = null;
+                    grabbedBy.netIsHolding.Value = false;
+                    grabbedBy.netHoldingTargetId.Value = 0;
+                }
             }
         }
 
