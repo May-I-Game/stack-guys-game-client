@@ -6,13 +6,9 @@ public class JiggleBallTrap : MonoBehaviour
 {
     [Header("Rotate Settings")]
     public float rightZ = 60f;
-
     public float leftZ = -60f;
-
     public float rotationSpeed = 50f;
-
     public float stayTime = 0.5f;
-
     public bool autoRotate = true;
 
     void Start()
@@ -28,7 +24,12 @@ public class JiggleBallTrap : MonoBehaviour
 
     private IEnumerator AutoRotateRoutine()
     {
-        while (true)
+        while (GameManager.instance.IsLobby)
+        {
+            yield return null;
+        }
+
+        while (GameManager.instance.IsGame)
         {
             yield return RotateTo(leftZ);
             yield return new WaitForSeconds(stayTime);
