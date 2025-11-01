@@ -16,8 +16,9 @@ public class RespawnManager : NetworkBehaviour
     {
         var no = GetComponent<NetworkObject>();
     }
-    // --- 버튼에서 직접 호출 ---
-    public void OnButtonClick_Int(int index)
+
+    // 인덱스를 이용한 리스폰
+    public void RespawnTo(int index)
     {
         if (index < 0 || index >= respawnPoints.Count) { Debug.LogWarning("[RespawnMgr] Invalid index"); return; }
         var dest = respawnPoints[index]; if (!dest) { Debug.LogWarning("[RespawnMgr] Null dest"); return; }
