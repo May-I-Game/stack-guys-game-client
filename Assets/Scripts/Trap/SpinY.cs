@@ -26,6 +26,8 @@ public class SpinY : MonoBehaviour
 
     private void Update()
     {
+        if (NetworkManager.Singleton == null) return;
+
         if (NetworkManager.Singleton.IsServer)
         {
             Spin();
