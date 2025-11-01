@@ -60,20 +60,4 @@ public class PopupCharacterSelect : MonoBehaviour
         // 팝업 닫기
         gameObject.SetActive(false);
     }
-
-    // 선택 표시 업데이트 (선택사항)
-    void UpdateSelectionBorders()
-    {
-        Button[] buttons = characterGrid.GetComponentsInChildren<Button>();
-
-        for (int i = 0; i < buttons.Length; i++)
-        {
-            // "SelectedBorder"라는 이름의 자식 찾기
-            Transform border = buttons[i].transform.Find("SelectedBorder");
-            if (border != null)
-            {
-                border.gameObject.SetActive(i == currentSelectedIndex);
-            }
-        }
-    }
 }
