@@ -97,3 +97,9 @@ InitTestScene*.unity*
 
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
+
+# 특정 에셋 제거
+/[Aa]ssets/Cute Dolls/
+/[Aa]ssets/Cute Dolls.meta
+/[Aa]ssets/Puzzle3DassetPack/
+/[Aa]ssets/Puzzle3DassetPack.meta

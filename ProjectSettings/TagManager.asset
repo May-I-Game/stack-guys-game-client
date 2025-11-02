@@ -5,6 +5,12 @@ TagManager:
   serializedVersion: 3
   tags:
   - CinemachineTarget
+  - Corpse
+  - Ground
+  - weakObstacles
+  - OtherPlayer
+  - StrongObstacles
+  - Death
   layers:
   - Default
   - TransparentFX
