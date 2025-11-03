@@ -1760,6 +1760,7 @@ GameObject:
   - component: {fileID: -1896197351260510767}
   - component: {fileID: 2411028735759513891}
   - component: {fileID: 5535848250039296769}
+  - component: {fileID: 6357143597061271924}
   m_Layer: 0
   m_Name: Player_6_body
   m_TagString: Player
@@ -1928,3 +1929,20 @@ MonoBehaviour:
   SwitchTransformSpaceWhenParented: 0
   Interpolate: 1
   SlerpPosition: 0
+--- !u!114 &6357143597061271924
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8774186256892484800}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 43fd30ea23a5b0648aba852d21027cb5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  canBeGrabbed: 1
+  netIsGrabbed:
+    m_InternalValue: 0
+  holder: {fileID: 0}
