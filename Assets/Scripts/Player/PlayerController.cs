@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class PlayerController : NetworkBehaviour
 {
+    // 모바일 UI 세팅
     private VariableJoystick joystick;
     private bool jumpButtonPressed = false;
     private bool grabButtonPressed = false;
@@ -11,6 +12,10 @@ public class PlayerController : NetworkBehaviour
     [Header("Movement Settings")]
     public float walkSpeed = 4f;
     public float rotationSpeed = 10f;
+
+    [Header("Cursor / Pointer Lock")]
+    public bool togglePointerLockWithRMB = true; // 우클릭으로 포인터락 토글
+    private bool _pointerLocked = false;
 
     [Header("Jump Settings")]
     public float jumpForce = 3f;
@@ -127,8 +132,13 @@ public class PlayerController : NetworkBehaviour
                 }
             }
 
-            // 오른쪽 버튼 커서 토글 부분
-            ToggleCursorWithRMB();
+            // --- 커서/포인터락 토글 & 강제 유지 ---
+            if (togglePointerLockWithRMB)
+            {
+                HandlePointerLockToggleRMB();
+            }
+
+            EnforcePointerLock();
         }
 
         UpdateAnimation();
@@ -188,6 +198,14 @@ public class PlayerController : NetworkBehaviour
             }
             grabButtonPressed = false;
         }
+        //m 키로 모바일 UI 숨기기/표시하기
+        if (Input.GetKeyDown(KeyCode.M))
+        {
+            if (MobileInputManager.Instance != null)
+            {
+                MobileInputManager.Instance.ToggleCanvas();
+            }
+        }
     }
     private void OnJumpButtonPressed()
     {
@@ -197,8 +215,9 @@ public class PlayerController : NetworkBehaviour
     {
         grabButtonPressed = true;
     }
-    void Oestroy()
+    public override void OnDestroy()
     {
+        base.OnDestroy();
         // 파괴될 때 이벤트 해제 (메모리 누수 방지)
         if (MobileInputManager.Instance != null)
         {
@@ -831,15 +850,48 @@ public class PlayerController : NetworkBehaviour
     #endregion
 
     // 오른쪽 버튼 클릭시 커서 토글
-    public void ToggleCursorWithRMB()
-    {
-        if (!IsClient) return;
+    #region MouseToggle
 
-        if (Input.GetMouseButtonDown(1)) // RMB 클릭 시
+    // 포인터락 상태 토글
+    private void HandlePointerLockToggleRMB()
+    {
+        if (Input.GetMouseButtonDown(1)) // 우클릭 한번으로 토글
         {
-            bool willUnlock = (Cursor.lockState == CursorLockMode.Locked);
-            Cursor.lockState = willUnlock ? CursorLockMode.None : CursorLockMode.Locked;
-            Cursor.visible = willUnlock;
+            _pointerLocked = !_pointerLocked;
+            ApplyCursorState();
         }
     }
+
+    // 현재 포인터락 상태 강제 적용
+    private void EnforcePointerLock()
+    {
+        // 매 프레임 강제 적용
+        ApplyCursorState();
+    }
+
+    // 포인터락 여부에 따라 커서 잠금/표시 반영
+    private void ApplyCursorState()
+    {
+        if (_pointerLocked)
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
+        else
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+    }
+
+    // 앱 포커스를 잃으면 잠금 해제해 커서가 갇히는 문제 방지
+    private void OnApplicationFocus(bool hasFocus)
+    {
+        if (!hasFocus && _pointerLocked)
+        {
+            _pointerLocked = false;
+            ApplyCursorState();
+        }
+    }
+    #endregion
 }

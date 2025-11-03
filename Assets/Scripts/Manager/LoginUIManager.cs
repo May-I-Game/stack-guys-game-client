@@ -7,6 +7,8 @@ using UnityEngine.EventSystems;
 
 public class LoginUIManager : MonoBehaviour
 {
+    [SerializeField] public string serverAddress = "127.0.0.1";
+    [SerializeField] ushort serverPort = 7779;
     [SerializeField] private TMP_InputField nameInput; // 닉네임 입력하는 inputtext
     [SerializeField] private Camera characterSelectCamera; // 캐릭터 선택 시에 현재 캐릭터를 보여줄 카메라
     [SerializeField] private GameObject characterSelectPopup; //캐릭터 선택 팝업 창
@@ -154,8 +156,6 @@ public class LoginUIManager : MonoBehaviour
         }
         // 서버 주소 설정
         // #if UNITY_EDITOR
-        const string serverAddress = "127.0.0.1";
-        const ushort serverPort = 7779;
         // #else
         //         const string serverAddress = "54.180.159.66";
         //         const ushort serverPort = 7779;
