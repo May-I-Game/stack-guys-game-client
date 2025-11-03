@@ -786,9 +786,8 @@ public class PlayerController : NetworkBehaviour
     {
         if (animator != null)
         {
-            // 이동 속도를 애니메이터에 전달
-            float speed = netMoveDirection.Value.magnitude * netCurrentSpeed.Value;
-            animator.SetFloat("Speed", speed);
+            // 이동 상태를 애니메이터에 전달
+            animator.SetBool("IsMoving", netMoveDirection.Value.magnitude > 0.1f);
             // 점프 상태를 애니메이터에 전달
             animator.SetBool("IsGrounded", netIsGrounded.Value);
             // 다이브 상태를 애니메이터에 전달
