@@ -435,7 +435,7 @@ GameObject:
   - component: {fileID: 8779131331482134145}
   - component: {fileID: 5654945514222889252}
   - component: {fileID: 7610680614217407982}
-  - component: {fileID: 7425681326364557956}
+  - component: {fileID: 5212770065279482103}
   m_Layer: 0
   m_Name: RotatePlate
   m_TagString: Platform
@@ -521,7 +521,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &7425681326364557956
+--- !u!114 &5212770065279482103
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -530,14 +530,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 8259159447638572091}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3b83e39dc290bc34684944762c01d3bf, type: 3}
+  m_Script: {fileID: 11500000, guid: d25ff6c6e72743e479ea0a8f2a2c589d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  axis: 2
-  degreesPerSecond: 180
-  spaceMode: 0
-  clockWise: 1
-  randomizeStartAngle: 0
+  rotationSpeed: 30
 --- !u!1 &8274030580495571785
 GameObject:
   m_ObjectHideFlags: 0
