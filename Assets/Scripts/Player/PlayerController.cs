@@ -21,7 +21,7 @@ public class PlayerController : NetworkBehaviour
 
     [Header("Grap Settings")]
     public float grabRange = 1f; // 잡기 범위
-    public float holdHeight = 0.5f; // 머리 위 높이
+    public float holdHeight = 0.55f; // 머리 위 높이
     public float holdDistance = 0.1f; // 플레이어 앞쪽 거리
     public float throwForce = 5f; // 던지기 힘
     public int escapeRequiredJumps = 5; // 탈출에 필요한 점프 횟수
@@ -43,6 +43,7 @@ public class PlayerController : NetworkBehaviour
     private NetworkVariable<float> netVerticalVelocity = new NetworkVariable<float>();
     private NetworkVariable<bool> netIsDiving = new NetworkVariable<bool>(false); // 공중 다이브 중인지
     private NetworkVariable<bool> netIsDiveGrounded = new NetworkVariable<bool>(false); // 다이브 착지 상태 (이동 불가)
+    private NetworkVariable<bool> netIsDeath = new NetworkVariable<bool>(false); // 죽었는지?
     private bool isHit = false; // 충돌 상태 (이동 불가)
     private bool canDive = false; // 다이브 가능 상태 (점프 중)
 
@@ -112,7 +113,11 @@ public class PlayerController : NetworkBehaviour
             // 로비/게임 중에만 입력 받기
             if (GameManager.instance.IsLobby || GameManager.instance.IsGame)
             {
-                HandleInput();
+                // 안 죽었을때만 입력받기
+                if (!netIsDeath.Value)
+                {
+                    HandleInput();
+                }
             }
 
             // 오른쪽 버튼 커서 토글 부분
@@ -180,8 +185,8 @@ public class PlayerController : NetworkBehaviour
 #endif
     }
 
-
-    #region ServerRPCs
+    // 클라에서 서버에게 요청할 Rpc 모음
+    #region ServerRpcs
     [ServerRpc]
     private void MovePlayerServerRpc(Vector3 direction)
     {
@@ -257,27 +262,6 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
-    private void GrabPlayer(PlayerController target)
-    {
-        holdingObject = target.gameObject;
-        netIsHolding.Value = true;
-        netHoldingTargetId.Value = target.NetworkObjectId;
-
-        // 상대방 상태 변경
-        target.netIsGrabbed.Value = true;
-        target.netGrabberId.Value = this.NetworkObjectId;
-        target.escapeJumpCount = 0;
-
-        // 상대방 물리 비활성화
-        if (target.rb != null)
-        {
-            target.rb.isKinematic = true;
-        }
-
-        target.SetTriggerClientRpc("Grabbed");
-        Debug.Log($"[잡기] 플레이어를 잡았습니다: {target.gameObject.name}");
-    }
-
     [ServerRpc]
     private void ThrowPlayerServerRpc()
     {
@@ -310,9 +294,19 @@ public class PlayerController : NetworkBehaviour
         SetTriggerClientRpc("Throw");
         Debug.Log("[잡기] 오브젝트를 던졌습니다");
     }
+
+    [ServerRpc]
+    public void RespawnPlayerServerRpc()
+    {
+        DoRespawn();
+    }
     #endregion
 
-    void MovePlayer()
+    // 서버에서 실제로 실행할 로직
+    // 여기에 있는 모든 로직은 서버만 실행해야함!!!!!!!!
+    #region ServerLogic
+
+    private void MovePlayer()
     {
         if (netMoveDirection.Value.magnitude >= 0.1f)
         {
@@ -324,9 +318,12 @@ public class PlayerController : NetworkBehaviour
             Quaternion targetRotation = Quaternion.LookRotation(netMoveDirection.Value);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime);
         }
+
+        // 이동처리 후 벡터 초기화
+        netMoveDirection.Value = Vector3.zero;
     }
 
-    void JumpPlayer()
+    private void JumpPlayer()
     {
         if (isjumpQueued)
         {
@@ -346,7 +343,7 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
-    void DivePlayer()
+    private void DivePlayer()
     {
         netIsDiving.Value = true;
         canDive = false;
@@ -361,7 +358,7 @@ public class PlayerController : NetworkBehaviour
     }
 
     // 다이브 착지 처리
-    void OnDiveLand()
+    private void OnDiveLand()
     {
         if (!netIsDiving.Value) return;
 
@@ -369,9 +366,6 @@ public class PlayerController : NetworkBehaviour
         netIsDiveGrounded.Value = true;
 
         Debug.Log("[다이브 착지] 착지 애니메이션 재생, 조작 불가");
-
-        // 착지 애니메이션 실행
-        SetTriggerClientRpc("DiveGrounded");
 
         // 착지 애니메이션이 끝나면 복구
         StartCoroutine(ResetDiveGroundedState());
@@ -382,6 +376,27 @@ public class PlayerController : NetworkBehaviour
     {
         yield return new WaitForSeconds(diveGroundedDuration);
         netIsDiveGrounded.Value = false;
+    }
+
+    private void GrabPlayer(PlayerController target)
+    {
+        holdingObject = target.gameObject;
+        netIsHolding.Value = true;
+        netHoldingTargetId.Value = target.NetworkObjectId;
+
+        // 상대방 상태 변경
+        target.netIsGrabbed.Value = true;
+        target.netGrabberId.Value = this.NetworkObjectId;
+        target.escapeJumpCount = 0;
+
+        // 상대방 물리 비활성화
+        if (target.rb != null)
+        {
+            target.rb.isKinematic = true;
+        }
+
+        target.SetTriggerClientRpc("Grabbed");
+        Debug.Log($"[잡기] 플레이어를 잡았습니다: {target.gameObject.name}");
     }
 
     private void HeldPlayer()
@@ -472,6 +487,142 @@ public class PlayerController : NetworkBehaviour
         Debug.Log("[탈출] 성공적으로 탈출했습니다!");
     }
 
+    private void ReleaseGrab()
+    {
+        // 내가 무언가를 들고 있었다면
+        if (netIsHolding.Value && holdingObject != null)
+        {
+            PlayerController heldPlayer = holdingObject.GetComponent<PlayerController>();
+            if (heldPlayer != null)
+            {
+                heldPlayer.netIsGrabbed.Value = false;
+                heldPlayer.netGrabberId.Value = 0;
+                if (heldPlayer.rb != null)
+                {
+                    heldPlayer.rb.isKinematic = false;
+                }
+            }
+            //TODO:
+            //else
+            //{
+            //    GrabbableObject grabbable = holdingObject.GetComponent<GrabbableObject>();
+            //    if (grabbable != null)
+            //    {
+            //        grabbable.OnReleased();
+            //    }
+            //}
+
+            holdingObject = null;
+        }
+
+        // 내가 잡혀있었다면
+        if (netIsGrabbed.Value)
+        {
+            if (!NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(netGrabberId.Value, out NetworkObject grabberObject))
+            {
+                PlayerController grabbedBy = grabberObject.GetComponent<PlayerController>();
+                if (grabbedBy != null)
+                {
+                    grabbedBy.holdingObject = null;
+                    grabbedBy.netIsHolding.Value = false;
+                    grabbedBy.netHoldingTargetId.Value = 0;
+                }
+            }
+        }
+
+        netIsHolding.Value = false;
+        netHoldingTargetId.Value = 0;
+        netIsGrabbed.Value = false;
+        netGrabberId.Value = 0;
+        escapeJumpCount = 0;
+    }
+
+    public void PlayerDeath()
+    {
+        netIsDeath.Value = true;
+        SetTriggerClientRpc("Death");
+    }
+
+    // Death 애니메이션에서 호출됨
+    private void DoRespawn()
+    {
+        if (!IsServer) return;
+
+        // 리스폰 리스트 가져오기
+        int index = RespawnId.Value;
+
+        var dest = respawnManager.respawnPoints[index];
+        if (!dest) { Debug.LogWarning("Respawn Transform null"); return; }
+
+        ReleaseGrab();
+
+        // 이동/회전 속도 초기화
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+
+        // 캐릭터 텔레포트
+        if (nt != null)
+        {
+            nt.Teleport(dest.position, dest.rotation, transform.localScale);
+        }
+
+        // 이동/점프 관련 상태 최소 초기화
+        netMoveDirection.Value = Vector3.zero;
+        netCurrentSpeed.Value = 0f;
+        netIsGrounded.Value = true;
+        netIsDiving.Value = false;
+        netIsDiveGrounded.Value = false;
+        netIsDeath.Value = false;
+        canDive = false;
+        isjumpQueued = false;
+        isHit = false;
+
+        // 애니메이터도 각 클라에서 리셋
+        ResetAnimClientRpc();
+    }
+
+    // 좌표를 이용한 텔레포트
+    // 순간이동에도 쓰이므로 public
+    public void DoRespawn(Vector3 pos, Quaternion rot)
+    {
+        if (!IsServer) return;
+
+        ReleaseGrab();
+
+        // 이동/회전 속도 초기화
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+
+        // 캐릭터 텔레포트
+        if (nt != null)
+        {
+            nt.Teleport(pos, rot, transform.localScale);
+        }
+
+        // 이동/점프 관련 상태 최소 초기화
+        netMoveDirection.Value = Vector3.zero;
+        netCurrentSpeed.Value = 0f;
+        netIsGrounded.Value = true;
+        netIsDiving.Value = false;
+        netIsDiveGrounded.Value = false;
+        netIsDeath.Value = false;
+        canDive = false;
+        isjumpQueued = false;
+        isHit = false;
+
+        // 애니메이터도 각 클라에서 리셋
+        ResetAnimClientRpc();
+    }
+    #endregion
+
+    // 충돌관리 로직
+    #region Collisions
     // Collider로 땅 감지
     private void OnCollisionStay(Collision collision)
     {
@@ -528,7 +679,7 @@ public class PlayerController : NetworkBehaviour
         {
             case "Death":
                 // 캐릭터가 가지고 있는 리스폰 인덱스로 이동
-                DoRespawn(RespawnId.Value);
+                PlayerDeath();
                 break;
 
             case "weakObstacles":
@@ -552,7 +703,30 @@ public class PlayerController : NetworkBehaviour
                 break;
         }
     }
+    #endregion
 
+    // 서버에서 클라한테 시킬 Rpc 모음
+    // 주로 애니메이션 연동
+    #region ClientRPCs
+    [ClientRpc]
+    void SetTriggerClientRpc(string triggerName)
+    {
+        if (animator != null)
+        {
+            animator.SetTrigger(triggerName);
+        }
+    }
+
+    [ClientRpc]
+    private void ResetAnimClientRpc()
+    {
+        if (animator == null) return;
+
+        animator.Rebind();                                  // 바인딩 초기화
+    }
+    #endregion
+
+    // 애니메이션 로직들
     #region Animation
     // 애니메이션 재생 함수
     private void PlayHitAnimation(string triggerName, float duration)
@@ -630,163 +804,6 @@ public class PlayerController : NetworkBehaviour
     }
     #endregion
 
-    // 기본 자리 리스폰
-    public void DoRespawn()
-    {
-        if (!IsServer) return;
-
-        ReleaseGrab();
-
-        // 이동/회전 속도 초기화
-        if (rb != null)
-        {
-            rb.linearVelocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
-        }
-
-        // 캐릭터 텔레포트
-        if (nt != null)
-        {
-            nt.Teleport(_initialSpawnPosition, Quaternion.identity, transform.localScale);
-        }
-
-        // 이동/점프 관련 상태 최소 초기화
-        netMoveDirection.Value = Vector3.zero;
-        netCurrentSpeed.Value = 0f;
-        netIsGrounded.Value = true;
-        netIsDiving.Value = false;
-        netIsDiveGrounded.Value = false;
-        canDive = false;
-        isjumpQueued = false;
-        isHit = false;
-
-        // 애니메이터도 각 클라에서 리셋
-        ResetDiveAnimClientRpc();
-    }
-
-    // 리스트를 이용한 텔레포트
-    public void DoRespawn(int index)
-    {
-
-        if (!IsServer) return;
-
-        // 리스폰 리스트 가져오기
-        var dest = respawnManager.respawnPoints[index];
-        if (!dest) { Debug.LogWarning("Respawn Transform null"); return; }
-
-        ReleaseGrab();
-
-        // 이동/회전 속도 초기화
-        if (rb != null)
-        {
-            rb.linearVelocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
-        }
-
-        // 캐릭터 텔레포트
-        if (nt != null)
-        {
-            nt.Teleport(dest.position, dest.rotation, transform.localScale);
-        }
-
-        // 이동/점프 관련 상태 최소 초기화
-        netMoveDirection.Value = Vector3.zero;
-        netCurrentSpeed.Value = 0f;
-        netIsGrounded.Value = true;
-        netIsDiving.Value = false;
-        netIsDiveGrounded.Value = false;
-        canDive = false;
-        isjumpQueued = false;
-        isHit = false;
-
-        // 애니메이터도 각 클라에서 리셋
-        ResetDiveAnimClientRpc();
-    }
-
-    // 좌표를 이용한 리스폰
-    public void DoRespawn(Vector3 pos, Quaternion rot)
-    {
-        if (!IsServer) return;
-
-        ReleaseGrab();
-
-        // 이동/회전 속도 초기화
-        if (rb != null)
-        {
-            rb.linearVelocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
-        }
-
-        // 캐릭터 텔레포트
-        if (nt != null)
-        {
-            nt.Teleport(pos, rot, transform.localScale);
-        }
-
-        // 이동/점프 관련 상태 최소 초기화
-        netMoveDirection.Value = Vector3.zero;
-        netCurrentSpeed.Value = 0f;
-        netIsGrounded.Value = true;
-        netIsDiving.Value = false;
-        netIsDiveGrounded.Value = false;
-        canDive = false;
-        isjumpQueued = false;
-        isHit = false;
-
-        // 애니메이터도 각 클라에서 리셋
-        ResetDiveAnimClientRpc();
-    }
-
-    private void ReleaseGrab()
-    {
-        // 내가 무언가를 들고 있었다면
-        if (netIsHolding.Value && holdingObject != null)
-        {
-            PlayerController heldPlayer = holdingObject.GetComponent<PlayerController>();
-            if (heldPlayer != null)
-            {
-                heldPlayer.netIsGrabbed.Value = false;
-                heldPlayer.netGrabberId.Value = 0;
-                if (heldPlayer.rb != null)
-                {
-                    heldPlayer.rb.isKinematic = false;
-                }
-            }
-            //TODO:
-            //else
-            //{
-            //    GrabbableObject grabbable = holdingObject.GetComponent<GrabbableObject>();
-            //    if (grabbable != null)
-            //    {
-            //        grabbable.OnReleased();
-            //    }
-            //}
-
-            holdingObject = null;
-        }
-
-        // 내가 잡혀있었다면
-        if (netIsGrabbed.Value)
-        {
-            if (!NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(netGrabberId.Value, out NetworkObject grabberObject))
-            {
-                PlayerController grabbedBy = grabberObject.GetComponent<PlayerController>();
-                if (grabbedBy != null)
-                {
-                    grabbedBy.holdingObject = null;
-                    grabbedBy.netIsHolding.Value = false;
-                    grabbedBy.netHoldingTargetId.Value = 0;
-                }
-            }
-        }
-
-        netIsHolding.Value = false;
-        netHoldingTargetId.Value = 0;
-        netIsGrabbed.Value = false;
-        netGrabberId.Value = 0;
-        escapeJumpCount = 0;
-    }
-
     // 오른쪽 버튼 클릭시 커서 토글
     public void ToggleCursorWithRMB()
     {
@@ -799,23 +816,4 @@ public class PlayerController : NetworkBehaviour
             Cursor.visible = willUnlock;
         }
     }
-
-    #region ClientRPCs
-    [ClientRpc]
-    void SetTriggerClientRpc(string triggerName)
-    {
-        if (animator != null)
-        {
-            animator.SetTrigger(triggerName);
-        }
-    }
-
-    [ClientRpc]
-    private void ResetDiveAnimClientRpc()
-    {
-        if (animator == null) return;
-
-        animator.Rebind();                                  // 바인딩 초기화
-    }
-    #endregion
 }
