@@ -131,15 +131,18 @@ public class PlayerController : NetworkBehaviour
     {
         if (IsServer)
         {
-            // 이동 처리
-            MovePlayer();
-            // 점프 처리
-            JumpPlayer();
-            // 들기 처리
-            HeldPlayer();
+            if (!netIsDeath.Value)
+            {
+                // 이동 처리
+                MovePlayer();
+                // 점프 처리
+                JumpPlayer();
+                // 들기 처리
+                HeldPlayer();
 
-            // 애니메이션 업데이트
-            SyncAnimationState();
+                // 애니메이션 업데이트
+                SyncAnimationState();
+            }
         }
     }
 
@@ -318,9 +321,6 @@ public class PlayerController : NetworkBehaviour
             Quaternion targetRotation = Quaternion.LookRotation(netMoveDirection.Value);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime);
         }
-
-        // 이동처리 후 벡터 초기화
-        netMoveDirection.Value = Vector3.zero;
     }
 
     private void JumpPlayer()
@@ -539,7 +539,13 @@ public class PlayerController : NetworkBehaviour
 
     public void PlayerDeath()
     {
+        if (netIsDeath.Value) return;
+
         netIsDeath.Value = true;
+        // 인풋벡터 초기화
+        netMoveDirection.Value = Vector3.zero;
+        ReleaseGrab();
+
         SetTriggerClientRpc("Death");
     }
 
@@ -553,8 +559,6 @@ public class PlayerController : NetworkBehaviour
 
         var dest = respawnManager.respawnPoints[index];
         if (!dest) { Debug.LogWarning("Respawn Transform null"); return; }
-
-        ReleaseGrab();
 
         // 이동/회전 속도 초기화
         if (rb != null)
@@ -589,8 +593,6 @@ public class PlayerController : NetworkBehaviour
     public void DoRespawn(Vector3 pos, Quaternion rot)
     {
         if (!IsServer) return;
-
-        ReleaseGrab();
 
         // 이동/회전 속도 초기화
         if (rb != null)
@@ -786,9 +788,8 @@ public class PlayerController : NetworkBehaviour
     {
         if (animator != null)
         {
-            // 이동 속도를 애니메이터에 전달
-            float speed = netMoveDirection.Value.magnitude * netCurrentSpeed.Value;
-            animator.SetFloat("Speed", speed);
+            // 이동 상태를 애니메이터에 전달
+            animator.SetBool("IsMoving", netMoveDirection.Value.magnitude > 0.1f);
             // 점프 상태를 애니메이터에 전달
             animator.SetBool("IsGrounded", netIsGrounded.Value);
             // 다이브 상태를 애니메이터에 전달
