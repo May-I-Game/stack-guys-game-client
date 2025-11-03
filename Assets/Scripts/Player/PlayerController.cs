@@ -12,6 +12,10 @@ public class PlayerController : NetworkBehaviour
     public float walkSpeed = 4f;
     public float rotationSpeed = 10f;
 
+    [Header("Cursor / Pointer Lock")]
+    public bool togglePointerLockWithRMB = true; // 우클릭으로 포인터락 토글
+    private bool _pointerLocked = false;
+
     [Header("Jump Settings")]
     public float jumpForce = 3f;
     public float diveForce = 4f; // 다이브할 때 앞으로 가는 힘
@@ -127,8 +131,13 @@ public class PlayerController : NetworkBehaviour
                 }
             }
 
-            // 오른쪽 버튼 커서 토글 부분
-            ToggleCursorWithRMB();
+            // --- 커서/포인터락 토글 & 강제 유지 ---
+            if (togglePointerLockWithRMB)
+            {
+                HandlePointerLockToggleRMB();
+            }
+
+            EnforcePointerLock();
         }
 
         UpdateAnimation();
@@ -831,15 +840,48 @@ public class PlayerController : NetworkBehaviour
     #endregion
 
     // 오른쪽 버튼 클릭시 커서 토글
-    public void ToggleCursorWithRMB()
-    {
-        if (!IsClient) return;
+    #region MouseToggle
 
-        if (Input.GetMouseButtonDown(1)) // RMB 클릭 시
+    // 포인터락 상태 토글
+    private void HandlePointerLockToggleRMB()
+    {
+        if (Input.GetMouseButtonDown(1)) // 우클릭 한번으로 토글
         {
-            bool willUnlock = (Cursor.lockState == CursorLockMode.Locked);
-            Cursor.lockState = willUnlock ? CursorLockMode.None : CursorLockMode.Locked;
-            Cursor.visible = willUnlock;
+            _pointerLocked = !_pointerLocked;
+            ApplyCursorState();
         }
     }
+
+    // 현재 포인터락 상태 강제 적용
+    private void EnforcePointerLock()
+    {
+        // 매 프레임 강제 적용
+        ApplyCursorState();
+    }
+
+    // 포인터락 여부에 따라 커서 잠금/표시 반영
+    private void ApplyCursorState()
+    {
+        if (_pointerLocked)
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
+        else
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+    }
+
+    // 앱 포커스를 잃으면 잠금 해제해 커서가 갇히는 문제 방지
+    private void OnApplicationFocus(bool hasFocus)
+    {
+        if (!hasFocus && _pointerLocked)
+        {
+            _pointerLocked = false;
+            ApplyCursorState();
+        }
+    }
+    #endregion
 }
