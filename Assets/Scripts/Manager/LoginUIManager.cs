@@ -3,6 +3,7 @@ using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 public class LoginUIManager : MonoBehaviour
 {
@@ -14,10 +15,14 @@ public class LoginUIManager : MonoBehaviour
     private string clientName; // 클라이언트가 작성한 이름
     private bool isConnecting = false; //중복 클릭 방지
 
+    private AudioSource audioSource;
+
     private const int MAX_NAME_LENGTH = 16;  //이름 글자수 제한 16byte
     void Start()
     {
         characterSelectPopup.SetActive(false); // 캐릭터 팝업창 닫아두기
+
+        audioSource = GetComponent<AudioSource>();
 
         if (NetworkManager.Singleton != null)
         {
@@ -72,6 +77,29 @@ public class LoginUIManager : MonoBehaviour
             // 기존 이벤트 제거 후 새로 추가
             buttons[i].onClick.RemoveAllListeners();
             buttons[i].onClick.AddListener(() => OnCharacterSelected(index));
+
+            // PointerDown 이벤트 추가 (소리용)
+            EventTrigger trigger = buttons[i].GetComponent<EventTrigger>();
+            if (trigger == null)
+            {
+                trigger = buttons[i].gameObject.AddComponent<EventTrigger>();
+            }
+
+            // 기존 이벤트 제거
+            trigger.triggers.Clear();
+
+            // PointerDown 이벤트 추가
+            EventTrigger.Entry entry = new EventTrigger.Entry();
+            entry.eventID = EventTriggerType.PointerDown;
+            entry.callback.AddListener((data) => { PlayButtonSound(); });
+            trigger.triggers.Add(entry);
+        }
+    }
+    private void PlayButtonSound()
+    {
+        if (audioSource != null)
+        {
+            audioSource.PlayOneShot(audioSource.clip);
         }
     }
     //팝업의 캐릭터를 클릭했을 경우
