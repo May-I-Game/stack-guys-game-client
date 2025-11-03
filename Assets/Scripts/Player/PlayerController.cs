@@ -330,19 +330,18 @@ public class PlayerController : NetworkBehaviour
             // 자기자신 제외
             if (col.gameObject == this.gameObject) continue;
 
-            // TODO: GrabbableObject 체크
-            //GrabbableObject grabbable = col.GetComponent<GrabbableObject>();
-            //if (grabbable != null && !grabbable.IsGrabbed())
-            //{
-            //    GrabObject(col.gameObject);
-            //    return;
-            //}
-
             // 다른 플레이어 체크
             PlayerController otherPlayer = col.GetComponent<PlayerController>();
             if (otherPlayer != null && !otherPlayer.netIsGrabbed.Value && !otherPlayer.netIsHolding.Value)
             {
                 GrabPlayer(otherPlayer);
+                return;
+            }
+
+            GrabbableObject grabbable = col.GetComponent<GrabbableObject>();
+            if (grabbable != null && !grabbable.netIsGrabbed.Value)
+            {
+                GrabObject(grabbable);
                 return;
             }
         }
@@ -367,11 +366,15 @@ public class PlayerController : NetworkBehaviour
             ThrowPlayer(targetPlayer, throwDirection);
         }
 
-        // TODO: 오브젝트를 던지는 경우
-        //else
-        //{
-        //    ThrowObject(holdingObject, throwDirection);
-        //}
+        // 오브젝트를 던지는 경우
+        else
+        {
+            GrabbableObject grabbable = holdingObject.GetComponent<GrabbableObject>();
+            if (grabbable != null)
+            {
+                ThrowObject(grabbable, throwDirection);
+            }
+        }
 
         holdingObject = null;
         netIsHolding.Value = false;
@@ -478,7 +481,6 @@ public class PlayerController : NetworkBehaviour
             target.rb.isKinematic = true;
         }
 
-        target.SetTriggerClientRpc("Grabbed");
         Debug.Log($"[잡기] 플레이어를 잡았습니다: {target.gameObject.name}");
     }
 
@@ -518,21 +520,37 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
-    private void ThrowObject(GameObject target, Vector3 throwDirection)
+    private void GrabObject(GrabbableObject target)
     {
-        // TODO:
-        //Rigidbody targetRb = target.GetComponent<Rigidbody>();
-        //if (targetRb != null)
-        //{
-        //    targetRb.isKinematic = false;
-        //    targetRb.AddForce(throwDirection * throwForce, ForceMode.Impulse);
-        //}
+        holdingObject = target.gameObject;
+        netIsHolding.Value = true;
+        netHoldingTargetId.Value = target.NetworkObjectId;
 
-        //GrabbableObject grabbable = target.GetComponent<GrabbableObject>();
-        //if (grabbable != null)
-        //{
-        //    grabbable.OnReleased();
-        //}
+        // 오브젝트 상태 변경
+        target.netIsGrabbed.Value = true;
+        target.holder = this;
+
+        // 오브젝트 물리 비활성화
+        Rigidbody targetRb = target.GetComponent<Rigidbody>();
+        if (targetRb != null)
+        {
+            targetRb.isKinematic = true;
+        }
+
+        Debug.Log($"[잡기] 오브젝트를 잡았습니다: {target.name}");
+    }
+
+    private void ThrowObject(GrabbableObject target, Vector3 throwDirection)
+    {
+        target.netIsGrabbed.Value = false;
+        target.holder = null;
+
+        Rigidbody targetRb = target.GetComponent<Rigidbody>();
+        if (targetRb != null)
+        {
+            targetRb.isKinematic = false;
+            targetRb.AddForce(throwDirection * throwForce, ForceMode.Impulse);
+        }
     }
 
     private void EscapeFromGrap()
@@ -585,15 +603,22 @@ public class PlayerController : NetworkBehaviour
                     heldPlayer.rb.isKinematic = false;
                 }
             }
-            //TODO:
-            //else
-            //{
-            //    GrabbableObject grabbable = holdingObject.GetComponent<GrabbableObject>();
-            //    if (grabbable != null)
-            //    {
-            //        grabbable.OnReleased();
-            //    }
-            //}
+
+            else
+            {
+                GrabbableObject grabbable = holdingObject.GetComponent<GrabbableObject>();
+                if (grabbable != null)
+                {
+                    grabbable.netIsGrabbed.Value = false;
+                    grabbable.holder = null;
+
+                    Rigidbody targetRb = grabbable.GetComponent<Rigidbody>();
+                    if (targetRb != null)
+                    {
+                        targetRb.isKinematic = false;
+                    }
+                }
+            }
 
             holdingObject = null;
         }
