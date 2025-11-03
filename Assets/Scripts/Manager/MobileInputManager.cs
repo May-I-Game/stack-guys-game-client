@@ -9,6 +9,8 @@ public class MobileInputManager : MonoBehaviour
     public Button jumpButton;
     public Button grabButton;
 
+    private Canvas canvas;
+
     void Awake()
     {
         //싱글톤 설정
@@ -19,6 +21,14 @@ public class MobileInputManager : MonoBehaviour
         else
         {
             Destroy(gameObject);
+        }
+        canvas = GetComponent<Canvas>();
+    }
+    public void ToggleCanvas()
+    {
+        if (canvas != null)
+        {
+            canvas.enabled = !canvas.enabled;
         }
     }
 

@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class PlayerController : NetworkBehaviour
 {
+    // 모바일 UI 세팅
     private VariableJoystick joystick;
     private bool jumpButtonPressed = false;
     private bool grabButtonPressed = false;
@@ -188,6 +189,14 @@ public class PlayerController : NetworkBehaviour
             }
             grabButtonPressed = false;
         }
+        //m 키로 모바일 UI 숨기기/표시하기
+        if (Input.GetKeyDown(KeyCode.M))
+        {
+            if (MobileInputManager.Instance != null)
+            {
+                MobileInputManager.Instance.ToggleCanvas();
+            }
+        }
     }
     private void OnJumpButtonPressed()
     {
@@ -197,8 +206,9 @@ public class PlayerController : NetworkBehaviour
     {
         grabButtonPressed = true;
     }
-    void Oestroy()
+    public override void OnDestroy()
     {
+        base.OnDestroy();
         // 파괴될 때 이벤트 해제 (메모리 누수 방지)
         if (MobileInputManager.Instance != null)
         {
