@@ -3,7 +3,9 @@ using TMPro;
 using Unity.Collections;
 using Unity.Netcode;
 using Unity.Netcode.Components;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Playables;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -33,6 +35,9 @@ public class GameManager : NetworkBehaviour
     [Header("Spawn Points")]
     [SerializeField] private Transform lobbySpawnPoint;
     [SerializeField] private Transform[] gameSpawnPoints;
+
+    [Header("Timeline")]
+    [SerializeField] private PlayableDirector timeline;
 
     public bool IsLobby => currentGameState.Value == GameState.Lobby;
     public bool IsGame => currentGameState.Value == GameState.Playing;
@@ -334,7 +339,63 @@ public class GameManager : NetworkBehaviour
     {
         if (current && !previous)
         {
-            // StartCoroutine(PlayTimelineAtSyncTime());
+            StartCoroutine(PlayTimelineAtSyncTime());
         }
+    }
+    private IEnumerator PlayTimelineAtSyncTime()
+    {
+        //입력 차단
+        DisablePlayerInput();
+
+        // 네트워크 시간과 동기화
+        while (NetworkManager.Singleton.ServerTime.Time < timelineStartTime.Value)
+        {
+            yield return null;
+        }
+
+        //timeline재생
+        timeline.Play();
+
+        //Timeline종료 대기
+        yield return new WaitForSeconds((float)timeline.duration);
+
+        //입력 활성화
+        EnablePlayerInput();
+    }
+    private void OnTimelineFinished(PlayableDirector director)
+    {
+        director.stopped -= OnTimelineFinished;
+
+        EnablePlayerInput();
+
+        Debug.Log("Timeline 종료, 게임 플레이 시작");
+    }
+    private void DisablePlayerInput()
+    {
+        var localPlayer = GetLocalPlayer();
+        if (localPlayer != null)
+        {
+            localPlayer.SetInputEnabled(false);
+        }
+    }
+    private void EnablePlayerInput()
+    {
+        var localPlayer = GetLocalPlayer();
+        if (localPlayer != null)
+        {
+            localPlayer.SetInputEnabled(true);
+        }
+    }
+    private PlayerController GetLocalPlayer()
+    {
+        foreach (var player in FindObjectsByType<PlayerController>(FindObjectsSortMode.None))
+        {
+            if (player.IsOwner)
+            {
+                return player;
+            }
+
+        }
+        return null;
     }
 }

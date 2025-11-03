@@ -1,6 +1,7 @@
 using Unity.Netcode;
 using Unity.Netcode.Components;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerController : NetworkBehaviour
 {
@@ -71,6 +72,9 @@ public class PlayerController : NetworkBehaviour
         0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     [SerializeField] private RespawnManager respawnManager;     // 리스폰 리스트를 사용하기 위하여 선언
+
+    //시네마틱 동기화를 위한 사용자 입력 무시 변수
+    private bool inputEnabled = true;
 
     public override void OnNetworkSpawn()
     {
@@ -167,6 +171,10 @@ public class PlayerController : NetworkBehaviour
 
     void HandleInput()
     {
+        if (!inputEnabled)
+        {
+            return;
+        }
         // ============ PC: 기존 키보드 입력 ============ // WASD 입력 받기
         float horizontal = Input.GetAxisRaw("Horizontal"); // A, D
         float vertical = Input.GetAxisRaw("Vertical");     // W, S
@@ -208,6 +216,10 @@ public class PlayerController : NetworkBehaviour
                 MobileInputManager.Instance.ToggleCanvas();
             }
         }
+    }
+    public void SetInputEnabled(bool enabled)
+    {
+        inputEnabled = enabled;
     }
     private void OnJumpButtonPressed()
     {
