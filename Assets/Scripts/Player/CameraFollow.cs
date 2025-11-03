@@ -20,19 +20,10 @@ public class CameraFollow : MonoBehaviour
     public float rotationSmoothSpeed = 10f; // 회전 보간 속도(클수록 빠르게 목표 각도로 붙음)
 
     [Header("Rotation Settings")]
-    public bool enableRotation = true;
     [Range(5f, 85f)]
     public float fixedPitch = 20f;          // 기본 수직 각도
 
-    [Header("Locked Sensitivity (기존 마우스 이동용)")]
-    public float lockedYawGain = 8f;
-    [Range(0.2f, 1f)]
-    public float lockedResponseGamma = 0.5f;
-
-    // 새 드래그 회전 옵션
-    [Header("Top-Drag Rotate (새 입력 방식)")]
-    public bool rotateByTopDrag = true;             // 상단 드래그로 회전
-    [Range(0.05f, 0.6f)] public float topRegionPercent = 0.30f; // 화면 상단 퍼센트
+    [Range(0.05f, 0.6f)] public float topRegionPercent = 0.50f; // 화면 상단 퍼센트
     public bool ignoreUIOnStart = true;             // UI 위에서 시작한 드래그 무시
     public float dragYawSensitivity = 0.2f;         // 좌우 드래그 → Yaw
     public bool allowPitchDrag = false;             // 상하 드래그로 Pitch 조절 허용할지
@@ -51,22 +42,18 @@ public class CameraFollow : MonoBehaviour
 
     void Start()
     {
+        // 초기 카메라 설정 (타겟/오프셋/초기 yaw 등 계산)
         InitializeCamera();
     }
 
+    // LateUpdate는 플레이어 이동/애니메이션이 끝난 뒤 카메라가 따라붙도록 해줌
     void LateUpdate()
     {
         if (target == null) return;
 
-        if (enableRotation)
-        {
-            if (rotateByTopDrag)
-                HandleTopRegionDrag();
-            else
-                HandlePointerLockRotation(); // 필요시 기존 방식 유지
+        HandleTopRegionDrag();
 
-            SmoothRotation();
-        }
+        SmoothRotation();
 
         UpdateCameraTransform();
     }
@@ -76,6 +63,7 @@ public class CameraFollow : MonoBehaviour
         if (target == null)
         {
             GameObject player = GameObject.FindGameObjectWithTag("Player");
+
             if (player != null) target = player.transform;
             else
             {
@@ -86,12 +74,9 @@ public class CameraFollow : MonoBehaviour
 
         transform.position = target.position + offset;
 
-        if (enableRotation)
-        {
-            Vector3 dir = (transform.position - target.position).normalized;
-            currentYaw = Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg;
-            smoothYaw = currentYaw;
-        }
+        Vector3 dir = (transform.position - target.position).normalized;
+        currentYaw = Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg;
+        smoothYaw = currentYaw;
     }
 
     // 새 입력: 화면 상단 N%에서 좌클릭 드래그로 회전
@@ -136,21 +121,7 @@ public class CameraFollow : MonoBehaviour
         }
     }
 
-    // 기존 포인터락 방식(우클릭 토글 후 Mouse X)
-    void HandlePointerLockRotation()
-    {
-        if (Cursor.lockState != CursorLockMode.Locked) return;
-
-        float dx = Input.GetAxisRaw("Mouse X");
-        float ax = Mathf.Abs(dx);
-
-        if (ax > Mathf.Epsilon)
-        {
-            float boosted = Mathf.Sign(dx) * Mathf.Pow(ax, lockedResponseGamma);
-            currentYaw += boosted * lockedYawGain;
-        }
-    }
-
+    // 현재 yaw를 목표 yaw로 부드럽게 감쇠 보간
     void SmoothRotation()
     {
         smoothYaw = Mathf.SmoothDampAngle(
@@ -161,6 +132,7 @@ public class CameraFollow : MonoBehaviour
         );
     }
 
+    // 카메라 목표 계산→축별 적용→이동→시선 설정을 한 프레임에 처리
     void UpdateCameraTransform()
     {
         Vector3 desired = CalculateDesiredPosition();
@@ -169,20 +141,16 @@ public class CameraFollow : MonoBehaviour
         LookAtTarget();
     }
 
+    // yaw/pitch와 오프셋을 적용해 이상적인 카메라 위치를 계산
     Vector3 CalculateDesiredPosition()
     {
-        if (enableRotation)
-        {
-            Quaternion rot = Quaternion.Euler(fixedPitch, smoothYaw, 0f);
-            Vector3 rotatedOffset = rot * offset;
-            return target.position + rotatedOffset;
-        }
-        else
-        {
-            return target.position + offset;
-        }
+        Quaternion rot = Quaternion.Euler(fixedPitch, smoothYaw, 0f);
+        Vector3 rotatedOffset = rot * offset;
+        return target.position + rotatedOffset;
+
     }
 
+    // 축별 추적 플래그에 따라 각 축 좌표를 갱신하거나 유지
     Vector3 ApplyFollowSettings(Vector3 desiredPosition)
     {
         return new Vector3(
@@ -192,6 +160,7 @@ public class CameraFollow : MonoBehaviour
         );
     }
 
+    // SmoothDamp(>0) 또는 즉시 스냅(=0)으로 목표 위치로 이동
     void MoveCamera(Vector3 targetPosition)
     {
         if (smoothSpeed > 0f)
@@ -209,17 +178,19 @@ public class CameraFollow : MonoBehaviour
         }
     }
 
+    // 플레이어 머리 높이 방향을 바라보도록 카메라 회전을 설정
     void LookAtTarget()
     {
-        if (!enableRotation) return;
         Vector3 lookTarget = target.position + Vector3.up * 1f;
         transform.LookAt(lookTarget);
     }
 
+    // 새 타겟을 지정하고 현재 시점 기준으로 yaw 초기값을 재설정
     public void SetTarget(Transform newTarget)
     {
         target = newTarget;
-        if (target != null && enableRotation)
+
+        if (target != null)
         {
             Vector3 dir = (transform.position - target.position).normalized;
             currentYaw = Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg;
@@ -227,7 +198,7 @@ public class CameraFollow : MonoBehaviour
         }
     }
 
-    // UI 위 포인터 여부(시작 시점만 체크)
+    // 상단 50%에 HUD/버튼/슬라이더 같은 UI 있으면 드래그 무시
     bool IsPointerOverUI()
     {
         if (EventSystem.current == null) return false;
