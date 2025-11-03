@@ -144,6 +144,11 @@ public class LoginUIManager : MonoBehaviour
             //입력값이 없을 경우
             clientName = "Player_" + Random.Range(1000, 9999);
         }
+        // 전체화면 전환
+#if UNITY_WEBGL && !UNITY_EDITOR
+        Screen.fullScreen = true;
+        Debug.Log("Entering fullscreen from Unity");
+#endif
         ConnectToServer();
     }
     private void ConnectToServer()
