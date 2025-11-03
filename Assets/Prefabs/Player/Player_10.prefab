@@ -377,6 +377,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   walkSpeed: 4
   rotationSpeed: 10
+  togglePointerLockWithRMB: 1
   jumpForce: 3
   diveForce: 4
   diveDownForce: 1
@@ -386,6 +387,7 @@ MonoBehaviour:
   throwForce: 5
   escapeRequiredJumps: 5
   animator: {fileID: 2223451083124563266}
+  bodyPrefab: {fileID: 5599093947531044034, guid: 5b4b0f06be3a0fa46b447efa97a80d08, type: 3}
   RespawnId:
     m_InternalValue: 0
   respawnManager: {fileID: 0}
