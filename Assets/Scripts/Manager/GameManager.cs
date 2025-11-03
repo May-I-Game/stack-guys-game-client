@@ -155,6 +155,7 @@ public class GameManager : NetworkBehaviour
             isCountingDown = true;
             ShowCountDownClientRpc(true);
             countdownCoroutine = StartCoroutine(StartGameCountdown());
+            Debug.Log("Start countdown!");
         }
         else if (playerCount < minPlayersToStart && isCountingDown)
         {
