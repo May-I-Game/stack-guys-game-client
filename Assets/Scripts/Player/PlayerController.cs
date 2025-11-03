@@ -1,6 +1,7 @@
 using Unity.Netcode;
 using Unity.Netcode.Components;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerController : NetworkBehaviour
 {
@@ -71,6 +72,9 @@ public class PlayerController : NetworkBehaviour
         0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     [SerializeField] private RespawnManager respawnManager;     // 리스폰 리스트를 사용하기 위하여 선언
+
+    //시네마틱 동기화를 위한 사용자 입력 무시 변수
+    private bool inputEnabled = true;
 
     public override void OnNetworkSpawn()
     {
@@ -167,6 +171,10 @@ public class PlayerController : NetworkBehaviour
 
     void HandleInput()
     {
+        if (!inputEnabled)
+        {
+            return;
+        }
         // ============ PC: 기존 키보드 입력 ============ // WASD 입력 받기
         float horizontal = Input.GetAxisRaw("Horizontal"); // A, D
         float vertical = Input.GetAxisRaw("Vertical");     // W, S
@@ -178,7 +186,32 @@ public class PlayerController : NetworkBehaviour
             vertical += joystick.Vertical;
         }
 
-        MovePlayerServerRpc(new Vector3(vertical, 0f, -horizontal).normalized);
+        // ============ 카메라에 영향을 받는 이동 ===========
+
+        // 메인 카메라 참조
+        var cam = Camera.main != null ? Camera.main.transform : null;
+
+        Vector3 dir;
+        if (cam != null)
+        {
+            // 카메라의 forward/right를 수평면(Y=0)에 투영해 기저벡터 생성
+            Vector3 camFwd = cam.forward; camFwd.y = 0f; camFwd.Normalize();
+            Vector3 camRight = cam.right; camRight.y = 0f; camRight.Normalize();
+
+            // 입력(Vertical=앞/뒤, Horizontal=좌/우)을 카메라 기준으로 합성
+            dir = camFwd * vertical + camRight * horizontal;
+        }
+        else
+        {
+            // 카메라가 없으면 기존 월드 기준으로 대체
+            dir = new Vector3(horizontal, 0f, vertical);
+        }
+
+        // 대각선 과입력(√2) 보정
+        if (dir.sqrMagnitude > 1f) dir.Normalize();
+
+        // 서버 권위 이동은 RPC로 전달
+        MovePlayerServerRpc(dir);
 
         // Space 키로 점프 또는 다이브
         if (Input.GetKeyDown(KeyCode.Space) || jumpButtonPressed)
@@ -208,6 +241,10 @@ public class PlayerController : NetworkBehaviour
                 MobileInputManager.Instance.ToggleCanvas();
             }
         }
+    }
+    public void SetInputEnabled(bool enabled)
+    {
+        inputEnabled = enabled;
     }
     private void OnJumpButtonPressed()
     {

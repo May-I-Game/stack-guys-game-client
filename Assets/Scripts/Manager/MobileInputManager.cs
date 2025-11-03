@@ -31,5 +31,19 @@ public class MobileInputManager : MonoBehaviour
             canvas.enabled = !canvas.enabled;
         }
     }
+    public void ShowCanvas()
+    {
+        if (canvas != null)
+        {
+            canvas.enabled = true;
+        }
+    }
+    public void HideCanvas()
+    {
+        if (canvas != null)
+        {
+            canvas.enabled = false;
+        }
+    }
 
 }
