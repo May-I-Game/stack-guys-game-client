@@ -44,6 +44,11 @@ public class GameManager : NetworkBehaviour
     private NetworkVariable<float> remainingTime = new NetworkVariable<float>(0f);
     private NetworkList<FixedString32Bytes> rankings;
 
+    //시네마틱 실행용 동기화 시간 변수
+    private NetworkVariable<double> timelineStartTime = new NetworkVariable<double>(0);
+    private NetworkVariable<bool> shouldPlayTimeline = new NetworkVariable<bool>(false);
+    private const float SYNC_BUFFER = 0.3f;
+
     public static GameManager instance;
 
     private void Awake()
@@ -87,6 +92,7 @@ public class GameManager : NetworkBehaviour
         if (IsClient)
         {
             remainingTime.OnValueChanged += UpdateCountDownUI;
+            shouldPlayTimeline.OnValueChanged += OnTimelineTriggered; // 시네마틱 동기화 변수
         }
     }
 
@@ -240,6 +246,8 @@ public class GameManager : NetworkBehaviour
 
             i++;
         }
+        timelineStartTime.Value = NetworkManager.Singleton.ServerTime.Time + SYNC_BUFFER;
+        shouldPlayTimeline.Value = true;
     }
 
     private void EndGame()
@@ -322,5 +330,11 @@ public class GameManager : NetworkBehaviour
         NetworkManager.Singleton.Shutdown();
         SceneManager.LoadScene(mainSceneName);
     }
-
+    private void OnTimelineTriggered(bool previous, bool current)
+    {
+        if (current && !previous)
+        {
+            // StartCoroutine(PlayTimelineAtSyncTime());
+        }
+    }
 }
