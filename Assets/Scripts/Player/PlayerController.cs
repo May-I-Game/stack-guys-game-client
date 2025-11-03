@@ -4,11 +4,9 @@ using UnityEngine;
 
 public class PlayerController : NetworkBehaviour
 {
-#if UNITY_ANDROID || UNITY_IOS
-    [Header("Mobile Input")]
-    public VirtualJoystick virtualJoystick;
-    public UnityEngine.UI.Button jumpButton;
-#endif
+    private VariableJoystick joystick;
+    private bool jumpButtonPressed = false;
+    private bool grabButtonPressed = false;
 
     [Header("Movement Settings")]
     public float walkSpeed = 4f;
@@ -97,13 +95,22 @@ public class PlayerController : NetworkBehaviour
             }
         }
 
-#if UNITY_ANDROID || UNITY_IOS
-            if (IsOwner && virtualJoystick != null)
+        //생성될 때 MobileInputManager에서 참조 가져오기
+        if (MobileInputManager.Instance != null)
+        {
+            joystick = MobileInputManager.Instance.joystick;
+
+            //버튼 이벤트 연결
+            if (MobileInputManager.Instance.jumpButton != null)
             {
-                // 점프 버튼 클릭 시 서버에 점프 명령 보내기
-                virtualJoystick.OnJumpPressed += () => JumpPlayerServerRpc();
+                MobileInputManager.Instance.jumpButton.onClick.AddListener(OnJumpButtonPressed);
             }
-#endif
+            if (MobileInputManager.Instance.grabButton != null)
+            {
+                MobileInputManager.Instance.grabButton.onClick.AddListener(OnGrabButtonPressed);
+            }
+
+        }
     }
 
     private void Update()
@@ -148,22 +155,28 @@ public class PlayerController : NetworkBehaviour
 
     void HandleInput()
     {
-
-#if UNITY_STANDALONE || UNITY_EDITOR
         // ============ PC: 기존 키보드 입력 ============ // WASD 입력 받기
         float horizontal = Input.GetAxisRaw("Horizontal"); // A, D
         float vertical = Input.GetAxisRaw("Vertical");     // W, S
 
+        // ============ 모바일 : 조이스틱 입력 추가 ===========
+        if (joystick != null)
+        {
+            horizontal += joystick.Horizontal;
+            vertical += joystick.Vertical;
+        }
+
         MovePlayerServerRpc(new Vector3(vertical, 0f, -horizontal).normalized);
 
         // Space 키로 점프 또는 다이브
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.Space) || jumpButtonPressed)
         {
             JumpPlayerServerRpc();
+            jumpButtonPressed = false;
         }
 
         // E 키로 잡기 또는 던지기
-        if (Input.GetKeyDown(KeyCode.E))
+        if (Input.GetKeyDown(KeyCode.E) || grabButtonPressed)
         {
             if (!netIsHolding.Value)
             {
@@ -173,21 +186,33 @@ public class PlayerController : NetworkBehaviour
             {
                 ThrowPlayerServerRpc();
             }
+            grabButtonPressed = false;
         }
-
-#elif UNITY_ANDROID || UNITY_IOS
-        // ============ 모바일: 가상 조이스틱 ============
-        if (virtualJoystick != null)
-        {
-            Vector2 input = virtualJoystick.GetInputVector();
-            direction = new Vector3(input.y, 0f, -input.x).normalized;
-        }
-        // 공통: 이동 명령 전송
-        MovePlayerServerRpc(direction);
-        // 점프는 UI 버튼으로 처리 (Start에서 연결)
-#endif
     }
+    private void OnJumpButtonPressed()
+    {
+        jumpButtonPressed = true;
+    }
+    public void OnGrabButtonPressed()
+    {
+        grabButtonPressed = true;
+    }
+    void Oestroy()
+    {
+        // 파괴될 때 이벤트 해제 (메모리 누수 방지)
+        if (MobileInputManager.Instance != null)
+        {
+            if (MobileInputManager.Instance.jumpButton != null)
+            {
+                MobileInputManager.Instance.jumpButton.onClick.RemoveListener(OnJumpButtonPressed);
+            }
 
+            if (MobileInputManager.Instance.grabButton != null)
+            {
+                MobileInputManager.Instance.grabButton.onClick.RemoveListener(OnGrabButtonPressed);
+            }
+        }
+    }
     // 클라에서 서버에게 요청할 Rpc 모음
     #region ServerRpcs
     [ServerRpc]
