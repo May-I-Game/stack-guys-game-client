@@ -24,13 +24,15 @@ public class PlayerController : NetworkBehaviour
 
     [Header("Grap Settings")]
     public float grabRange = 1f; // 잡기 범위
-    public float holdHeight = 0.55f; // 머리 위 높이
+    public float holdHeight = 0.6f; // 머리 위 높이
     public float holdDistance = 0.1f; // 플레이어 앞쪽 거리
     public float throwForce = 5f; // 던지기 힘
     public int escapeRequiredJumps = 5; // 탈출에 필요한 점프 횟수
 
     [Header("Animation")]
     public Animator animator;
+
+    public GameObject bodyPrefab;
 
     private float weakHitDuration = 2f;    // weakHit 애니메이션 길이
     private float strongHitDuration = 2.4f; // StrongHit 애니메이션 길이
@@ -597,6 +599,17 @@ public class PlayerController : NetworkBehaviour
     private void DoRespawn()
     {
         if (!IsServer) return;
+
+        if (bodyPrefab != null)
+        {
+            GameObject bodyInstance = Instantiate(bodyPrefab, transform.position, transform.rotation);
+            NetworkObject networkBody = bodyInstance.GetComponent<NetworkObject>();
+
+            if (networkBody != null)
+            {
+                networkBody.Spawn();
+            }
+        }
 
         // 리스폰 리스트 가져오기
         int index = RespawnId.Value;
