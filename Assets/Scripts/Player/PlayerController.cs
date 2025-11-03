@@ -5,7 +5,7 @@ using UnityEngine;
 public class PlayerController : NetworkBehaviour
 {
     // 모바일 UI 세팅
-    private VariableJoystick joystick;
+    private FixedJoystick joystick;
     private bool jumpButtonPressed = false;
     private bool grabButtonPressed = false;
 
