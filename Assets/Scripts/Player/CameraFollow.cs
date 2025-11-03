@@ -1,36 +1,53 @@
+// CameraFollow.cs
 using UnityEngine;
+using UnityEngine.EventSystems; // UI 위 포인터 검사용 (옵션)
 
 public class CameraFollow : MonoBehaviour
 {
     [Header("Target Settings")]
-    public Transform target; // 따라갈 타겟(플레이어 Transform)
+    public Transform target;
 
     [Header("Camera Offset")]
-    public Vector3 offset = new Vector3(0f, 7f, -15f); // 타겟 기준 기본 오프셋(위로 +Y, 뒤로 -Z)
+    public Vector3 offset = new Vector3(0f, 7f, -15f);
 
     [Header("Follow Settings")]
-    public bool followX = true; // X축 위치를 따라갈지 여부
-    public bool followY = true; // Y축 위치를 따라갈지 여부
-    public bool followZ = true; // Z축 위치를 따라갈지 여부
+    public bool followX = true;
+    public bool followY = true;
+    public bool followZ = true;
 
     [Header("Smooth Settings")]
-    public float smoothSpeed = 5f;          // 위치 보간 속도(클수록 빠르게 근접, 0이면 즉시 이동)
+    public float smoothSpeed = 5f;          // 위치 보간 속도(클수록 빠르게 근접, 0=즉시 이동)
     public float rotationSmoothSpeed = 10f; // 회전 보간 속도(클수록 빠르게 목표 각도로 붙음)
 
     [Header("Rotation Settings")]
-    public bool enableRotation = true;  // 회전 기능 켜기/끄기
-    public float fixedPitch = 20f;        // 수직 고정 각도(위/아래 시점 고정)
+    public bool enableRotation = true;
+    [Range(5f, 85f)]
+    public float fixedPitch = 20f;          // 기본 수직 각도
 
-    [Header("Locked Sensitivity Boost")]
-    public float lockedYawGain = 8f;          // 잠금 상태 회전 증폭(값을 크게 → 더 많이 회전)
+    [Header("Locked Sensitivity (기존 마우스 이동용)")]
+    public float lockedYawGain = 8f;
     [Range(0.2f, 1f)]
-    public float lockedResponseGamma = 0.5f;  // 1=선형, 0.5=제곱근(작은 변화도 크게 증폭)
+    public float lockedResponseGamma = 0.5f;
 
-    // 내부 상태값들
-    private Vector3 velocity = Vector3.zero; // SmoothDamp에 필요한 속도 누적 버퍼
-    private float currentYaw = 0f;           // 입력으로 누적되는 실제 목표 Yaw(제한/랩 없음 → 360도+ 회전 가능)
-    private float smoothYaw = 0f;            // 카메라가 따라가는 보간된 Yaw
-    private float yawVelocity = 0f;          // SmoothDampAngle 내부에서 사용하는 각속도 버퍼
+    // 새 드래그 회전 옵션
+    [Header("Top-Drag Rotate (새 입력 방식)")]
+    public bool rotateByTopDrag = true;             // 상단 드래그로 회전
+    [Range(0.05f, 0.6f)] public float topRegionPercent = 0.30f; // 화면 상단 퍼센트
+    public bool ignoreUIOnStart = true;             // UI 위에서 시작한 드래그 무시
+    public float dragYawSensitivity = 0.2f;         // 좌우 드래그 → Yaw
+    public bool allowPitchDrag = false;             // 상하 드래그로 Pitch 조절 허용할지
+    public float dragPitchSensitivity = 0.12f;      // 상하 드래그 → Pitch 변화량
+    public float pitchMin = 5f, pitchMax = 75f;     // Pitch 범위
+
+    // 내부 상태
+    private Vector3 velocity = Vector3.zero;
+    private float currentYaw = 0f;
+    private float smoothYaw = 0f;
+    private float yawVelocity = 0f;
+
+    // 드래그 상태
+    private bool dragActive = false;
+    private Vector3 prevMousePos;
 
     void Start()
     {
@@ -43,14 +60,17 @@ public class CameraFollow : MonoBehaviour
 
         if (enableRotation)
         {
-            HandleRotationInput(); // 커서 잠금 상태일 때만 회전 입력
-            SmoothRotation();      // smoothYaw가 currentYaw로 부드럽게 수렴
+            if (rotateByTopDrag)
+                HandleTopRegionDrag();
+            else
+                HandlePointerLockRotation(); // 필요시 기존 방식 유지
+
+            SmoothRotation();
         }
 
-        UpdateCameraTransform();   // 공전 위치 계산 → 축별 반영 → 위치 보간 → 타겟을 바라보도록 회전
+        UpdateCameraTransform();
     }
 
-    // 타겟 탐색/초기 위치/초기 회전 각도 셋업
     void InitializeCamera()
     {
         if (target == null)
@@ -68,32 +88,69 @@ public class CameraFollow : MonoBehaviour
 
         if (enableRotation)
         {
-            Vector3 direction = (transform.position - target.position).normalized;
-            currentYaw = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
+            Vector3 dir = (transform.position - target.position).normalized;
+            currentYaw = Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg;
             smoothYaw = currentYaw;
         }
     }
 
-    // 마우스 X 입력 → currentYaw 누적 (잠금 상태에서만)
-    // 작은 변화량도 크게 반영되도록 비선형(감마) + 게인 적용
-    void HandleRotationInput()
+    // 새 입력: 화면 상단 N%에서 좌클릭 드래그로 회전
+    void HandleTopRegionDrag()
+    {
+        Vector3 mp = Input.mousePosition;
+
+        // 드래그 시작 조건: 좌클릭 눌린 프레임 & "상단 영역" & (옵션) UI 위 아님
+        if (Input.GetMouseButtonDown(0))
+        {
+            bool inTopRegion = mp.y >= Screen.height * (1f - topRegionPercent) && mp.y <= Screen.height
+                               && mp.x >= 0 && mp.x <= Screen.width;
+
+            if (inTopRegion && (!ignoreUIOnStart || !IsPointerOverUI()))
+            {
+                dragActive = true;
+                prevMousePos = mp;
+            }
+        }
+
+        // 드래그 중
+        if (dragActive && Input.GetMouseButton(0))
+        {
+            Vector2 delta = (Vector2)(mp - prevMousePos);
+
+            // 좌우 → Yaw
+            currentYaw += delta.x * dragYawSensitivity;
+
+            // 상하 → Pitch(옵션)
+            if (allowPitchDrag)
+            {
+                fixedPitch = Mathf.Clamp(fixedPitch - delta.y * dragPitchSensitivity, pitchMin, pitchMax);
+            }
+
+            prevMousePos = mp;
+        }
+
+        // 드래그 종료
+        if (Input.GetMouseButtonUp(0))
+        {
+            dragActive = false;
+        }
+    }
+
+    // 기존 포인터락 방식(우클릭 토글 후 Mouse X)
+    void HandlePointerLockRotation()
     {
         if (Cursor.lockState != CursorLockMode.Locked) return;
 
-        float dx = Input.GetAxisRaw("Mouse X");     // 프레임당 마우스 델타
+        float dx = Input.GetAxisRaw("Mouse X");
         float ax = Mathf.Abs(dx);
 
         if (ax > Mathf.Epsilon)
         {
-            // 감마 < 1 → 작은 델타를 더 키움 (예: 0.5 = sqrt)
             float boosted = Mathf.Sign(dx) * Mathf.Pow(ax, lockedResponseGamma);
-
-            // 최종 게인 적용
-            currentYaw += boosted * lockedYawGain;  // 360° 제한 없음
+            currentYaw += boosted * lockedYawGain;
         }
     }
 
-    // smoothYaw가 currentYaw로 부드럽게 따라가도록 보간
     void SmoothRotation()
     {
         smoothYaw = Mathf.SmoothDampAngle(
@@ -104,22 +161,20 @@ public class CameraFollow : MonoBehaviour
         );
     }
 
-    // 오비트된 목표 위치 계산 → 축별 따라가기 적용 → 위치 보간 → 타겟을 바라보도록 회전
     void UpdateCameraTransform()
     {
-        Vector3 desiredPosition = CalculateDesiredPosition();
-        Vector3 targetPosition = ApplyFollowSettings(desiredPosition);
-        MoveCamera(targetPosition);
+        Vector3 desired = CalculateDesiredPosition();
+        Vector3 targetPos = ApplyFollowSettings(desired);
+        MoveCamera(targetPos);
         LookAtTarget();
     }
 
-    // 타겟 주위를 공전한 카메라의 목표 위치를 계산한다
     Vector3 CalculateDesiredPosition()
     {
         if (enableRotation)
         {
-            Quaternion rotation = Quaternion.Euler(fixedPitch, smoothYaw, 0f);
-            Vector3 rotatedOffset = rotation * offset;
+            Quaternion rot = Quaternion.Euler(fixedPitch, smoothYaw, 0f);
+            Vector3 rotatedOffset = rot * offset;
             return target.position + rotatedOffset;
         }
         else
@@ -128,7 +183,6 @@ public class CameraFollow : MonoBehaviour
         }
     }
 
-    // 축별 따라가기 옵션(followX/Y/Z)에 따라 최종 목표 위치를 만듬
     Vector3 ApplyFollowSettings(Vector3 desiredPosition)
     {
         return new Vector3(
@@ -138,7 +192,6 @@ public class CameraFollow : MonoBehaviour
         );
     }
 
-    // 부드럽게 목표 위치로 이동(smoothSpeed<=0이면 즉시 이동)
     void MoveCamera(Vector3 targetPosition)
     {
         if (smoothSpeed > 0f)
@@ -156,7 +209,6 @@ public class CameraFollow : MonoBehaviour
         }
     }
 
-    // 카메라가 타겟(머리 높이)을 바라보도록 회전
     void LookAtTarget()
     {
         if (!enableRotation) return;
@@ -164,15 +216,21 @@ public class CameraFollow : MonoBehaviour
         transform.LookAt(lookTarget);
     }
 
-    // 런타임에 타겟을 교체하고, 초기 Yaw를 재계산해 자연스럽게 잇는다
     public void SetTarget(Transform newTarget)
     {
         target = newTarget;
         if (target != null && enableRotation)
         {
-            Vector3 direction = (transform.position - target.position).normalized;
-            currentYaw = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
+            Vector3 dir = (transform.position - target.position).normalized;
+            currentYaw = Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg;
             smoothYaw = currentYaw;
         }
+    }
+
+    // UI 위 포인터 여부(시작 시점만 체크)
+    bool IsPointerOverUI()
+    {
+        if (EventSystem.current == null) return false;
+        return EventSystem.current.IsPointerOverGameObject();
     }
 }

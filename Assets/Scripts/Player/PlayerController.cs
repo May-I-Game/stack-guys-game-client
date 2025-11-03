@@ -135,12 +135,12 @@ public class PlayerController : NetworkBehaviour
             }
 
             // --- 커서/포인터락 토글 & 강제 유지 ---
-            if (togglePointerLockWithRMB)
-            {
-                HandlePointerLockToggleRMB();
-            }
+            //if (togglePointerLockWithRMB)
+            //{
+            //    HandlePointerLockToggleRMB();
+            //}
 
-            EnforcePointerLock();
+            //EnforcePointerLock();
         }
 
         UpdateAnimation();
@@ -898,13 +898,13 @@ public class PlayerController : NetworkBehaviour
     }
 
     // 앱 포커스를 잃으면 잠금 해제해 커서가 갇히는 문제 방지
-    private void OnApplicationFocus(bool hasFocus)
-    {
-        if (!hasFocus && _pointerLocked)
-        {
-            _pointerLocked = false;
-            ApplyCursorState();
-        }
-    }
+    //private void OnApplicationFocus(bool hasFocus)
+    //{
+    //    if (!hasFocus && _pointerLocked)
+    //    {
+    //        _pointerLocked = false;
+    //        ApplyCursorState();
+    //    }
+    //}
     #endregion
 }
