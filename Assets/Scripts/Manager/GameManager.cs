@@ -19,7 +19,9 @@ public enum GameState
 public class GameManager : NetworkBehaviour
 {
     [Header("UI References")]
-    [SerializeField] private TMP_Text countdownText; // 화면 중앙의 카운트다운
+    [SerializeField] private TMP_Text gameStartcountdown; // 로비에서 게임 시작 전 카운트
+    [SerializeField] private TMP_Text NowPlayerCount; // 현재 접속자 수
+    [SerializeField] private TMP_Text gameEndcountdown; // 1등이 결정난 이후 10초 카운트
     [SerializeField] private GameObject resultPanel; // 하얀 결과 화면
     [SerializeField] private TMP_Text firstPlaceText;
     [SerializeField] private TMP_Text secondPlaceText;
@@ -58,6 +60,11 @@ public class GameManager : NetworkBehaviour
     private NetworkVariable<bool> shouldPlayTimeline = new NetworkVariable<bool>(false);
     private const float SYNC_BUFFER = 0.3f;
 
+    //로비 및 게임 종료 시 사용
+    private NetworkVariable<int> currentPlayerCount = new NetworkVariable<int>(0);
+    private NetworkVariable<bool> isStartCountdownActive = new NetworkVariable<bool>(false);
+    private NetworkVariable<bool> isEndCountdownActive = new NetworkVariable<bool>(false);
+
     public static GameManager instance;
 
     private void Awake()
@@ -78,8 +85,6 @@ public class GameManager : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         // UI 초기 숨기기
-        if (countdownText != null)
-            countdownText.gameObject.SetActive(false);
         if (resultPanel != null)
             resultPanel.SetActive(false);
         // 버튼 이벤트 연결
@@ -102,6 +107,13 @@ public class GameManager : NetworkBehaviour
         {
             remainingTime.OnValueChanged += UpdateCountDownUI;
             shouldPlayTimeline.OnValueChanged += OnTimelineTriggered; // 시네마틱 동기화 변수
+
+            // 플레이어 수 변경 감지
+            currentPlayerCount.OnValueChanged += UpdatePlayerCountUI;
+            isStartCountdownActive.OnValueChanged += UpdateStartCountdownVisibility;
+            isEndCountdownActive.OnValueChanged += UpdateEndCountdownVisibility;
+
+            UpdatePlayerCountUI(0, currentPlayerCount.Value);
         }
     }
 
@@ -116,6 +128,12 @@ public class GameManager : NetworkBehaviour
         if (IsClient)
         {
             remainingTime.OnValueChanged -= UpdateCountDownUI;
+            shouldPlayTimeline.OnValueChanged -= OnTimelineTriggered; // 시네마틱 동기화 변수
+
+            // 플레이어 수 변경 감지
+            currentPlayerCount.OnValueChanged -= UpdatePlayerCountUI;
+            isStartCountdownActive.OnValueChanged -= UpdateStartCountdownVisibility;
+            isEndCountdownActive.OnValueChanged -= UpdateEndCountdownVisibility;
         }
     }
 
@@ -149,18 +167,19 @@ public class GameManager : NetworkBehaviour
         if (currentGameState.Value != GameState.Lobby) return;
 
         int playerCount = NetworkManager.Singleton.ConnectedClientsList.Count;
+        currentPlayerCount.Value = playerCount;
         if (playerCount >= minPlayersToStart && !isCountingDown)
         {
             // 카운트다운 시작
             isCountingDown = true;
-            ShowCountDownClientRpc(true);
+            isStartCountdownActive.Value = true;
             countdownCoroutine = StartCoroutine(StartGameCountdown());
-            Debug.Log("Start countdown!");
+
         }
         else if (playerCount < minPlayersToStart && isCountingDown)
         {
             isCountingDown = false;
-            ShowCountDownClientRpc(false);
+            isStartCountdownActive.Value = false;
             // 카운트다운 중지
             if (countdownCoroutine != null)
             {
@@ -168,7 +187,27 @@ public class GameManager : NetworkBehaviour
             }
         }
     }
-
+    private void UpdatePlayerCountUI(int priviousValue, int newValue)
+    {
+        if (NowPlayerCount != null)
+        {
+            NowPlayerCount.text = $"현재 참가자: {newValue}명";
+        }
+    }
+    private void UpdateStartCountdownVisibility(bool previousValue, bool newValue)
+    {
+        if (gameStartcountdown != null)
+        {
+            gameStartcountdown.gameObject.SetActive(newValue);
+        }
+    }
+    private void UpdateEndCountdownVisibility(bool previousValue, bool newValue)
+    {
+        if (gameEndcountdown != null)
+        {
+            gameEndcountdown.gameObject.SetActive(newValue);
+        }
+    }
     [ServerRpc(RequireOwnership = false)]
     public void PlayerReachedGoalServerRpc(string playerName, ulong clientId)
     {
@@ -189,6 +228,7 @@ public class GameManager : NetworkBehaviour
         // 첫 번째 플레이어가 골인하면 카운트다운 시작
         if (rankings.Count == 1 && !isCountingDown)
         {
+            isEndCountdownActive.Value = true;
             StartCoroutine(EndGameCountdown());
         }
     }
@@ -196,7 +236,6 @@ public class GameManager : NetworkBehaviour
     private IEnumerator StartGameCountdown()
     {
         isCountingDown = true;
-        ShowCountDownClientRpc(true);
 
         // 게임 시작 카운트다운
         remainingTime.Value = startCountdownTime;
@@ -207,7 +246,6 @@ public class GameManager : NetworkBehaviour
         }
 
         isCountingDown = false;
-        ShowCountDownClientRpc(false);
 
         // 게임 시작 처리
         StartGame();
@@ -216,7 +254,6 @@ public class GameManager : NetworkBehaviour
     private IEnumerator EndGameCountdown()
     {
         isCountingDown = true;
-        ShowCountDownClientRpc(true);
 
         // 게임 종료 카운트다운
         remainingTime.Value = endCountdownTime;
@@ -227,7 +264,6 @@ public class GameManager : NetworkBehaviour
         }
 
         isCountingDown = false;
-        ShowCountDownClientRpc(false);
 
         // 게임 종료 처리
         EndGame();
@@ -238,6 +274,8 @@ public class GameManager : NetworkBehaviour
         if (!IsServer) return;
 
         currentGameState.Value = GameState.Playing;
+
+        HideLobbyUIClientRpc();
 
         int i = 0;
         foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
@@ -271,18 +309,10 @@ public class GameManager : NetworkBehaviour
     }
 
     [ClientRpc]
-    private void ShowCountDownClientRpc(bool active)
-    {
-        // 카운트다운 텍스트 표시
-        if (countdownText != null)
-        {
-            countdownText.gameObject.SetActive(active);
-        }
-    }
-
-    [ClientRpc]
     private void ShowResultsClientRpc()
     {
+        //카운트 다운 내리기
+        gameEndcountdown.gameObject.SetActive(false);
         // 결과 화면 표시
         if (resultPanel != null)
         {
@@ -296,13 +326,28 @@ public class GameManager : NetworkBehaviour
         // 순위 표시
         UpdateRankingUI();
     }
-
+    [ClientRpc]
+    private void HideLobbyUIClientRpc()
+    {
+        if (gameStartcountdown != null)
+        {
+            gameStartcountdown.gameObject.SetActive(false);
+        }
+        if (NowPlayerCount != null)
+        {
+            NowPlayerCount.gameObject.SetActive(false);
+        }
+    }
     private void UpdateCountDownUI(float prviousValue, float newValue)
     {
         // 카운트 다운
-        if (countdownText != null)
+        if (rankings.Count > 0 && gameEndcountdown != null)
         {
-            countdownText.text = Mathf.Ceil(newValue).ToString();
+            gameEndcountdown.text = Mathf.Ceil(newValue).ToString();
+        }
+        else if (gameStartcountdown != null)
+        {
+            gameStartcountdown.text = $"{Mathf.Ceil(newValue)}초 후 게임이 시작됩니다!!";
         }
     }
 
