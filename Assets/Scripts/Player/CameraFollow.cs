@@ -23,7 +23,7 @@ public class CameraFollow : MonoBehaviour
     [Range(5f, 85f)]
     public float fixedPitch = 20f;          // 기본 수직 각도
 
-    [Range(0.05f, 0.6f)] public float topRegionPercent = 0.50f; // 화면 상단 퍼센트
+    [Range(0.05f, 0.6f)] public float topRegionPercent = 0.70f; // 화면 상단 퍼센트
     public bool ignoreUIOnStart = true;             // UI 위에서 시작한 드래그 무시
     public float dragYawSensitivity = 0.2f;         // 좌우 드래그 → Yaw
     public bool allowPitchDrag = false;             // 상하 드래그로 Pitch 조절 허용할지
@@ -198,7 +198,7 @@ public class CameraFollow : MonoBehaviour
         }
     }
 
-    // 상단 50%에 HUD/버튼/슬라이더 같은 UI 있으면 드래그 무시
+    // 상단 70%에 HUD/버튼/슬라이더 같은 UI 있으면 드래그 무시
     bool IsPointerOverUI()
     {
         if (EventSystem.current == null) return false;
