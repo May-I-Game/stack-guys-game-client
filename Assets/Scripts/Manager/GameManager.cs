@@ -39,6 +39,10 @@ public class GameManager : NetworkBehaviour
     [Header("Timeline")]
     [SerializeField] private PlayableDirector timeline;
 
+    [Header("Audio")]
+    [SerializeField] private AudioSource lobbyBGM;
+    [SerializeField] private AudioSource trackBGM;
+
     public bool IsLobby => currentGameState.Value == GameState.Lobby;
     public bool IsGame => currentGameState.Value == GameState.Playing;
 
@@ -347,14 +351,20 @@ public class GameManager : NetworkBehaviour
         //입력 차단
         DisablePlayerInput();
 
+        //로비 BGM 아웃
+        lobbyBGM.Stop();
+
         // 네트워크 시간과 동기화
         while (NetworkManager.Singleton.ServerTime.Time < timelineStartTime.Value)
         {
             yield return null;
         }
 
+
         //timeline재생
         timeline.Play();
+        //트랙 bgm on
+        trackBGM.Play();
 
         //Timeline종료 대기
         yield return new WaitForSeconds((float)timeline.duration);
