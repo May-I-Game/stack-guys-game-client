@@ -11,6 +11,7 @@ TagManager:
   - OtherPlayer
   - StrongObstacles
   - Death
+  - Platform
   layers:
   - Default
   - TransparentFX
