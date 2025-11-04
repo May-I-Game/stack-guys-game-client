@@ -16,19 +16,19 @@ public class CameraFollow : MonoBehaviour
     public bool followZ = true;
 
     [Header("Smooth Settings")]
-    public float smoothSpeed = 5f;          // 위치 보간 속도(클수록 빠르게 근접, 0=즉시 이동)
-    public float rotationSmoothSpeed = 10f; // 회전 보간 속도(클수록 빠르게 목표 각도로 붙음)
+    public float smoothSpeed = 5f;                              // 위치 보간 속도(클수록 빠르게 근접, 0=즉시 이동)
+    public float rotationSmoothSpeed = 10f;                     // 회전 보간 속도(클수록 빠르게 목표 각도로 붙음)
 
     [Header("Rotation Settings")]
-    [Range(5f, 85f)]
-    public float fixedPitch = 20f;          // 기본 수직 각도
+    [Range(-60f, 75f)]
+    public float fixedPitch = 20f;                              // 기본 수직 각도
 
     [Range(0.05f, 1f)] public float topRegionPercent = 0.70f;   // 화면 상단 퍼센트 (카메라 드래그 영역)
     public bool ignoreUIOnStart = true;                         // UI 위에서 시작한 드래그 무시
     public float dragYawSensitivity = 0.2f;                     // 좌우 드래그 → Yaw
-    public bool allowPitchDrag = false;                         // 상하 드래그로 Pitch 조절 허용할지
+    public bool allowPitchDrag = true;                          // 상하 드래그로 Pitch 조절 허용할지
     public float dragPitchSensitivity = 0.12f;                  // 상하 드래그 → Pitch 변화량
-    public float pitchMin = 5f, pitchMax = 75f;                 // Pitch 범위
+    public float pitchMin = -60f, pitchMax = 75f;               // Pitch 범위
 
     // 내부 상태
     private Vector3 velocity = Vector3.zero;
@@ -201,7 +201,7 @@ public class CameraFollow : MonoBehaviour
             dragActive = false;
         }
     }
-    
+
     // 터치 위치가 상단 영역에 있는지 확인 (조이스틱 영역 제외)
     bool IsTouchInTopRegion(Vector2 screenPosition)
     {
@@ -229,6 +229,7 @@ public class CameraFollow : MonoBehaviour
     {
         Vector3 desired = CalculateDesiredPosition();
         Vector3 targetPos = ApplyFollowSettings(desired);
+
         MoveCamera(targetPos);
         LookAtTarget();
     }
@@ -236,9 +237,18 @@ public class CameraFollow : MonoBehaviour
     // yaw/pitch와 오프셋을 적용해 이상적인 카메라 위치를 계산
     Vector3 CalculateDesiredPosition()
     {
-        Quaternion rot = Quaternion.Euler(fixedPitch, smoothYaw, 0f);
-        Vector3 rotatedOffset = rot * offset;
-        return target.position + rotatedOffset;
+        // Yaw 회전만 적용한 기본 방향
+        Quaternion yawRotation = Quaternion.Euler(0f, smoothYaw, 0f);
+        Vector3 horizontalOffset = yawRotation * new Vector3(offset.x, 0f, offset.z);
+
+        // 수평 거리 계산
+        float horizontalDistance = Mathf.Sqrt(offset.x * offset.x + offset.z * offset.z);
+
+        // Pitch에 따른 높이 계산 (삼각함수 사용)
+        float pitchRadians = fixedPitch * Mathf.Deg2Rad;
+        float verticalOffset = offset.y + horizontalDistance * Mathf.Sin(pitchRadians);
+
+        return target.position + horizontalOffset + Vector3.up * verticalOffset;
     }
 
     // 축별 추적 플래그에 따라 각 축 좌표를 갱신하거나 유지
@@ -272,8 +282,17 @@ public class CameraFollow : MonoBehaviour
     // 플레이어 머리 높이 방향을 바라보도록 카메라 회전을 설정
     void LookAtTarget()
     {
+        // 타겟을 바라봄 (높이는 타겟 중심)
         Vector3 lookTarget = target.position + Vector3.up * 1f;
-        transform.LookAt(lookTarget);
+
+        // 카메라 → 타겟 방향 계산
+        Vector3 direction = lookTarget - transform.position;
+
+        // 타겟 방향으로 회전 (높이 보정 없이 정확히 바라봄)
+        if (direction.sqrMagnitude > 0.001f)  // 0으로 나누기 방지
+        {
+            transform.rotation = Quaternion.LookRotation(direction);
+        }
     }
 
     // 새 타겟을 지정하고 현재 시점 기준으로 yaw 초기값을 재설정
