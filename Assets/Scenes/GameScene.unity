@@ -38028,13 +38028,13 @@ MonoBehaviour:
   followZ: 1
   smoothSpeed: 8
   rotationSmoothSpeed: 10
-  fixedPitch: 20
+  fixedPitch: 5
   topRegionPercent: 0.3
   ignoreUIOnStart: 1
   dragYawSensitivity: 0.2
-  allowPitchDrag: 0
+  allowPitchDrag: 1
   dragPitchSensitivity: 0.12
-  pitchMin: 5
+  pitchMin: -5
   pitchMax: 75
 --- !u!1001 &1598342738
 PrefabInstance:
