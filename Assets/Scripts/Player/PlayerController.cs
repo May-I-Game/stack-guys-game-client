@@ -45,6 +45,7 @@ public class PlayerController : NetworkBehaviour
     private NetworkVariable<Vector3> netMoveDirection = new NetworkVariable<Vector3>();
     private NetworkVariable<float> netCurrentSpeed = new NetworkVariable<float>();
     private bool isjumpQueued;
+    private bool isgrabQueued;
 
     private NetworkVariable<bool> netIsGrounded = new NetworkVariable<bool>();
     private NetworkVariable<float> netVerticalVelocity = new NetworkVariable<float>();
@@ -155,14 +156,33 @@ public class PlayerController : NetworkBehaviour
     {
         if (IsServer)
         {
+            // 죽었으면 처리 무시
             if (!netIsDeath.Value)
             {
-                // 이동 처리
-                MovePlayer();
-                // 점프 처리
-                JumpPlayer();
-                // 들기 처리
-                HeldPlayer();
+                // 이동 요청이 있으면
+                if (netMoveDirection.Value.magnitude >= 0.1f)
+                {
+                    // 이동 처리
+                    MovePlayer();
+                }
+                // 점프 요청이 있으면
+                if (isjumpQueued)
+                {
+                    // 점프 처리
+                    JumpPlayer();
+                }
+                // 잡기 요청이 있으면
+                if (isgrabQueued)
+                {
+                    // 잡기 처리
+                    GrabPlayer();
+                }
+                // 잡고 있으면
+                if (netIsHolding.Value && holdingObject != null)
+                {
+                    // 들기 처리
+                    HeldPlayer();
+                }
 
                 // 애니메이션 업데이트
                 SyncAnimationState();
@@ -243,21 +263,24 @@ public class PlayerController : NetworkBehaviour
             }
         }
     }
+
     public void SetInputEnabled(bool enabled)
     {
         inputEnabled = enabled;
     }
+
     private void OnJumpButtonPressed()
     {
         jumpButtonPressed = true;
     }
+
     public void OnGrabButtonPressed()
     {
         grabButtonPressed = true;
     }
+
     public override void OnDestroy()
     {
-        base.OnDestroy();
         // 파괴될 때 이벤트 해제 (메모리 누수 방지)
         if (MobileInputManager.Instance != null)
         {
@@ -292,28 +315,13 @@ public class PlayerController : NetworkBehaviour
     [ServerRpc]
     private void JumpPlayerServerRpc()
     {
-        // 잡혔으면 탈출시도
-        if (netIsGrabbed.Value)
+        // 충돌 중이거나 다이브 착지 중이면 입력 무시
+        if (isHit || netIsDiveGrounded.Value)
         {
-            Debug.Log($"[잡기] 플레이어 탈출 시도: {escapeJumpCount}");
-            escapeJumpCount++;
-            if (escapeJumpCount >= escapeRequiredJumps)
-            {
-                EscapeFromGrap();
-            }
+            return;
         }
 
-        // 이외에는 점프시도
-        else
-        {
-            // 충돌 중이거나 다이브 착지 중이면 입력 무시
-            if (isHit || netIsDiveGrounded.Value)
-            {
-                return;
-            }
-
-            isjumpQueued = true;
-        }
+        isjumpQueued = true;
     }
 
     [ServerRpc]
@@ -324,28 +332,7 @@ public class PlayerController : NetworkBehaviour
             return;
         }
 
-        // 범위 내 잡을 수 있는 오브젝트에 잡기시도
-        Collider[] colliders = Physics.OverlapSphere(transform.position, grabRange);
-        foreach (Collider col in colliders)
-        {
-            // 자기자신 제외
-            if (col.gameObject == this.gameObject) continue;
-
-            // 다른 플레이어 체크
-            PlayerController otherPlayer = col.GetComponent<PlayerController>();
-            if (otherPlayer != null && !otherPlayer.netIsGrabbed.Value && !otherPlayer.netIsHolding.Value)
-            {
-                GrabPlayer(otherPlayer);
-                return;
-            }
-
-            GrabbableObject grabbable = col.GetComponent<GrabbableObject>();
-            if (grabbable != null && !grabbable.netIsGrabbed.Value)
-            {
-                GrabObject(grabbable);
-                return;
-            }
-        }
+        isgrabQueued = true;
     }
 
     [ServerRpc]
@@ -406,21 +393,29 @@ public class PlayerController : NetworkBehaviour
 
     private void MovePlayer()
     {
-        if (netMoveDirection.Value.magnitude >= 0.1f)
-        {
-            // 이동
-            Vector3 movement = netMoveDirection.Value * netCurrentSpeed.Value * Time.fixedDeltaTime;
-            rb.MovePosition(rb.position + movement);
+        // 이동
+        Vector3 movement = netMoveDirection.Value * netCurrentSpeed.Value * Time.fixedDeltaTime;
+        rb.MovePosition(rb.position + movement);
 
-            // 회전
-            Quaternion targetRotation = Quaternion.LookRotation(netMoveDirection.Value);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime);
-        }
+        // 회전
+        Quaternion targetRotation = Quaternion.LookRotation(netMoveDirection.Value);
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime);
     }
 
     private void JumpPlayer()
     {
-        if (isjumpQueued)
+        // 잡혔으면 탈출시도
+        if (netIsGrabbed.Value)
+        {
+            Debug.Log($"[잡기] 플레이어 탈출 시도: {escapeJumpCount}");
+            escapeJumpCount++;
+            if (escapeJumpCount >= escapeRequiredJumps)
+            {
+                EscapeFromGrap();
+            }
+        }
+
+        else
         {
             // 땅에 있을 때: 점프
             if (netIsGrounded.Value)
@@ -434,8 +429,9 @@ public class PlayerController : NetworkBehaviour
             {
                 DivePlayer();
             }
-            isjumpQueued = false;
         }
+
+        isjumpQueued = false;
     }
 
     private void DivePlayer()
@@ -473,33 +469,67 @@ public class PlayerController : NetworkBehaviour
         netIsDiveGrounded.Value = false;
     }
 
-    private void GrabPlayer(PlayerController target)
+    private void GrabPlayer()
     {
-        holdingObject = target.gameObject;
-        netIsHolding.Value = true;
-        netHoldingTargetId.Value = target.NetworkObjectId;
-
-        // 상대방 상태 변경
-        target.netIsGrabbed.Value = true;
-        target.netGrabberId.Value = this.NetworkObjectId;
-        target.escapeJumpCount = 0;
-
-        // 상대방 물리 비활성화
-        if (target.rb != null)
+        // 범위 내 잡을 수 있는 오브젝트에 잡기시도
+        Collider[] colliders = Physics.OverlapSphere(transform.position, grabRange);
+        foreach (Collider col in colliders)
         {
-            target.rb.isKinematic = true;
+            // 자기자신 제외
+            if (col.gameObject == this.gameObject) continue;
+
+            // 다른 플레이어 체크
+            PlayerController otherPlayer = col.GetComponent<PlayerController>();
+            if (otherPlayer != null && !otherPlayer.netIsGrabbed.Value && !otherPlayer.netIsHolding.Value)
+            {
+                holdingObject = otherPlayer.gameObject;
+                netIsHolding.Value = true;
+                netHoldingTargetId.Value = otherPlayer.NetworkObjectId;
+
+                // 상대방 상태 변경
+                otherPlayer.netIsGrabbed.Value = true;
+                otherPlayer.netGrabberId.Value = this.NetworkObjectId;
+                otherPlayer.escapeJumpCount = 0;
+
+                // 상대방 물리 비활성화
+                if (otherPlayer.rb != null)
+                {
+                    otherPlayer.rb.isKinematic = true;
+                }
+
+                Debug.Log($"[잡기] 플레이어를 잡았습니다: {otherPlayer.gameObject.name}");
+                return;
+            }
+
+            // 오브젝트 체크
+            GrabbableObject grabbable = col.GetComponent<GrabbableObject>();
+            if (grabbable != null && !grabbable.netIsGrabbed.Value)
+            {
+                holdingObject = grabbable.gameObject;
+                netIsHolding.Value = true;
+                netHoldingTargetId.Value = grabbable.NetworkObjectId;
+
+                // 오브젝트 상태 변경
+                grabbable.netIsGrabbed.Value = true;
+                grabbable.holder = this;
+
+                // 오브젝트 물리 비활성화
+                Rigidbody targetRb = grabbable.GetComponent<Rigidbody>();
+                if (targetRb != null)
+                {
+                    targetRb.isKinematic = true;
+                }
+
+                Debug.Log($"[잡기] 오브젝트를 잡았습니다: {grabbable.name}");
+                return;
+            }
         }
 
-        Debug.Log($"[잡기] 플레이어를 잡았습니다: {target.gameObject.name}");
+        isgrabQueued = false;
     }
 
     private void HeldPlayer()
     {
-        if (!netIsHolding.Value || holdingObject == null)
-        {
-            return;
-        }
-
         // 머리 위 위치 계산
         Vector3 targetPosition = transform.position
             + transform.forward * holdDistance
@@ -527,26 +557,6 @@ public class PlayerController : NetworkBehaviour
             target.rb.isKinematic = false;
             target.rb.AddForce(throwDirection * throwForce, ForceMode.Impulse);
         }
-    }
-
-    private void GrabObject(GrabbableObject target)
-    {
-        holdingObject = target.gameObject;
-        netIsHolding.Value = true;
-        netHoldingTargetId.Value = target.NetworkObjectId;
-
-        // 오브젝트 상태 변경
-        target.netIsGrabbed.Value = true;
-        target.holder = this;
-
-        // 오브젝트 물리 비활성화
-        Rigidbody targetRb = target.GetComponent<Rigidbody>();
-        if (targetRb != null)
-        {
-            targetRb.isKinematic = true;
-        }
-
-        Debug.Log($"[잡기] 오브젝트를 잡았습니다: {target.name}");
     }
 
     private void ThrowObject(GrabbableObject target, Vector3 throwDirection)
