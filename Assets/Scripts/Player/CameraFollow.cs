@@ -79,22 +79,23 @@ public class CameraFollow : MonoBehaviour
     // 화면 상단 N%에서 터치 드래그로 회전 (멀티터치 지원)
     void HandleTopRegionDrag()
     {
-        // 에디터: 마우스 입력 처리
-#if UNITY_EDITOR
-        HandleMouseDrag();
-#else
-    // 모바일: 터치 입력 처리
-    if (Input.touchCount > 0)
-    {
-        HandleTouchDrag();
-    }
-    // 터치가 없으면 드래그 상태 해제
-    else if (cameraTouchId != -1)
-    {
-        cameraTouchId = -1;
-        dragActive = false;
-    }
-#endif
+        // 터치 입력이 있으면 터치 우선 처리
+        if (Input.touchCount > 0)
+        {
+            HandleTouchDrag();
+        }
+        // 터치가 없으면 마우스 입력 처리 (PC 브라우저/에디터)
+        else
+        {
+            HandleMouseDrag();
+
+            // 마우스 입력도 없으면 드래그 상태 해제
+            if (!Input.GetMouseButton(0) && cameraTouchId != -1)
+            {
+                cameraTouchId = -1;
+                dragActive = false;
+            }
+        }
     }
 
     // 터치 입력으로 카메라 드래그 처리
