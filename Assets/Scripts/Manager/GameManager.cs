@@ -35,7 +35,7 @@ public class GameManager : NetworkBehaviour
     [SerializeField] private string mainSceneName = "Login";
 
     [Header("Spawn Points")]
-    [SerializeField] private Transform lobbySpawnPoint;
+    [SerializeField] private Transform[] lobbySpawnPoints;
     [SerializeField] private Transform[] gameSpawnPoints;
 
     [Header("Timeline")]
@@ -157,7 +157,8 @@ public class GameManager : NetworkBehaviour
         NetworkTransform nt = playerObject.GetComponent<NetworkTransform>();
         if (nt != null)
         {
-            nt.Teleport(lobbySpawnPoint.transform.position, Quaternion.identity, playerObject.transform.localScale);
+            Transform randomSpawnPoint = lobbySpawnPoints[Random.Range(0, lobbySpawnPoints.Length)];
+            nt.Teleport(randomSpawnPoint.position, Quaternion.identity, playerObject.transform.localScale);
         }
     }
 
