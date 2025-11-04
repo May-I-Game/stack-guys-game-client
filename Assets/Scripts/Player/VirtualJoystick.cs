@@ -1,14 +1,14 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
-using System; // Action ÀÌº¥Æ® »ç¿ë
+using System; // Action ì´ë²¤íŠ¸ ì‚¬ìš©
 
 public class VirtualJoystick : MonoBehaviour, IDragHandler, IPointerDownHandler, IPointerUpHandler
 {
     [Header("Joystick Components")]
     public RectTransform background;
     public RectTransform handle;
-    public Button jumpButton; // Jump ¹öÆ° (RectTransformÀÌ ¾Æ´Ñ ButtonÀ¸·Î º¯°æ)
+    public Button jumpButton; // Jump ë²„íŠ¼ (RectTransformì´ ì•„ë‹Œ Buttonìœ¼ë¡œ ë³€ê²½)
 
     [Header("Settings")]
     public float handleRange = 50f;
@@ -16,12 +16,12 @@ public class VirtualJoystick : MonoBehaviour, IDragHandler, IPointerDownHandler,
 
     private Vector2 inputVector;
 
-    // ¿ÜºÎ¿¡¼­ ±¸µ¶ÇÒ ¼ö ÀÖ´Â Á¡ÇÁ ÀÌº¥Æ®
+    // ì™¸ë¶€ì—ì„œ êµ¬ë…í•  ìˆ˜ ìˆëŠ” ì í”„ ì´ë²¤íŠ¸
     public event Action OnJumpPressed;
 
     private void Start()
     {
-        // Á¡ÇÁ ¹öÆ°ÀÌ ¼³Á¤µÇ¾î ÀÖÀ¸¸é Å¬¸¯ ½Ã ÀÌº¥Æ® È£Ãâ
+        // ì í”„ ë²„íŠ¼ì´ ì„¤ì •ë˜ì–´ ìˆìœ¼ë©´ í´ë¦­ ì‹œ ì´ë²¤íŠ¸ í˜¸ì¶œ
         if (jumpButton != null)
         {
             jumpButton.onClick.AddListener(() =>
@@ -46,14 +46,14 @@ public class VirtualJoystick : MonoBehaviour, IDragHandler, IPointerDownHandler,
             out position
         );
 
-        // Á¤±ÔÈ­
+        // ì •ê·œí™”
         position = Vector2.ClampMagnitude(position, handleRange);
         handle.anchoredPosition = position;
 
-        // ÀÔ·Â º¤ÅÍ °è»ê (-1 ~ 1 ¹üÀ§)
+        // ì…ë ¥ ë²¡í„° ê³„ì‚° (-1 ~ 1 ë²”ìœ„)
         inputVector = position / handleRange;
 
-        // µ¥µåÁ¸ Àû¿ë
+        // ë°ë“œì¡´ ì ìš©
         if (inputVector.magnitude < deadZone)
         {
             inputVector = Vector2.zero;
