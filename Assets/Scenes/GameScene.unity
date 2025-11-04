@@ -3468,11 +3468,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6754852531663270748, guid: 3539c126191de0140833409c996ef55f, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 38.23
+      value: 38.162
       objectReference: {fileID: 0}
     - target: {fileID: 6754852531663270748, guid: 3539c126191de0140833409c996ef55f, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.07
+      value: 0.34
       objectReference: {fileID: 0}
     - target: {fileID: 6754852531663270748, guid: 3539c126191de0140833409c996ef55f, type: 3}
       propertyPath: m_LocalPosition.z
@@ -20033,6 +20033,7 @@ MonoBehaviour:
   jumpButton: {fileID: 73726875}
   handleRange: 50
   deadZone: 0.1
+  joystickScreenHeightPercent: 0.3
 --- !u!1001 &799641379
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -25094,7 +25095,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6754852531663270748, guid: 3539c126191de0140833409c996ef55f, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -4.7
+      value: -4.64
       objectReference: {fileID: 0}
     - target: {fileID: 6754852531663270748, guid: 3539c126191de0140833409c996ef55f, type: 3}
       propertyPath: m_LocalPosition.y
@@ -30458,7 +30459,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6754852531663270748, guid: 3539c126191de0140833409c996ef55f, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -15.539978
+      value: -15.41
       objectReference: {fileID: 0}
     - target: {fileID: 6754852531663270748, guid: 3539c126191de0140833409c996ef55f, type: 3}
       propertyPath: m_LocalRotation.w
