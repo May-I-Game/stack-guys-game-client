@@ -59,6 +59,7 @@ public class PlayerController : NetworkBehaviour
     private NetworkVariable<ulong> netHoldingTargetId = new NetworkVariable<ulong>(0); // 누구를 잡고 있는지
 
     private GameObject holdingObject = null; // 실제로 들고 있는 오브젝트
+    private int heldObjectOriginLayer;
     private int escapeJumpCount = 0; // 탈출 시도 횟수
 
     NetworkTransform nt;
@@ -230,6 +231,7 @@ public class PlayerController : NetworkBehaviour
         //이제 이동 가능
         isHit = false;
     }
+
     [ServerRpc]
     public void ResetStateServerRpc()
     {
@@ -378,6 +380,10 @@ public class PlayerController : NetworkBehaviour
         {
             otherPlayer.rb.isKinematic = true;
         }
+        // 레이어 저장 및 비활성화 (충돌 무시용)
+        heldObjectOriginLayer = otherPlayer.gameObject.layer;
+        otherPlayer.gameObject.layer = LayerMask.NameToLayer("HeldObject");
+        Debug.Log($"[잡기] 오브젝트 레이어 변환: {otherPlayer.gameObject.layer}");
 
         Debug.Log($"[잡기] 플레이어를 잡았습니다: {otherPlayer.gameObject.name}");
     }
@@ -398,6 +404,10 @@ public class PlayerController : NetworkBehaviour
         {
             targetRb.isKinematic = true;
         }
+        // 레이어 저장 및 비활성화 (충돌 무시용)
+        heldObjectOriginLayer = grabbable.gameObject.layer;
+        grabbable.gameObject.layer = LayerMask.NameToLayer("HeldObject");
+        Debug.Log($"[잡기] 오브젝트 레이어 변환: {grabbable.gameObject.layer}");
 
         Debug.Log($"[잡기] 오브젝트를 잡았습니다: {grabbable.name}");
     }
@@ -445,6 +455,9 @@ public class PlayerController : NetworkBehaviour
             target.rb.isKinematic = false;
             target.rb.AddForce(throwDirection * throwForce, ForceMode.Impulse);
         }
+        // 충돌 재활성화
+        target.gameObject.layer = heldObjectOriginLayer;
+        Debug.Log($"[잡기] 오브젝트 레이어 변환: {target.gameObject.layer}");
 
         SetTriggerClientRpc("Throw");
         Debug.Log("[잡기] 오브젝트를 던졌습니다");
@@ -461,6 +474,9 @@ public class PlayerController : NetworkBehaviour
             targetRb.isKinematic = false;
             targetRb.AddForce(throwDirection * throwForce, ForceMode.Impulse);
         }
+        // 충돌 재활성화
+        target.gameObject.layer = heldObjectOriginLayer;
+        Debug.Log($"[잡기] 오브젝트 레이어 변환: {target.gameObject.layer}");
 
         SetTriggerClientRpc("Throw");
         Debug.Log("[잡기] 오브젝트를 던졌습니다");

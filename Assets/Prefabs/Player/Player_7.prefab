@@ -209,7 +209,7 @@ GameObject:
   - component: {fileID: 1815840507391890310}
   - component: {fileID: -5221811087933614686}
   - component: {fileID: -6019983252898257762}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Player_7
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -468,6 +468,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: de256038f252a2a43a15bfb5e675b3c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!1 &1603252422376430676
 GameObject:
   m_ObjectHideFlags: 0
