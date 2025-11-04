@@ -135,16 +135,6 @@ public class PlayerInputHandler : NetworkBehaviour
         GrabInput = false;
     }
 
-    // 모든 입력 초기화
-    public void ResetAllInputs()
-    {
-        MoveInput = Vector3.zero;
-        JumpInput = false;
-        GrabInput = false;
-        jumpButtonPressed = false;
-        grabButtonPressed = false;
-    }
-
     public void OnJumpButtonPressed()
     {
         jumpButtonPressed = true;

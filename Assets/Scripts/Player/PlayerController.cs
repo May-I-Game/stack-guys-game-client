@@ -230,6 +230,11 @@ public class PlayerController : NetworkBehaviour
         //이제 이동 가능
         isHit = false;
     }
+    [ServerRpc]
+    public void ResetStateServerRpc()
+    {
+        ResetPlayerInput();
+    }
     #endregion
 
     // 서버에서 실제로 실행할 로직
@@ -622,9 +627,8 @@ public class PlayerController : NetworkBehaviour
         // 애니메이터도 각 클라에서 리셋
         ResetAnimClientRpc();
     }
-    public void ResetPlayerInput()
+    private void ResetPlayerInput()
     {
-        Debug.Log("입력값 초기화");
         // 이동/점프 관련 상태 최소 초기화
         netMoveDirection.Value = Vector3.zero;
         netCurrentSpeed.Value = 0f;
@@ -793,20 +797,6 @@ public class PlayerController : NetworkBehaviour
         animator.Rebind();                                  // 바인딩 초기화
     }
 
-    [ClientRpc]
-    public void ResetInputClientRpc()
-    {
-        if (!IsOwner) return;
-
-        // PlayerController의 입력 상태 초기화
-        ResetPlayerInput();
-
-        // 입력 핸들러도 초기화
-        if (inputHandler != null)
-        {
-            inputHandler.ResetAllInputs();
-        }
-    }
     #endregion
 
     // 애니메이션 로직들
