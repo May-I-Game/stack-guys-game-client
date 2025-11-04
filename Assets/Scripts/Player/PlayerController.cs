@@ -734,7 +734,12 @@ public class PlayerController : NetworkBehaviour
     {
         if (!IsServer) return;
 
-        netIsGrounded.Value = false;
+        // 실제로 위로 올라가는 중일 때만 땅에서 떠났다고 판단
+        if (rb.linearVelocity.y > 0.1f)
+        {
+            netIsGrounded.Value = false;
+            Debug.Log("[점프로 땅 떠남] netIsGrounded = false");
+        }
     }
 
     // 특정 물체와 충돌할 때
