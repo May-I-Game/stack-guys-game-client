@@ -6,7 +6,7 @@ public class CameraFollow : MonoBehaviour
 {
     [Header("Target Settings")]
     public Transform target;
-    public float teleportDistance = 3f;                        // 이 거리 이상이면 즉시 텔레포트
+    public float teleportDistance = 10f;                        // 이 거리 이상이면 즉시 텔레포트
 
     [Header("Camera Offset")]
     public Vector3 offset = new Vector3(0f, 7f, -15f);
