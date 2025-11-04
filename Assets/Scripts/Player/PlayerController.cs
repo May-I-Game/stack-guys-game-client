@@ -30,13 +30,14 @@ public class PlayerController : NetworkBehaviour
     public float throwForce = 5f; // 던지기 힘
     public int escapeRequiredJumps = 5; // 탈출에 필요한 점프 횟수
 
+    [Header("Collision")]
+    public float bounceForce = 5f; // 튕겨나가는 힘
+
     [Header("Animation")]
     public Animator animator;
 
     public GameObject bodyPrefab;
 
-    private float weakHitDuration = 2f;    // weakHit 애니메이션 길이
-    private float strongHitDuration = 2.4f; // StrongHit 애니메이션 길이
     private float diveGroundedDuration = 0.65f; // 다이브 착지 애니메이션 길이
 
     private Rigidbody rb;
@@ -389,6 +390,14 @@ public class PlayerController : NetworkBehaviour
     {
         DoRespawn();
     }
+
+    // 애니메이션이 끝날때 호출되는 함수
+    [ServerRpc]
+    public void ResetHitStateServerRpc()
+    {
+        //이제 이동 가능
+        isHit = false;
+    }
     #endregion
 
     // 서버에서 실제로 실행할 로직
@@ -740,6 +749,19 @@ public class PlayerController : NetworkBehaviour
         // 애니메이터도 각 클라에서 리셋
         ResetAnimClientRpc();
     }
+
+    // 플레이어 튕겨나가기 함수
+    private void BouncePlayer(Vector3 normal, float force)
+    {
+        // 현재 속도 초기화
+        rb.linearVelocity = Vector3.zero;
+
+        // 법선 방향으로 힘 가하기 (위쪽 방향 추가)
+        Vector3 bounceDirection = (normal + Vector3.up * 0.3f).normalized;
+        rb.AddForce(bounceDirection * force, ForceMode.Impulse);
+
+        Debug.Log($"[튕겨나가기] 방향: {bounceDirection}, 힘: {force}");
+    }
     #endregion
 
     // 충돌관리 로직
@@ -804,18 +826,22 @@ public class PlayerController : NetworkBehaviour
                 break;
 
             case "weakObstacles":
-                // 장애물에 부딪힘
-                PlayHitAnimation("weakHit", weakHitDuration);
-                break;
+                // 충돌 지점의 평균 법선 벡터 계산
+                Vector3 avgNormal = Vector3.zero;
+                foreach (ContactPoint contact in collision.contacts)
+                {
+                    avgNormal += contact.normal;
+                }
+                avgNormal /= collision.contacts.Length;
 
-            case "OtherPlayer":
-                // 다른플레이어
-                PlayHitAnimation("weakHit", weakHitDuration);
+                // 장애물에 부딪힘
+                PlayHitAnimation("weakHit");
+                BouncePlayer(avgNormal, bounceForce);
                 break;
 
             case "StrongObstacles":
                 // 가시에 부딪힘
-                PlayHitAnimation("StrongHit", strongHitDuration);
+                PlayHitAnimation("StrongHit");
                 break;
 
             default:
@@ -850,9 +876,9 @@ public class PlayerController : NetworkBehaviour
     // 애니메이션 로직들
     #region Animation
     // 애니메이션 재생 함수
-    private void PlayHitAnimation(string triggerName, float duration)
+    private void PlayHitAnimation(string triggerName)
     {
-        if (animator == null)
+        if (isHit || animator == null)
         {
             return;
         }
@@ -882,19 +908,6 @@ public class PlayerController : NetworkBehaviour
         // 이동 차단 및 Trigger 실행
         isHit = true;
         SetTriggerClientRpc(triggerName);
-
-        // 지정된 시간만큼 대기 후 이동 재개
-        StartCoroutine(ResetHitState(duration));
-    }
-
-    // 애니메이션이 끝나면 이동 가능하도록 복구
-    private System.Collections.IEnumerator ResetHitState(float duration)
-    {
-        //이동 차단 duration초 동안 이동 불가
-        yield return new WaitForSeconds(duration);
-
-        isHit = false;
-        //이제 이동 가능
     }
 
     // NetworkVariable 업데이트
