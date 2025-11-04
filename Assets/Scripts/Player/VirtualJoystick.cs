@@ -42,12 +42,12 @@ public class VirtualJoystick : MonoBehaviour
 
     private void Update()
     {
-        // 모바일 터치 입력 처리
-        HandleTouchInput();
-
-        // 마우스 입력 (에디터 테스트용)
+        // 에디터: 마우스 입력 처리
 #if UNITY_EDITOR
         HandleMouseInput();
+#else
+    // 모바일: 터치 입력 처리
+    HandleTouchInput();
 #endif
     }
 
