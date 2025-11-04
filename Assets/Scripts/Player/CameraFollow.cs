@@ -23,7 +23,7 @@ public class CameraFollow : MonoBehaviour
     [Range(-60f, 75f)]
     public float fixedPitch = 20f;                              // 기본 수직 각도
 
-    [Range(0.05f, 1f)] public float topRegionPercent = 0.70f;   // 화면 상단 퍼센트 (카메라 드래그 영역)
+    [Range(0.05f, 1f)] public float topRegionPercent = 0.60f;   // 화면 상단 퍼센트 (카메라 드래그 영역)
     public bool ignoreUIOnStart = true;                         // UI 위에서 시작한 드래그 무시
     public float dragYawSensitivity = 0.2f;                     // 좌우 드래그 → Yaw
     public bool allowPitchDrag = true;                          // 상하 드래그로 Pitch 조절 허용할지

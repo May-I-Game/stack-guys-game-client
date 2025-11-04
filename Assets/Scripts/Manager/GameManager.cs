@@ -113,7 +113,16 @@ public class GameManager : NetworkBehaviour
             isStartCountdownActive.OnValueChanged += UpdateStartCountdownVisibility;
             isEndCountdownActive.OnValueChanged += UpdateEndCountdownVisibility;
 
+            // 초기 상태 동기화 (새로 접속한 클라이언트를 위해)
             UpdatePlayerCountUI(0, currentPlayerCount.Value);
+            UpdateStartCountdownVisibility(false, isStartCountdownActive.Value);
+            UpdateEndCountdownVisibility(false, isEndCountdownActive.Value);
+
+            // 카운트다운이 진행 중이면 현재 시간도 업데이트
+            if (isStartCountdownActive.Value || isEndCountdownActive.Value)
+            {
+                UpdateCountDownUI(0, remainingTime.Value);
+            }
         }
     }
 
@@ -397,6 +406,19 @@ public class GameManager : NetworkBehaviour
     {
         //입력 차단
         DisablePlayerInput();
+
+        // 유저의 입력 벡터 모두 초기화 (ClientRpc 호출)
+        foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
+        {
+            NetworkObject playerObject = client.PlayerObject;
+            if (playerObject == null) continue;
+
+            PlayerController playerController = playerObject.GetComponent<PlayerController>();
+            if (playerController != null)
+            {
+                playerController.ResetInputClientRpc();
+            }
+        }
 
         //로비 BGM 아웃
         lobbyBGM.Stop();
