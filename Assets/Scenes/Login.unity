@@ -2835,7 +2835,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01e3e5f34683dc34b925cffa242a807d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serverAddress: 172.21.100.182
+  serverAddress: 127.0.0.1
   serverPort: 7779
   nameInput: {fileID: 912574218}
   characterSelectCamera: {fileID: 142083412}
