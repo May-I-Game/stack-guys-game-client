@@ -4,58 +4,41 @@ using Unity.Netcode.Transports.UTP;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using UnityEngine.Networking;
+using System.Collections;
 
+/// <summary>
+/// LoginUIManager
+///  - FastAPI를 통해 GameLift 매치메이킹 요청
+///  - 서버 IP/Port/PlayerSessionId 수신 후 UnityTransport로 연결
+///  - WebGL에서는 WebSocket 모드로 전환
+/// </summary>
 public class LoginUIManager : MonoBehaviour
 {
-    [SerializeField] public string serverAddress = "127.0.0.1";
-    [SerializeField] ushort serverPort = 7779;
-    [SerializeField] private TMP_InputField nameInput; // 닉네임 입력하는 inputtext
-    [SerializeField] private Camera characterSelectCamera; // 캐릭터 선택 시에 현재 캐릭터를 보여줄 카메라
-    [SerializeField] private GameObject characterSelectPopup; //캐릭터 선택 팝업 창
+    [SerializeField] private string matchApiUrl = "http://54.180.24.20/api/find-game"; // FastAPI 주소
+    [SerializeField] private TMP_InputField nameInput;
+    [SerializeField] private Camera characterSelectCamera;
+    [SerializeField] private GameObject characterSelectPopup;
 
-    private int clientCharIndex; // 클라이언트가 선택한 캐릭터 인덱스
-    private string clientName; // 클라이언트가 작성한 이름
-    private bool isConnecting = false; //중복 클릭 방지
-
+    private int clientCharIndex;
+    private string clientName;
+    private bool isConnecting = false;
     private AudioSource audioSource;
 
-    private const int MAX_NAME_LENGTH = 16;  //이름 글자수 제한 16byte
+    private const int MAX_NAME_BYTES = 16;
+
     void Start()
     {
-        characterSelectPopup.SetActive(false); // 캐릭터 팝업창 닫아두기
-
+        characterSelectPopup?.SetActive(false);
         audioSource = GetComponent<AudioSource>();
 
         if (NetworkManager.Singleton != null)
         {
-            //networkManager 콜백 구독
             NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
             NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
         }
     }
-    private void OnClientConnected(ulong clientId)
-    {
-        //성공적으로 자신이 연결됨
-        if (clientId == NetworkManager.Singleton.LocalClientId)
-        {
-            Debug.Log("Successfully connected to server!");
-            CancelInvoke(nameof(CheckConnectionTimeout));
-            isConnecting = false;
-        }
-    }
-    private void OnClientDisconnected(ulong clientId)
-    {
-        //자신이 연결 해제됨
-        if (clientId == NetworkManager.Singleton.LocalClientId)
-        {
-            Debug.Log("Disconnected from server");
-            if (isConnecting)
-            {
-                Debug.Log("Connected failed");
-                isConnecting = false;
-            }
-        }
-    }
+
     private void OnDestroy()
     {
         if (NetworkManager.Singleton != null)
@@ -65,164 +48,208 @@ public class LoginUIManager : MonoBehaviour
         }
         CancelInvoke(nameof(CheckConnectionTimeout));
     }
-    // 현재 화면에 나와있는 캐릭터를 클릭했을 경우
+
+    private void OnClientConnected(ulong clientId)
+    {
+        if (clientId == NetworkManager.Singleton.LocalClientId)
+        {
+            Debug.Log("✅ Successfully connected to server!");
+            CancelInvoke(nameof(CheckConnectionTimeout));
+            isConnecting = false;
+        }
+    }
+
+    private void OnClientDisconnected(ulong clientId)
+    {
+        if (clientId == NetworkManager.Singleton.LocalClientId)
+        {
+            Debug.Log("Disconnected from server");
+            if (isConnecting)
+            {
+                Debug.Log("❌ Connection failed");
+                isConnecting = false;
+            }
+        }
+    }
+
+    // ========================== 캐릭터 선택 ==========================
     public void OnClickPresentCharacter()
     {
+        if (characterSelectPopup == null) return;
         characterSelectPopup.SetActive(true);
-        // Grid의 모든 자식에서 Button 컴포넌트 찾기
-        Button[] buttons = characterSelectPopup.GetComponentsInChildren<Button>();
 
+        Button[] buttons = characterSelectPopup.GetComponentsInChildren<Button>(true);
         for (int i = 0; i < buttons.Length; i++)
         {
-            int index = i; // 클로저 문제 방지 (중요!)
-
-            // 기존 이벤트 제거 후 새로 추가
+            int index = i;
             buttons[i].onClick.RemoveAllListeners();
             buttons[i].onClick.AddListener(() => OnCharacterSelected(index));
 
-            // PointerDown 이벤트 추가 (소리용)
-            EventTrigger trigger = buttons[i].GetComponent<EventTrigger>();
-            if (trigger == null)
-            {
-                trigger = buttons[i].gameObject.AddComponent<EventTrigger>();
-            }
-
-            // 기존 이벤트 제거
+            var trigger = buttons[i].GetComponent<EventTrigger>() ?? buttons[i].gameObject.AddComponent<EventTrigger>();
             trigger.triggers.Clear();
-
-            // PointerDown 이벤트 추가
-            EventTrigger.Entry entry = new EventTrigger.Entry();
-            entry.eventID = EventTriggerType.PointerDown;
-            entry.callback.AddListener((data) => { PlayButtonSound(); });
+            var entry = new EventTrigger.Entry { eventID = EventTriggerType.PointerDown };
+            entry.callback.AddListener(_ => PlayButtonSound());
             trigger.triggers.Add(entry);
         }
     }
+
     private void PlayButtonSound()
     {
-        if (audioSource != null)
-        {
+        if (audioSource != null && audioSource.clip != null)
             audioSource.PlayOneShot(audioSource.clip);
-        }
     }
-    //팝업의 캐릭터를 클릭했을 경우
+
     private void OnCharacterSelected(int index)
     {
-        //카메라 x위치 변경 : -2 * index
-        characterSelectCamera.transform.localPosition = new Vector3(-2f * index, 0, 0);
+        if (characterSelectCamera != null)
+            characterSelectCamera.transform.localPosition = new Vector3(-2f * index, 0, 0);
 
-        // 인덱스 받아오기
         clientCharIndex = index;
-
-        // 팝업 닫기
-        characterSelectPopup.SetActive(false);
+        characterSelectPopup?.SetActive(false);
     }
-    // 팝업밖의 패널을 클릭했을 경우
+
     public void OnClickOuterPanel()
     {
-        characterSelectPopup.SetActive(false);
+        characterSelectPopup?.SetActive(false);
     }
-    // Start 버튼 눌렀을 경우, 캐릭터 index와 name을 서버로 전송 및 websocket연결
+
+    // ========================== Start 버튼 ==========================
     public void OnClickStart()
     {
-        //중복 클릭 방지
         if (isConnecting)
         {
             Debug.Log("이미 연결 중입니다...");
+            return;
         }
 
-        //inputtext 기반 이름 설정
         clientName = (nameInput?.text ?? "").Trim();
-
-        //이름 글자 수 제한을 넘겼을 경우 16byte로 truncate
-        if (clientName.Length > MAX_NAME_LENGTH)
-        {
-            clientName = clientName.Substring(0, MAX_NAME_LENGTH);
-        }
-
         if (string.IsNullOrEmpty(clientName))
-        {
-            //입력값이 없을 경우
             clientName = "Player_" + Random.Range(1000, 9999);
-        }
-        // 전체화면 전환
+
 #if UNITY_WEBGL && !UNITY_EDITOR
         Screen.fullScreen = true;
-        Debug.Log("Entering fullscreen from Unity");
+        Debug.Log("Entering fullscreen (WebGL)");
 #endif
-        ConnectToServer();
+
+        StartCoroutine(FindGameAndConnect());
     }
-    private void ConnectToServer()
+
+    // ========================== FastAPI 매치 요청 ==========================
+    private IEnumerator FindGameAndConnect()
     {
-        if (NetworkManager.Singleton == null)
+        isConnecting = true;
+        Debug.Log("🎮 Finding game server via FastAPI…");
+
+        var req = new UnityWebRequest(matchApiUrl, "POST");
+        byte[] body = System.Text.Encoding.UTF8.GetBytes("{}");
+        req.uploadHandler = new UploadHandlerRaw(body);
+        req.downloadHandler = new DownloadHandlerBuffer();
+        req.SetRequestHeader("Content-Type", "application/json");
+        req.timeout = 20;
+
+        yield return req.SendWebRequest();
+
+        if (req.result != UnityWebRequest.Result.Success)
         {
-            Debug.Log("NetworkManager not found!");
+            Debug.LogError($"find-game failed: {req.error}");
+            isConnecting = false;
+            yield break;
+        }
+
+        GameServerInfo info = null;
+        try { info = JsonUtility.FromJson<GameServerInfo>(req.downloadHandler.text); }
+        catch { Debug.LogError("Invalid JSON response from FastAPI"); }
+
+        if (info == null || !info.success)
+        {
+            Debug.LogError($"find-game returned invalid: {req.downloadHandler.text}");
+            isConnecting = false;
+            yield break;
+        }
+
+        Debug.Log($"Got server info → {info.server_ip}:{info.server_port}");
+        ConnectToServer(info.server_ip, (ushort)info.server_port, info.player_session_id);
+    }
+
+    // ========================== 서버 연결 로직 ==========================
+    private void ConnectToServer(string serverAddress, ushort serverPort, string playerSessionId)
+    {
+        var nm = NetworkManager.Singleton;
+        if (nm == null)
+        {
+            Debug.LogError("❌ NetworkManager not found!");
             isConnecting = false;
             return;
         }
-        // 서버 주소 설정
-        // #if UNITY_EDITOR
-        // #else
-        //         const string serverAddress = "54.180.159.66";
-        //         const ushort serverPort = 7779;
-        // #endif
 
-        Debug.Log($"Connecting to {serverAddress}:{serverPort}...");
-
-        //Unitytransport 설정
-        UnityTransport transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
-        if (transport != null)
+        var transport = nm.GetComponent<UnityTransport>();
+        if (transport == null)
         {
-            transport.SetConnectionData(serverAddress, serverPort);
-        }
-        else
-        {
-            Debug.Log("unityTransport not found");
+            Debug.LogError("❌ UnityTransport missing on NetworkManager");
+            isConnecting = false;
             return;
         }
 
-        isConnecting = true;
+#if UNITY_WEBGL && !UNITY_EDITOR
+        transport.UseWebSockets = true;  // WebGL 강제
+#endif
+        transport.SetConnectionData(serverAddress, serverPort);
+        Debug.Log($"Connecting to {serverAddress}:{serverPort} ...");
 
-        //서버로 캐릭터 인덱스를 보내기
-        byte[] payload = new byte[17];
-
+        // ConnectionData 구성: [1바이트 캐릭터][이름(UTF8 ≤16B)][0x00][playerSessionId UTF8]
+        byte[] nameBytes = TruncateUtf8(clientName, MAX_NAME_BYTES);
+        byte[] sessionBytes = System.Text.Encoding.UTF8.GetBytes(playerSessionId ?? "");
+        byte[] payload = new byte[1 + nameBytes.Length + 1 + sessionBytes.Length];
         payload[0] = (byte)clientCharIndex;
-        // 이름을 ASCII 바이트로 변환
-        byte[] nameBytes = System.Text.Encoding.UTF8.GetBytes(clientName);
+        System.Array.Copy(nameBytes, 0, payload, 1, nameBytes.Length);
+        payload[1 + nameBytes.Length] = 0;
+        System.Array.Copy(sessionBytes, 0, payload, 1 + nameBytes.Length + 1, sessionBytes.Length);
 
-        // 이름 복사 (최대 16바이트)
-        int bytesToCopy = Mathf.Min(nameBytes.Length, MAX_NAME_LENGTH);
-        System.Array.Copy(nameBytes, 0, payload, 1, bytesToCopy);
-
-        NetworkManager.Singleton.NetworkConfig.ConnectionData = payload;
-
-        //서버로 캐릭터 이름을 보내기
+        nm.NetworkConfig.ConnectionData = payload;
         PlayerPrefs.SetString("player_name", clientName);
         PlayerPrefs.Save();
 
-        Debug.Log($"Character Index : {clientCharIndex}, Name: {clientName}");
-
-        //클라이언트 시작
-        bool startResult = NetworkManager.Singleton.StartClient();
-
-        //클라-서버 연결 실패했을 경우
-        if (!startResult)
+        if (!nm.StartClient())
         {
-            Debug.Log("연결 실패");
+            Debug.LogError("❌ StartClient failed");
             isConnecting = false;
             return;
         }
+
         Invoke(nameof(CheckConnectionTimeout), 10f);
     }
+
+    // UTF-8 바이트 안전 자르기
+    private static byte[] TruncateUtf8(string s, int maxBytes)
+    {
+        var src = System.Text.Encoding.UTF8.GetBytes(s ?? "");
+        if (src.Length <= maxBytes) return src;
+        int len = maxBytes;
+        while (len > 0 && (src[len] & 0b1100_0000) == 0b1000_0000) len--;
+        var dst = new byte[len];
+        System.Array.Copy(src, dst, len);
+        return dst;
+    }
+
     private void CheckConnectionTimeout()
     {
         if (isConnecting && NetworkManager.Singleton != null && !NetworkManager.Singleton.IsConnectedClient)
         {
-            Debug.Log("Connection timeout!");
+            Debug.Log("⏰ Connection timeout!");
             if (NetworkManager.Singleton.IsClient)
-            {
                 NetworkManager.Singleton.Shutdown();
-            }
             isConnecting = false;
         }
     }
+}
+
+// ========================== JSON 구조체 ==========================
+[System.Serializable]
+public class GameServerInfo
+{
+    public bool success;
+    public string server_ip;
+    public int server_port;
+    public string player_session_id;
+    public string game_session_id;
 }
