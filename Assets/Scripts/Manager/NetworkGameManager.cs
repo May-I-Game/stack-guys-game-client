@@ -38,15 +38,20 @@ public class NetworkGameManager : MonoBehaviour
             hasInitialized = true;
         }
 
-        // 배치 모드에서 실행 시 자동으로 서버 시작
+#if UNITY_SERVER
         if (Application.isBatchMode)
         {
             StartServerAndLoadScene();
         }
         else
         {
-            Debug.Log("--- CLIENT BUILD DETECTED ---");
+            Debug.Log("--- SERVER BUILD CLIENT MOD DETECTED ---");
         }
+#elif DUMMY_CLIENT
+        Debug.Log("--- BOT CLIENT BUILD DETECTED ---");
+#else
+        Debug.Log("--- CLIENT BUILD DETECTED ---");
+#endif
     }
 
     private void Initialize()
@@ -72,8 +77,8 @@ public class NetworkGameManager : MonoBehaviour
 
     private void StartServerAndLoadScene()
     {
-        Debug.Log("--- SERVER BUILD DETECTED (Batch Mode) ---");
-        Debug.Log("     --------  SERVER START  --------     ");
+        Debug.Log("--- SERVER BUILD DETECTED ---");
+        Debug.Log("-----  SERVER START  -----");
 
         NetworkManager.Singleton.StartServer();
 
