@@ -1,9 +1,7 @@
 using System.Collections.Generic;
-using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.TextCore.Text;
 
 public class NetworkGameManager : MonoBehaviour
 {
@@ -38,15 +36,13 @@ public class NetworkGameManager : MonoBehaviour
             hasInitialized = true;
         }
 
-        // 배치 모드에서 실행 시 자동으로 서버 시작
-        if (Application.isBatchMode)
-        {
-            StartServerAndLoadScene();
-        }
-        else
-        {
-            Debug.Log("--- CLIENT BUILD DETECTED ---");
-        }
+#if UNITY_SERVER
+        StartServerAndLoadScene();
+#elif DUMMY_CLIENT
+        Debug.Log("--- BOT CLIENT BUILD DETECTED ---");
+#else
+        Debug.Log("--- CLIENT BUILD DETECTED ---");
+#endif
     }
 
     private void Initialize()
