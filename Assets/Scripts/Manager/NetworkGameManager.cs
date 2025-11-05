@@ -8,12 +8,14 @@ public class NetworkGameManager : MonoBehaviour
     private static NetworkGameManager instance;
     private NetworkManager networkManager;
 
+    [SerializeField] private bool isServerMod;
     [SerializeField] private string gameSceneName = "GameScene";
     [SerializeField] private GameObject[] characterPrefabs;
 
     private bool hasInitialized = false;
     private Dictionary<ulong, int> clientCharacterSelections = new Dictionary<ulong, int>();
     private Dictionary<ulong, string> clientPlayerNames = new Dictionary<ulong, string>();
+
     private void Awake()
     {
         // 싱글톤 패턴으로 중복 방지
@@ -37,7 +39,14 @@ public class NetworkGameManager : MonoBehaviour
         }
 
 #if UNITY_SERVER
-        StartServerAndLoadScene();
+        if (isServerMod)
+        {
+            StartServerAndLoadScene();
+        }
+        else
+        {
+            Debug.Log("--- SERVER BUILD CLIENT MOD DETECTED ---");
+        }
 #elif DUMMY_CLIENT
         Debug.Log("--- BOT CLIENT BUILD DETECTED ---");
 #else
@@ -68,8 +77,8 @@ public class NetworkGameManager : MonoBehaviour
 
     private void StartServerAndLoadScene()
     {
-        Debug.Log("--- SERVER BUILD DETECTED (Batch Mode) ---");
-        Debug.Log("     --------  SERVER START  --------     ");
+        Debug.Log("--- SERVER BUILD DETECTED ---");
+        Debug.Log("-----  SERVER START  -----");
 
         NetworkManager.Singleton.StartServer();
 

@@ -1480,12 +1480,11 @@ GameObject:
   - component: {fileID: 7839709260095116719}
   - component: {fileID: -7203480982915365540}
   - component: {fileID: 2417491111524222058}
-  - component: {fileID: 4422993982241243552}
+  - component: {fileID: 5542489576015073576}
   - component: {fileID: 2593437910564063128}
   - component: {fileID: -1997074929084709135}
-  - component: {fileID: -9054018348559208295}
   m_Layer: 6
-  m_Name: Player_1
+  m_Name: Bot_Player
   m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1596,7 +1595,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 416949604
+  GlobalObjectIdHash: 2926255402
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -1655,7 +1654,7 @@ MonoBehaviour:
   SwitchTransformSpaceWhenParented: 0
   Interpolate: 1
   SlerpPosition: 0
---- !u!114 &4422993982241243552
+--- !u!114 &5542489576015073576
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1664,7 +1663,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5785324236016558479}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 41ec7eeb0c0cacf4e885a2d57ca8d28a, type: 3}
+  m_Script: {fileID: 11500000, guid: a6b67c5ab9c04af49b2e7d19e8a33c73, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
@@ -1674,17 +1673,19 @@ MonoBehaviour:
   diveForce: 4
   diveDownForce: 1
   grabRange: 1
-  holdHeight: 0.5
+  holdHeight: 0.6
   holdDistance: 0.1
   throwForce: 5
   escapeRequiredJumps: 5
   bounceForce: 5
-  animator: {fileID: 964459002660691872}
-  bodyPrefab: {fileID: 6666310234280264781, guid: 0708bba17fbec6249998b48e1a436e2b, type: 3}
+  animator: {fileID: 0}
+  bodyPrefab: {fileID: 6666310234280264781, guid: df039cf0004bb1746b7374f3511b1325, type: 3}
   RespawnId:
     m_InternalValue: 0
   respawnManager: {fileID: 0}
   inputEnabled: 1
+  actionIntervalMin: 3
+  actionIntervalMax: 5
 --- !u!114 &2593437910564063128
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1711,19 +1712,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e0be88c815df128439b1d0cc928acbf7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &-9054018348559208295
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5785324236016558479}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: de256038f252a2a43a15bfb5e675b3c6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!1 &5873298213058847420
 GameObject:
   m_ObjectHideFlags: 0
