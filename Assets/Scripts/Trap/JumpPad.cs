@@ -1,0 +1,75 @@
+using UnityEngine;
+using Unity.Netcode;
+
+[RequireComponent(typeof(BoxCollider))]
+public class JumpPad : NetworkBehaviour
+{
+    [Header("점프 설정")]
+    [SerializeField] private float launchForce = 20f;   // 발사 힘
+    [SerializeField] private float launchAngle = 45f;   // 발사 각도
+
+    [Header("쿨다운 설정")]
+    [SerializeField] private float cooldownTime = 0.5f; // 연속 발동 방지
+    private float lastLaunchTime = -999f;
+
+    private BoxCollider triggerCollider;
+
+    private void Awake()
+    {
+        triggerCollider = GetComponent<BoxCollider>();
+        triggerCollider.isTrigger = true;
+    }
+
+    // 플레이어 충돌 감지 및 점프 실행
+    private void OnTriggerEnter(Collider other)
+    {
+        if (Time.time - lastLaunchTime < cooldownTime)
+            return;
+
+        if (!other.CompareTag("Player"))
+            return;
+
+        Rigidbody rb = other.GetComponent<Rigidbody>();
+        if (rb == null)
+            return;
+
+        NetworkObject networkObject = other.GetComponent<NetworkObject>();
+        if (networkObject != null)
+        {
+            if (!networkObject.IsOwner)
+                return;
+
+            if (IsClient)
+            {
+                RequestLaunchServerRpc(networkObject.NetworkObjectId);
+            }
+
+            LaunchPlayer(rb);
+
+            lastLaunchTime = Time.time;
+        }
+    }
+
+    // 서버에 점프 요청 전송
+    [ServerRpc(RequireOwnership = false)]
+    private void RequestLaunchServerRpc(ulong networkObjectId)
+    {
+        if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(networkObjectId, out NetworkObject networkObject))
+        {
+            Rigidbody rb = networkObject.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                LaunchPlayer(rb);
+            }
+        }
+    }
+
+    // 플레이어에게 발사 힘 적용
+    private void LaunchPlayer(Rigidbody rb)
+    {
+        rb.linearVelocity = Vector3.zero;
+        Vector3 direction = transform.up;
+
+        rb.AddForce(direction * launchForce, ForceMode.VelocityChange);
+    }
+}
