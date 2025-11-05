@@ -36,7 +36,7 @@ public class NetworkBotIdentity : NetworkBehaviour
         return $"{botNames[nameIndex]}_{botCounter:D2}";
     }
 
-    // 다른 스크립트에서 봇 여부를 확인하는 헬퍼 메서드
+    // 다른 스크립트에서 봇 여부를 확인하는 헬퍼 함수
     public static bool IsPlayerBot(GameObject player)
     {
         if (player == null) return false;
