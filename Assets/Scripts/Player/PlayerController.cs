@@ -1,6 +1,7 @@
 using Unity.Netcode;
 using Unity.Netcode.Components;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerController : NetworkBehaviour
 {
@@ -29,6 +30,7 @@ public class PlayerController : NetworkBehaviour
     private Rigidbody rb;
     private PlayerInputHandler inputHandler;
 
+    private Vector3 lastMoveInput = Vector3.zero;
     private bool isJumpQueued;
     private bool isGrabQueued;
 
@@ -84,14 +86,8 @@ public class PlayerController : NetworkBehaviour
         respawnManager = FindFirstObjectByType<RespawnManager>();
 
         // Animator가 설정되지 않았다면 자동으로 찾기
-        if (animator == null)
-        {
-            animator = GetComponent<Animator>();
-            if (animator == null)
-            {
-                animator = GetComponentInChildren<Animator>();
-            }
-        }
+        animator ??= GetComponent<Animator>();
+        animator ??= GetComponentInChildren<Animator>();
     }
 
     private void Update()
@@ -101,7 +97,11 @@ public class PlayerController : NetworkBehaviour
             // 입력 허용시만 요청 처리
             if (inputEnabled)
             {
-                MovePlayerServerRpc(inputHandler.MoveInput);
+                if (inputHandler.MoveInput != lastMoveInput)
+                {
+                    MovePlayerServerRpc(inputHandler.MoveInput);
+                    lastMoveInput = inputHandler.MoveInput;
+                }
 
                 if (inputHandler.JumpInput)
                 {
@@ -370,6 +370,7 @@ public class PlayerController : NetworkBehaviour
         {
             otherPlayer.rb.isKinematic = true;
         }
+
         // 레이어 저장 및 비활성화 (충돌 무시용)
         heldObjectOriginLayer = otherPlayer.gameObject.layer;
         otherPlayer.gameObject.layer = LayerMask.NameToLayer("HeldObject");
