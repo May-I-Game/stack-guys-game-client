@@ -1,7 +1,6 @@
 using Unity.Netcode;
 using Unity.Netcode.Components;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class PlayerController : NetworkBehaviour
 {
@@ -68,7 +67,7 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private RespawnManager respawnManager;     // 리스폰 리스트를 사용하기 위하여 선언
 
     //시네마틱 동기화를 위한 사용자 입력 무시 변수
-    private bool inputEnabled = true;
+    public bool inputEnabled = true;
 
     public override void OnNetworkSpawn()
     {
@@ -90,7 +89,7 @@ public class PlayerController : NetworkBehaviour
         animator ??= GetComponentInChildren<Animator>();
     }
 
-    private void Update()
+    protected virtual void Update()
     {
         if (IsOwner)
         {
@@ -168,7 +167,7 @@ public class PlayerController : NetworkBehaviour
     // 클라에서 서버에게 요청할 Rpc 모음
     #region ServerRpcs
     [ServerRpc]
-    private void MovePlayerServerRpc(Vector3 direction)
+    protected void MovePlayerServerRpc(Vector3 direction)
     {
         // 충돌 중이거나 다이브 착지 중이면 입력 무시
         if (isHit || netIsDiveGrounded.Value)
@@ -185,7 +184,7 @@ public class PlayerController : NetworkBehaviour
     }
 
     [ServerRpc]
-    private void JumpPlayerServerRpc()
+    protected void JumpPlayerServerRpc()
     {
         // 충돌 중이거나 다이브 착지 중이면 입력 무시
         if (isHit || netIsDiveGrounded.Value)
@@ -842,12 +841,12 @@ public class PlayerController : NetworkBehaviour
     }
 
     // NetworkVariable 업데이트
-    void SyncAnimationState()
+    private void SyncAnimationState()
     {
         netVerticalVelocity.Value = rb.linearVelocity.y;
     }
 
-    void UpdateAnimation()
+    protected void UpdateAnimation()
     {
         if (animator != null)
         {
