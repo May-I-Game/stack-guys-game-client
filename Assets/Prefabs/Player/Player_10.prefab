@@ -234,7 +234,6 @@ GameObject:
   - component: {fileID: 2223451083124563266}
   - component: {fileID: 168834041635864175}
   - component: {fileID: 8007151402340119097}
-  - component: {fileID: 2484399978502817349}
   - component: {fileID: 1487229761582353401}
   - component: {fileID: 7575739267369913625}
   - component: {fileID: 2352481575949685909}
@@ -340,27 +339,6 @@ CapsuleCollider:
   m_Height: 1.85
   m_Direction: 1
   m_Center: {x: 0, y: 0.9, z: 0}
---- !u!65 &2484399978502817349
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2924196025165890153}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 0
-  serializedVersion: 3
-  m_Size: {x: 0.8, y: 1.8, z: 0.8}
-  m_Center: {x: 0, y: 0.9, z: 0}
 --- !u!114 &1487229761582353401
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -401,7 +379,6 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   walkSpeed: 4
   rotationSpeed: 10
-  togglePointerLockWithRMB: 1
   jumpForce: 3
   diveForce: 4
   diveDownForce: 1
@@ -416,6 +393,7 @@ MonoBehaviour:
   RespawnId:
     m_InternalValue: 0
   respawnManager: {fileID: 0}
+  inputEnabled: 1
 --- !u!114 &2352481575949685909
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -449,11 +427,11 @@ MonoBehaviour:
   SyncRotAngleX: 1
   SyncRotAngleY: 1
   SyncRotAngleZ: 1
-  SyncScaleX: 1
-  SyncScaleY: 1
-  SyncScaleZ: 1
-  PositionThreshold: 0.001
-  RotAngleThreshold: 0.01
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.01
+  RotAngleThreshold: 0.1
   ScaleThreshold: 0.01
   UseQuaternionSynchronization: 0
   UseQuaternionCompression: 0

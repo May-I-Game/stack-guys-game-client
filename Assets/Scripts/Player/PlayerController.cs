@@ -1,17 +1,12 @@
 using Unity.Netcode;
 using Unity.Netcode.Components;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class PlayerController : NetworkBehaviour
 {
     [Header("Movement Settings")]
     public float walkSpeed = 4f;
     public float rotationSpeed = 10f;
-
-    [Header("Cursor / Pointer Lock")]
-    public bool togglePointerLockWithRMB = true; // 우클릭으로 포인터락 토글
-    private bool _pointerLocked = false;
 
     [Header("Jump Settings")]
     public float jumpForce = 3f;
@@ -34,6 +29,7 @@ public class PlayerController : NetworkBehaviour
     private Rigidbody rb;
     private PlayerInputHandler inputHandler;
 
+    private Vector3 lastMoveInput = Vector3.zero;
     private bool isJumpQueued;
     private bool isGrabQueued;
 
@@ -71,7 +67,7 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private RespawnManager respawnManager;     // 리스폰 리스트를 사용하기 위하여 선언
 
     //시네마틱 동기화를 위한 사용자 입력 무시 변수
-    private bool inputEnabled = true;
+    public bool inputEnabled = true;
 
     public override void OnNetworkSpawn()
     {
@@ -89,24 +85,22 @@ public class PlayerController : NetworkBehaviour
         respawnManager = FindFirstObjectByType<RespawnManager>();
 
         // Animator가 설정되지 않았다면 자동으로 찾기
-        if (animator == null)
-        {
-            animator = GetComponent<Animator>();
-            if (animator == null)
-            {
-                animator = GetComponentInChildren<Animator>();
-            }
-        }
+        animator = animator != null ? animator : GetComponent<Animator>();
+        animator = animator != null ? animator : GetComponentInChildren<Animator>();
     }
 
-    private void Update()
+    protected virtual void Update()
     {
         if (IsOwner)
         {
             // 입력 허용시만 요청 처리
             if (inputEnabled)
             {
-                MovePlayerServerRpc(inputHandler.MoveInput);
+                if (inputHandler.MoveInput != lastMoveInput)
+                {
+                    MovePlayerServerRpc(inputHandler.MoveInput);
+                    lastMoveInput = inputHandler.MoveInput;
+                }
 
                 if (inputHandler.JumpInput)
                 {
@@ -119,14 +113,6 @@ public class PlayerController : NetworkBehaviour
                     GrabPlayerServerRpc();
                     inputHandler.ResetGrabInput();
                 }
-
-                // --- 커서/포인터락 토글 & 강제 유지 ---
-                //if (togglePointerLockWithRMB)
-                //{
-                //    HandlePointerLockToggleRMB();
-                //}
-
-                //EnforcePointerLock();
             }
         }
 
@@ -181,7 +167,7 @@ public class PlayerController : NetworkBehaviour
     // 클라에서 서버에게 요청할 Rpc 모음
     #region ServerRpcs
     [ServerRpc]
-    private void MovePlayerServerRpc(Vector3 direction)
+    protected void MovePlayerServerRpc(Vector3 direction)
     {
         // 충돌 중이거나 다이브 착지 중이면 입력 무시
         if (isHit || netIsDiveGrounded.Value)
@@ -190,13 +176,15 @@ public class PlayerController : NetworkBehaviour
             return;
         }
 
+        Debug.Log($"[이동] 플레이어 이동 Rpc 호출됨!: {direction}");
+
         netMoveDirection.Value = direction;
         // 기본 이동 속도
         netCurrentSpeed.Value = walkSpeed;
     }
 
     [ServerRpc]
-    private void JumpPlayerServerRpc()
+    protected void JumpPlayerServerRpc()
     {
         // 충돌 중이거나 다이브 착지 중이면 입력 무시
         if (isHit || netIsDiveGrounded.Value)
@@ -381,6 +369,7 @@ public class PlayerController : NetworkBehaviour
         {
             otherPlayer.rb.isKinematic = true;
         }
+
         // 레이어 저장 및 비활성화 (충돌 무시용)
         heldObjectOriginLayer = otherPlayer.gameObject.layer;
         otherPlayer.gameObject.layer = LayerMask.NameToLayer("HeldObject");
@@ -535,7 +524,7 @@ public class PlayerController : NetworkBehaviour
         Debug.Log("[탈출] 성공적으로 탈출했습니다!");
     }
 
-    private void ReleaseGrab()
+    public void ReleaseGrab()
     {
         // 내가 무언가를 들고 있었다면
         if (netIsHolding.Value && holdingObject != null)
@@ -713,12 +702,6 @@ public class PlayerController : NetworkBehaviour
     {
         if (!IsServer) return;
 
-        // 점프 직후에는 땅 체크 안 함
-        //if (canDive && !netIsDiving.Value)
-        //{
-        //    return;
-        //}
-
         // 충돌한 오브젝트가 아래쪽에 있으면 땅으로 판단
         foreach (ContactPoint contact in collision.contacts)
         {
@@ -755,7 +738,6 @@ public class PlayerController : NetworkBehaviour
         if (rb.linearVelocity.y > 0.1f)
         {
             netIsGrounded.Value = false;
-            Debug.Log("[점프로 땅 떠남] netIsGrounded = false");
         }
     }
 
@@ -859,12 +841,12 @@ public class PlayerController : NetworkBehaviour
     }
 
     // NetworkVariable 업데이트
-    void SyncAnimationState()
+    private void SyncAnimationState()
     {
         netVerticalVelocity.Value = rb.linearVelocity.y;
     }
 
-    void UpdateAnimation()
+    protected void UpdateAnimation()
     {
         if (animator != null)
         {
@@ -883,51 +865,5 @@ public class PlayerController : NetworkBehaviour
             animator.SetBool("IsGrabbed", netIsGrabbed.Value);
         }
     }
-    #endregion
-
-    // 오른쪽 버튼 클릭시 커서 토글
-    #region MouseToggle
-
-    // 포인터락 상태 토글
-    private void HandlePointerLockToggleRMB()
-    {
-        if (Input.GetMouseButtonDown(1)) // 우클릭 한번으로 토글
-        {
-            _pointerLocked = !_pointerLocked;
-            ApplyCursorState();
-        }
-    }
-
-    // 현재 포인터락 상태 강제 적용
-    private void EnforcePointerLock()
-    {
-        // 매 프레임 강제 적용
-        ApplyCursorState();
-    }
-
-    // 포인터락 여부에 따라 커서 잠금/표시 반영
-    private void ApplyCursorState()
-    {
-        if (_pointerLocked)
-        {
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
-        }
-        else
-        {
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
-        }
-    }
-
-    // 앱 포커스를 잃으면 잠금 해제해 커서가 갇히는 문제 방지
-    //private void OnApplicationFocus(bool hasFocus)
-    //{
-    //    if (!hasFocus && _pointerLocked)
-    //    {
-    //        _pointerLocked = false;
-    //        ApplyCursorState();
-    //    }
-    //}
     #endregion
 }

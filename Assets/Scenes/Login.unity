@@ -2168,6 +2168,50 @@ Transform:
   - {fileID: 1130395429}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1233099837
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1233099839}
+  - component: {fileID: 1233099838}
+  m_Layer: 0
+  m_Name: BotGameStarter
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1233099838
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1233099837}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b522d4141e049314d95fde2aaf4eddc3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &1233099839
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1233099837}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1244441093
 GameObject:
   m_ObjectHideFlags: 0
@@ -2835,7 +2879,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01e3e5f34683dc34b925cffa242a807d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serverAddress: 172.21.100.154
+  serverAddress: 127.0.0.1
   serverPort: 7779
   nameInput: {fileID: 912574218}
   characterSelectCamera: {fileID: 142083412}
@@ -4050,7 +4094,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 18b8a20568e1f0b4fb3fb1cea7d973ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameSceneName: kang
+  isServerMod: 1
+  gameSceneName: GameScene
   characterPrefabs:
   - {fileID: 5785324236016558479, guid: a43ef8e1e961de34fb719499a2851b9a, type: 3}
   - {fileID: 8763665469170833523, guid: 246d6fc3d65b80044a2f2be7429fc7db, type: 3}
@@ -4064,6 +4109,7 @@ MonoBehaviour:
   - {fileID: 2924196025165890153, guid: 9f19e73cf89feea419a29e8a1927fee0, type: 3}
   - {fileID: 5959619642509524950, guid: e0d1c7feddd34b24ca2012b30582afeb, type: 3}
   - {fileID: 5309982938216476723, guid: 43c0ac29a41a27446af684a239f6b066, type: 3}
+  - {fileID: 5785324236016558479, guid: 32a80714f8c91684084c599ca110faf8, type: 3}
 --- !u!1001 &1951648188819123406
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4682,3 +4728,4 @@ SceneRoots:
   - {fileID: 1206528543}
   - {fileID: 1607066190}
   - {fileID: 1715763403}
+  - {fileID: 1233099839}

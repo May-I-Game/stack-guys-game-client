@@ -1,21 +1,21 @@
 using System.Collections.Generic;
-using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.TextCore.Text;
 
 public class NetworkGameManager : MonoBehaviour
 {
     private static NetworkGameManager instance;
     private NetworkManager networkManager;
 
+    [SerializeField] private bool isServerMod;
     [SerializeField] private string gameSceneName = "GameScene";
     [SerializeField] private GameObject[] characterPrefabs;
 
     private bool hasInitialized = false;
     private Dictionary<ulong, int> clientCharacterSelections = new Dictionary<ulong, int>();
     private Dictionary<ulong, string> clientPlayerNames = new Dictionary<ulong, string>();
+
     private void Awake()
     {
         // 싱글톤 패턴으로 중복 방지
@@ -38,15 +38,20 @@ public class NetworkGameManager : MonoBehaviour
             hasInitialized = true;
         }
 
-        // 배치 모드에서 실행 시 자동으로 서버 시작
-        if (Application.isBatchMode)
+#if UNITY_SERVER
+        if (isServerMod)
         {
             StartServerAndLoadScene();
         }
         else
         {
-            Debug.Log("--- CLIENT BUILD DETECTED ---");
+            Debug.Log("--- SERVER BUILD CLIENT MOD DETECTED ---");
         }
+#elif DUMMY_CLIENT
+        Debug.Log("--- BOT CLIENT BUILD DETECTED ---");
+#else
+        Debug.Log("--- CLIENT BUILD DETECTED ---");
+#endif
     }
 
     private void Initialize()
@@ -72,8 +77,8 @@ public class NetworkGameManager : MonoBehaviour
 
     private void StartServerAndLoadScene()
     {
-        Debug.Log("--- SERVER BUILD DETECTED (Batch Mode) ---");
-        Debug.Log("     --------  SERVER START  --------     ");
+        Debug.Log("--- SERVER BUILD DETECTED ---");
+        Debug.Log("-----  SERVER START  -----");
 
         NetworkManager.Singleton.StartServer();
 
