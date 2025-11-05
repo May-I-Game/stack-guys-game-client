@@ -6,6 +6,7 @@ public class CameraFollow : MonoBehaviour
 {
     [Header("Target Settings")]
     public Transform target;
+    public float teleportDistance = 10f;                        // 이 거리 이상이면 즉시 텔레포트
 
     [Header("Camera Offset")]
     public Vector3 offset = new Vector3(0f, 7f, -15f);
@@ -264,7 +265,17 @@ public class CameraFollow : MonoBehaviour
     // SmoothDamp(>0) 또는 즉시 스냅(=0)으로 목표 위치로 이동
     void MoveCamera(Vector3 targetPosition)
     {
-        if (smoothSpeed > 0f)
+        // 현재 카메라와 목표 위치 사이의 거리 계산
+        float distance = Vector3.Distance(transform.position, targetPosition);
+
+        // 거리가 임계값보다 크면 즉시 텔레포트
+        if (distance > teleportDistance)
+        {
+            transform.position = targetPosition;
+            velocity = Vector3.zero; // 속도 초기화
+        }
+        // 가까우면 부드럽게 따라감
+        else if (smoothSpeed > 0f)
         {
             transform.position = Vector3.SmoothDamp(
                 transform.position,
@@ -273,6 +284,7 @@ public class CameraFollow : MonoBehaviour
                 1f / smoothSpeed
             );
         }
+        // smoothSpeed가 0 이하일 때의 안전장치
         else
         {
             transform.position = targetPosition;
