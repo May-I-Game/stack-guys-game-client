@@ -3,10 +3,12 @@ using UnityEngine;
 public class DummyController : PlayerController
 {
     [Header("Bot Settings")]
-    public float actionIntervalMin = 3f;
-    public float actionIntervalMax = 5f;
-    private Vector3 currentMoveDir = Vector3.zero;
+    public float rotateIntervalMin = 1f;
+    public float rotateIntervalMax = 1.5f;
     private float rotateTimer = 3f;
+    private Vector3 currentMoveDir = Vector3.zero;
+    public float jumpIntervalMin = 3f;
+    public float jumpIntervalMax = 5f;
     private float jumpTimer = 3f;
 
     protected override void Update()
@@ -28,16 +30,16 @@ public class DummyController : PlayerController
         rotateTimer -= Time.deltaTime;
         if (rotateTimer < 0)
         {
-            currentMoveDir = new Vector3(Random.Range(0f, 1f), 0, Random.Range(0f, 1f));
-            rotateTimer = Random.Range(actionIntervalMin, actionIntervalMax);
+            MovePlayerServerRpc(currentMoveDir);
+            currentMoveDir = new Vector3(Random.Range(-1f, 1f), 0, Random.Range(-1f, 1f));
+            rotateTimer = Random.Range(rotateIntervalMin, rotateIntervalMax);
         }
-        MovePlayerServerRpc(currentMoveDir);
 
         jumpTimer -= Time.deltaTime;
         if (jumpTimer < 0)
         {
             JumpPlayerServerRpc();
-            jumpTimer = Random.Range(actionIntervalMin, actionIntervalMax);
+            jumpTimer = Random.Range(jumpIntervalMin, jumpIntervalMax);
         }
     }
 }

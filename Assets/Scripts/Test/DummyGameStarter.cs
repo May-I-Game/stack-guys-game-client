@@ -5,12 +5,13 @@ using UnityEngine;
 
 public class DummyGameStarter : MonoBehaviour
 {
-    private int clientCharIndex = 0;
+    private int clientCharIndex = 12;
     private string clientName = "BotClient";
     private bool isConnecting;
 
     private void Start()
     {
+#if DUMMY_CLIENT
         if (NetworkManager.Singleton != null)
         {
             //networkManager 콜백 구독
@@ -19,16 +20,19 @@ public class DummyGameStarter : MonoBehaviour
         }
 
         ConnectToServer();
+#endif
     }
 
     private void OnDestroy()
     {
+#if DUMMY_CLIENT
         if (NetworkManager.Singleton != null)
         {
             NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
             NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
         }
         CancelInvoke(nameof(CheckConnectionTimeout));
+#endif
     }
 
     private void OnClientConnected(ulong clientId)

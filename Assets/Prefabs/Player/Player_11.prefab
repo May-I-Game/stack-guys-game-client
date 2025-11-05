@@ -1062,7 +1062,6 @@ GameObject:
   - component: {fileID: 6302605766645664122}
   - component: {fileID: 6189197716342150360}
   - component: {fileID: 6147180758796284364}
-  - component: {fileID: -680307750599574720}
   - component: {fileID: 6837014527919319146}
   - component: {fileID: 4112465486471160893}
   - component: {fileID: 5606927148127964588}
@@ -1168,27 +1167,6 @@ CapsuleCollider:
   m_Height: 1.85
   m_Direction: 1
   m_Center: {x: 0, y: 0.9, z: 0}
---- !u!65 &-680307750599574720
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5959619642509524950}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 0
-  serializedVersion: 3
-  m_Size: {x: 0.8, y: 1.8, z: 0.8}
-  m_Center: {x: 0, y: 0.9, z: 0}
 --- !u!114 &6837014527919319146
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1229,7 +1207,6 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   walkSpeed: 4
   rotationSpeed: 10
-  togglePointerLockWithRMB: 1
   jumpForce: 3
   diveForce: 4
   diveDownForce: 1
@@ -1244,6 +1221,7 @@ MonoBehaviour:
   RespawnId:
     m_InternalValue: 0
   respawnManager: {fileID: 0}
+  inputEnabled: 1
 --- !u!114 &5606927148127964588
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -85,8 +85,8 @@ public class PlayerController : NetworkBehaviour
         respawnManager = FindFirstObjectByType<RespawnManager>();
 
         // Animator가 설정되지 않았다면 자동으로 찾기
-        animator ??= GetComponent<Animator>();
-        animator ??= GetComponentInChildren<Animator>();
+        animator = animator != null ? animator : GetComponent<Animator>();
+        animator = animator != null ? animator : GetComponentInChildren<Animator>();
     }
 
     protected virtual void Update()

@@ -8,12 +8,14 @@ public class NetworkGameManager : MonoBehaviour
     private static NetworkGameManager instance;
     private NetworkManager networkManager;
 
+    [SerializeField] private bool isServerMod;
     [SerializeField] private string gameSceneName = "GameScene";
     [SerializeField] private GameObject[] characterPrefabs;
 
     private bool hasInitialized = false;
     private Dictionary<ulong, int> clientCharacterSelections = new Dictionary<ulong, int>();
     private Dictionary<ulong, string> clientPlayerNames = new Dictionary<ulong, string>();
+
     private void Awake()
     {
         // 싱글톤 패턴으로 중복 방지
@@ -37,7 +39,7 @@ public class NetworkGameManager : MonoBehaviour
         }
 
 #if UNITY_SERVER
-        if (Application.isBatchMode)
+        if (isServerMod)
         {
             StartServerAndLoadScene();
         }
