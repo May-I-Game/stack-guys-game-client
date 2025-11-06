@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8322235344045565762}
   - component: {fileID: 6447403739512176486}
   - component: {fileID: 1620073952334904919}
-  - component: {fileID: 115455952567287561}
+  - component: {fileID: 7101765245775661002}
   m_Layer: 0
   m_Name: DoubleSpike_MESH
   m_TagString: Death
@@ -87,8 +87,8 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &115455952567287561
-MeshCollider:
+--- !u!136 &7101765245775661002
+CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -105,7 +105,8 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 1216925830340625318, guid: b06c433e732a0cb4992b6eecbb695894, type: 3}
+  serializedVersion: 2
+  m_Radius: 0.17180061
+  m_Height: 2.3205032
+  m_Direction: 0
+  m_Center: {x: -0.02001381, y: 0, z: 0}
