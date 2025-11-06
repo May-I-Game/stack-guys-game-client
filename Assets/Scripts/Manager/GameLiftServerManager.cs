@@ -1,4 +1,4 @@
-
+#if UNITY_SERVER
 using Aws.GameLift.Server;
 using Amazon.GameLift.Model;            // 필요 시 유지
 using System.Collections.Generic;
@@ -114,3 +114,4 @@ public class GameLiftServerManager : MonoBehaviour
         GameLiftServerAPI.Destroy();
     }
 }
+#endif
