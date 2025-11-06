@@ -5,7 +5,7 @@ using UnityEngine.AI;
 [RequireComponent(typeof(NavMeshAgent))]
 public class BotController : PlayerController
 {
-    [Header("Bot AI Settings")]
+    [Header("Bot Settings")]
     [SerializeField] private float updatePathInterval = 0.5f; // 경로 업데이트 주기
     
     private NavMeshAgent navAgent;
@@ -14,19 +14,19 @@ public class BotController : PlayerController
     
     protected override void Update()
     {
-        // 봇은 입력을 받지 않음
-        if (IsOwner)
-        {
-            UpdateAnimation();
-        }
+        // 봇은 서버에서만 업데이트
+        if (!IsServer) return;
+
+        UpdateAnimation();
     }
 
-    private void Start()
+    protected override void Start()
     {
-        // 부모 클래스 초기화는 그대로 사용
         base.Start();
-        
-        // NavMeshAgent 설정
+
+        // 서버에서먄 AI 설정
+        if (!IsServer) return;
+
         navAgent = GetComponent<NavMeshAgent>();
         if (navAgent != null)
         {
@@ -41,22 +41,19 @@ public class BotController : PlayerController
             navAgent.updateRotation = false;
         }
         
-        // 골 찾기
         FindGoal();
     }
 
-    private void FixedUpdate()
+    protected override void FixedUpdate()
     {
         if (!IsServer) return;
         if (netIsDeath.Value) return;
         
-        // 서버에서만 AI 로직 실행
         if (navAgent != null && navAgent.enabled)
         {
             UpdateBotAI();
         }
         
-        // 부모 클래스의 물리/애니메이션 처리
         base.FixedUpdate();
     }
 
@@ -73,7 +70,7 @@ public class BotController : PlayerController
         }
         else
         {
-            Debug.LogWarning("[Bot] Goal 태그를 가진 오브젝트를 찾을 수 없습니다!");
+            Debug.LogWarning("[Bot] Goal 태그를 가진 오브젝트 없음");
         }
     }
 
@@ -128,10 +125,7 @@ public class BotController : PlayerController
 
     public override void OnNetworkSpawn()
     {
-        // 카메라는 봇을 따라가지 않음
-        if (IsOwner && !IsServer)
-        {
-            // 클라이언트 봇은 카메라 설정 안함
-        }
+        // 봇은 카메라 설정 안함
+        // 부모 클래스의 카메라 설정을 무시
     }
 }

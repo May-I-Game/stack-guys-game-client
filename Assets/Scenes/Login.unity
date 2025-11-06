@@ -4082,7 +4082,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isServerMod: 1
-  gameSceneName: GameScene
+  gameSceneName: DoHoon
   characterPrefabs:
   - {fileID: 5785324236016558479, guid: a43ef8e1e961de34fb719499a2851b9a, type: 3}
   - {fileID: 8763665469170833523, guid: 246d6fc3d65b80044a2f2be7429fc7db, type: 3}
@@ -4097,10 +4097,7 @@ MonoBehaviour:
   - {fileID: 5959619642509524950, guid: e0d1c7feddd34b24ca2012b30582afeb, type: 3}
   - {fileID: 5309982938216476723, guid: 43c0ac29a41a27446af684a239f6b066, type: 3}
   - {fileID: 5785324236016558479, guid: 32a80714f8c91684084c599ca110faf8, type: 3}
-  disconnectOnBackground: 1
   maxBackgroundTime: 30
-  autoReconnectOnForeground: 1
-  reconnectDelay: 1
   backgroundTargetFrameRate: 10
 --- !u!1001 &1951648188819123406
 PrefabInstance:

@@ -77,7 +77,7 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
-    protected void Start()
+    protected virtual void Start()
     {
         rb = GetComponent<Rigidbody>();
         inputHandler = GetComponent<PlayerInputHandler>();
@@ -119,7 +119,7 @@ public class PlayerController : NetworkBehaviour
         UpdateAnimation();
     }
 
-    protected void FixedUpdate()
+    protected virtual void FixedUpdate()
     {
         // 서버만 로직 처리
         if (IsServer)
@@ -208,7 +208,7 @@ public class PlayerController : NetworkBehaviour
         isGrabQueued = true;
     }
 
-    [ServerRpc]
+    [ServerRpc(RequireOwnership = false)]
     public void RespawnPlayerServerRpc()
     {
         DoRespawn();

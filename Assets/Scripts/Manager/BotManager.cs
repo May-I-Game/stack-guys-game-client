@@ -45,19 +45,19 @@ public class BotManager : NetworkBehaviour
     {
         if (!IsServer)
         {
-            Debug.LogWarning("[BotManager] 서버만 봇을 생성할 수 있습니다!");
+            Debug.LogWarning("[BotManager] 서버만 봇을 생성할 수 있음");
             return;
         }
 
         if (botPrefab == null)
         {
-            Debug.LogError("[BotManager] 봇 프리팹이 설정되지 않았습니다!");
+            Debug.LogError("[BotManager] 봇 프리팹이 설정 안됨");
             return;
         }
 
         if (spawnPoints == null || spawnPoints.Length == 0)
         {
-            Debug.LogError("[BotManager] 스폰 포인트가 설정되지 않았습니다!");
+            Debug.LogError("[BotManager] 스폰 포인트가 설정 안됨");
             return;
         }
 
@@ -66,7 +66,7 @@ public class BotManager : NetworkBehaviour
             SpawnBot(i);
         }
 
-        Debug.Log($"[BotManager] {numberOfBots}개의 봇을 생성했습니다.");
+        Debug.Log($"[BotManager] {numberOfBots}개의 봇을 생성");
     }
 
     private void SpawnBot(int botIndex)
@@ -86,7 +86,7 @@ public class BotManager : NetworkBehaviour
         if (botIdentity != null)
         {
             botIdentity.IsBot = true;
-            botIdentity.BotName = $"Bot_{botIndex + 1:D2}";
+            // BotName을 설정하지 않으면 NetworkBotIdentity의 Awake()에서 자동 생성됨
         }
 
         // 네트워크 오브젝트로 스폰 (서버 소유)
