@@ -33495,44 +33495,13 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 8944336655422409498, guid: f6d148d888ffbf54b9afe9936dfaec1f, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 916744070}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f6d148d888ffbf54b9afe9936dfaec1f, type: 3}
 --- !u!1 &916744069 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8944336655422409498, guid: f6d148d888ffbf54b9afe9936dfaec1f, type: 3}
   m_PrefabInstance: {fileID: 916744068}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &916744070
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 916744069}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 61966ae17a5ba064087239fd835e6b5c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  target: {fileID: 0}
-  teleportDistance: 3
-  offset: {x: 0, y: 1.5, z: -3}
-  followX: 1
-  followY: 1
-  followZ: 1
-  smoothSpeed: 8
-  rotationSmoothSpeed: 10
-  fixedPitch: 5
-  topRegionPercent: 0.3
-  ignoreUIOnStart: 1
-  dragYawSensitivity: 0.2
-  allowPitchDrag: 1
-  dragPitchSensitivity: 0.12
-  pitchMin: -5
-  pitchMax: 75
 --- !u!1001 &919862198
 PrefabInstance:
   m_ObjectHideFlags: 0

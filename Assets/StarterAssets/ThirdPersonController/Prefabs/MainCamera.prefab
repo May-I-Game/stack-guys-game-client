@@ -13,6 +13,8 @@ GameObject:
   - component: {fileID: 8944336655422409497}
   - component: {fileID: 9078993845375825671}
   - component: {fileID: -7756724462168527499}
+  - component: {fileID: 1303015576224256053}
+  - component: {fileID: 1431844617286526003}
   m_Layer: 0
   m_Name: MainCamera
   m_TagString: MainCamera
@@ -170,3 +172,46 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
+--- !u!114 &1303015576224256053
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8944336655422409498}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 61966ae17a5ba064087239fd835e6b5c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 0}
+  teleportDistance: 3
+  offset: {x: 0, y: 1.5, z: -3}
+  followX: 1
+  followY: 1
+  followZ: 1
+  smoothSpeed: 8
+  rotationSmoothSpeed: 10
+  fixedPitch: 5
+  topRegionPercent: 0.3
+  ignoreUIOnStart: 1
+  dragYawSensitivity: 0.2
+  allowPitchDrag: 1
+  dragPitchSensitivity: 0.12
+  pitchMin: -5
+  pitchMax: 75
+--- !u!114 &1431844617286526003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8944336655422409498}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2c0afe949c63b73419c21bb3fa90b577, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveSpeed: 10
+  shiftSpeed: 20
+  sensitivity: 2
