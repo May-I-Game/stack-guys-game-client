@@ -58910,6 +58910,7 @@ GameObject:
   - component: {fileID: 1600138840}
   - component: {fileID: 1600138839}
   - component: {fileID: 1600138838}
+  - component: {fileID: 1600138841}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -59105,6 +59106,29 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1600138841
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1600138837}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ad85018dc4b85e44ba211715be236b8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  logInterval: 1
+  autoStartOnConnect: 1
+  showDebugUI: 1
+  trackNetwork: 1
+  trackPerformance: 1
+  trackMemory: 1
+  trackRendering: 1
+  trackPhysics: 1
+  trackFileAccess: 1
+  fixedLogDirectory: C:\Users\user\Documents\GitHub\stack-guys\Build\Profiller
 --- !u!1001 &1601021526
 PrefabInstance:
   m_ObjectHideFlags: 0
