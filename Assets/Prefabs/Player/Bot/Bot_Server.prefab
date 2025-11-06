@@ -1492,7 +1492,7 @@ MonoBehaviour:
   escapeRequiredJumps: 5
   bounceForce: 5
   animator: {fileID: 0}
-  bodyPrefab: {fileID: 0}
+  bodyPrefab: {fileID: 5814155081040976887, guid: e785fca2fecc59d46912db6379fa4394, type: 3}
   RespawnId:
     m_InternalValue: 0
   respawnManager: {fileID: 0}

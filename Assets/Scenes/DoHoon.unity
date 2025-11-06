@@ -47282,9 +47282,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   botPrefab: {fileID: 5309982938216476723, guid: b1c3c2cd08f943a4dbfeb3812b3980b1, type: 3}
-  numberOfBots: 2
+  numberOfBots: 50
   spawnPoints:
   - {fileID: 2092092486}
+  - {fileID: 1602559662}
 --- !u!1001 &1786704686
 PrefabInstance:
   m_ObjectHideFlags: 0
