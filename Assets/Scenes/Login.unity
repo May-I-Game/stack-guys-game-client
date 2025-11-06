@@ -1398,7 +1398,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 762926095}
-  - component: {fileID: 762926094}
   - component: {fileID: 762926096}
   m_Layer: 0
   m_Name: GameLiftServerManager
@@ -1407,18 +1406,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &762926094
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 762926093}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9c7eabeba22754f4b8b27bd44448ae37, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!4 &762926095
 Transform:
   m_ObjectHideFlags: 0
