@@ -164,9 +164,9 @@ public class PlayerController : NetworkBehaviour
         inputEnabled = enabled;
     }
 
-    // 클라에서 서버에게 요청할 Rpc 모음
+    // 클라에서 서버에게 요청할 Rpc 모음, 봇의 소유권 문제 때문에 false 설정
     #region ServerRpcs
-    [ServerRpc]
+    [ServerRpc(RequireOwnership = false)]
     protected void MovePlayerServerRpc(Vector2 direction)
     {
         // 충돌 중이거나 다이브 착지 중이면 입력 무시
@@ -184,7 +184,7 @@ public class PlayerController : NetworkBehaviour
         netCurrentSpeed.Value = walkSpeed;
     }
 
-    [ServerRpc]
+    [ServerRpc(RequireOwnership = false)]
     protected void JumpPlayerServerRpc()
     {
         // 충돌 중이거나 다이브 착지 중이면 입력 무시
@@ -196,7 +196,7 @@ public class PlayerController : NetworkBehaviour
         isJumpQueued = true;
     }
 
-    [ServerRpc]
+    [ServerRpc(RequireOwnership = false)]
     private void GrabPlayerServerRpc()
     {
         // 충돌 중이거나 공중에 있거나 다이브 착지 중이거나 잡힌 상태면 입력 무시
@@ -215,14 +215,14 @@ public class PlayerController : NetworkBehaviour
     }
 
     // 애니메이션이 끝날때 호출되는 함수
-    [ServerRpc]
+    [ServerRpc(RequireOwnership = false)]
     public void ResetHitStateServerRpc()
     {
         //이제 이동 가능
         isHit = false;
     }
 
-    [ServerRpc]
+    [ServerRpc(RequireOwnership = false)]
     public void ResetStateServerRpc()
     {
         ResetPlayerState();
