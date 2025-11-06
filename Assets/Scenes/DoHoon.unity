@@ -13139,6 +13139,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: DoorWall001_MESH (7)
       objectReference: {fileID: 0}
+    - target: {fileID: 2179053535918370844, guid: b3ed4c02e8db14c409e824b6dababb33, type: 3}
+      propertyPath: m_TagString
+      value: Goal
+      objectReference: {fileID: 0}
     - target: {fileID: 4491164035357222835, guid: b3ed4c02e8db14c409e824b6dababb33, type: 3}
       propertyPath: m_LocalScale.x
       value: 1.5000002
@@ -21154,7 +21158,7 @@ Transform:
   m_GameObject: {fileID: 838055331}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 4.91, z: -6.03}
+  m_LocalPosition: {x: 600.4, y: 5.33, z: -8.97}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -39967,9 +39971,13 @@ PrefabInstance:
       propertyPath: m_Name
       value: SmallTriangleTrap 1 (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 7595326119421109423, guid: 82f6c481a121f7148ae0b96a1c233838, type: 3}
+      propertyPath: m_TagString
+      value: Death
+      objectReference: {fileID: 0}
     - target: {fileID: 8757561124791757463, guid: 82f6c481a121f7148ae0b96a1c233838, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 15.65
+      value: 15.77
       objectReference: {fileID: 0}
     - target: {fileID: 8757561124791757463, guid: 82f6c481a121f7148ae0b96a1c233838, type: 3}
       propertyPath: m_LocalPosition.y
@@ -39977,7 +39985,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8757561124791757463, guid: 82f6c481a121f7148ae0b96a1c233838, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 8.52002
+      value: 8.52
       objectReference: {fileID: 0}
     - target: {fileID: 8757561124791757463, guid: 82f6c481a121f7148ae0b96a1c233838, type: 3}
       propertyPath: m_LocalRotation.w
@@ -42093,7 +42101,7 @@ Transform:
   m_GameObject: {fileID: 1602559661}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 10, y: 0.5, z: -4}
+  m_LocalPosition: {x: 0, y: -0.18, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -47178,6 +47186,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1783362396}
+  - component: {fileID: 1783362398}
+  - component: {fileID: 1783362397}
+  - component: {fileID: 1783362399}
   m_Layer: 0
   m_Name: BotManager
   m_TagString: Untagged
@@ -47200,6 +47211,80 @@ Transform:
   m_Children: []
   m_Father: {fileID: 532188006}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1783362397
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1783362395}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 1964739405
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 0
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
+--- !u!114 &1783362398
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1783362395}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a5ac11cc976e418e8d13136b07e1f52, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SerializedVersion: 0
+  m_AgentTypeID: 0
+  m_CollectObjects: 0
+  m_Size: {x: 10, y: 10, z: 10}
+  m_Center: {x: 0, y: 2, z: 0}
+  m_LayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_UseGeometry: 0
+  m_DefaultArea: 0
+  m_GenerateLinks: 0
+  m_IgnoreNavMeshAgent: 1
+  m_IgnoreNavMeshObstacle: 1
+  m_OverrideTileSize: 0
+  m_TileSize: 256
+  m_OverrideVoxelSize: 0
+  m_VoxelSize: 0.16666667
+  m_MinRegionArea: 2
+  m_NavMeshData: {fileID: 23800000, guid: e001d8c399c9e5849a9d4077dcd16fd6, type: 2}
+  m_BuildHeightMesh: 0
+--- !u!114 &1783362399
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1783362395}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 34318ed7bd8922041ba7b9ef77836b17, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  botPrefab: {fileID: 5309982938216476723, guid: b1c3c2cd08f943a4dbfeb3812b3980b1, type: 3}
+  numberOfBots: 2
+  spawnPoints:
+  - {fileID: 2092092486}
 --- !u!1001 &1786704686
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -58195,7 +58280,7 @@ Transform:
   m_GameObject: {fileID: 2092092485}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 12, y: 0.5, z: -4}
+  m_LocalPosition: {x: 1.98, y: -0.11, z: 0.04}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

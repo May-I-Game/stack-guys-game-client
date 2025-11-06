@@ -26,7 +26,7 @@ public class PlayerController : NetworkBehaviour
     [Header("Animation")]
     public Animator animator;
 
-    private Rigidbody rb;
+    protected Rigidbody rb;
     private PlayerInputHandler inputHandler;
 
     private Vector2 lastMoveInput = Vector2.zero;
@@ -37,34 +37,34 @@ public class PlayerController : NetworkBehaviour
 
     private float diveGroundedDuration = 0.65f; // 다이브 착지 애니메이션 길이
 
-    private NetworkVariable<Vector2> netMoveDirection = new NetworkVariable<Vector2>();
-    private NetworkVariable<float> netCurrentSpeed = new NetworkVariable<float>();
+    protected NetworkVariable<Vector2> netMoveDirection = new NetworkVariable<Vector2>();
+    protected NetworkVariable<float> netCurrentSpeed = new NetworkVariable<float>();
 
-    private NetworkVariable<bool> netIsGrounded = new NetworkVariable<bool>();
-    private NetworkVariable<float> netVerticalVelocity = new NetworkVariable<float>();
-    private NetworkVariable<bool> netIsDiving = new NetworkVariable<bool>(false); // 공중 다이브 중인지
-    private NetworkVariable<bool> netIsDiveGrounded = new NetworkVariable<bool>(false); // 다이브 착지 상태 (이동 불가)
-    private NetworkVariable<bool> netIsDeath = new NetworkVariable<bool>(false); // 죽었는지?
-    private bool isHit = false; // 충돌 상태 (이동 불가)
-    private bool canDive = false; // 다이브 가능 상태 (점프 중)
+    protected NetworkVariable<bool> netIsGrounded = new NetworkVariable<bool>();
+    protected NetworkVariable<float> netVerticalVelocity = new NetworkVariable<float>();
+    protected NetworkVariable<bool> netIsDiving = new NetworkVariable<bool>(false); // 공중 다이브 중인지
+    protected NetworkVariable<bool> netIsDiveGrounded = new NetworkVariable<bool>(false); // 다이브 착지 상태 (이동 불가)
+    protected NetworkVariable<bool> netIsDeath = new NetworkVariable<bool>(false); // 죽었는지?
+    protected bool isHit = false; // 충돌 상태 (이동 불가)
+    protected bool canDive = false; // 다이브 가능 상태 (점프 중)
 
     // 잡기 관련 변수
-    private NetworkVariable<bool> netIsHolding = new NetworkVariable<bool>(false); // 무언가를 들고 있는지
-    private NetworkVariable<bool> netIsGrabbed = new NetworkVariable<bool>(false); // 잡혀있는지
-    private NetworkVariable<ulong> netGrabberId = new NetworkVariable<ulong>(0); // 누가 잡고 있는지
-    private NetworkVariable<ulong> netHoldingTargetId = new NetworkVariable<ulong>(0); // 누구를 잡고 있는지
+    protected NetworkVariable<bool> netIsHolding = new NetworkVariable<bool>(false); // 무언가를 들고 있는지
+    protected NetworkVariable<bool> netIsGrabbed = new NetworkVariable<bool>(false); // 잡혀있는지
+    protected NetworkVariable<ulong> netGrabberId = new NetworkVariable<ulong>(0); // 누가 잡고 있는지
+    protected NetworkVariable<ulong> netHoldingTargetId = new NetworkVariable<ulong>(0); // 누구를 잡고 있는지
 
     private GameObject holdingObject = null; // 실제로 들고 있는 오브젝트
     private int heldObjectOriginLayer;
     private int escapeJumpCount = 0; // 탈출 시도 횟수
 
-    NetworkTransform nt;
+    protected NetworkTransform nt;
 
     // 리스폰 구역 Index 값
     public NetworkVariable<int> RespawnId = new(
         0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-    [SerializeField] private RespawnManager respawnManager;     // 리스폰 리스트를 사용하기 위하여 선언
+    [SerializeField] protected RespawnManager respawnManager;     // 리스폰 리스트를 사용하기 위하여 선언
 
     //시네마틱 동기화를 위한 사용자 입력 무시 변수
     public bool inputEnabled = true;
@@ -77,7 +77,7 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
-    private void Start()
+    protected virtual void Start()
     {
         rb = GetComponent<Rigidbody>();
         inputHandler = GetComponent<PlayerInputHandler>();
@@ -119,7 +119,7 @@ public class PlayerController : NetworkBehaviour
         UpdateAnimation();
     }
 
-    private void FixedUpdate()
+    protected virtual void FixedUpdate()
     {
         // 서버만 로직 처리
         if (IsServer)
@@ -164,9 +164,9 @@ public class PlayerController : NetworkBehaviour
         inputEnabled = enabled;
     }
 
-    // 클라에서 서버에게 요청할 Rpc 모음
+    // 클라에서 서버에게 요청할 Rpc 모음, 봇의 소유권 문제 때문에 false 설정
     #region ServerRpcs
-    [ServerRpc]
+    [ServerRpc(RequireOwnership = false)]
     protected void MovePlayerServerRpc(Vector2 direction)
     {
         // 충돌 중이거나 다이브 착지 중이면 입력 무시
@@ -184,7 +184,7 @@ public class PlayerController : NetworkBehaviour
         netCurrentSpeed.Value = walkSpeed;
     }
 
-    [ServerRpc]
+    [ServerRpc(RequireOwnership = false)]
     protected void JumpPlayerServerRpc()
     {
         // 충돌 중이거나 다이브 착지 중이면 입력 무시
@@ -196,7 +196,7 @@ public class PlayerController : NetworkBehaviour
         isJumpQueued = true;
     }
 
-    [ServerRpc]
+    [ServerRpc(RequireOwnership = false)]
     private void GrabPlayerServerRpc()
     {
         // 충돌 중이거나 공중에 있거나 다이브 착지 중이거나 잡힌 상태면 입력 무시
@@ -208,21 +208,21 @@ public class PlayerController : NetworkBehaviour
         isGrabQueued = true;
     }
 
-    [ServerRpc]
+    [ServerRpc(RequireOwnership = false)]
     public void RespawnPlayerServerRpc()
     {
         DoRespawn();
     }
 
     // 애니메이션이 끝날때 호출되는 함수
-    [ServerRpc]
+    [ServerRpc(RequireOwnership = false)]
     public void ResetHitStateServerRpc()
     {
         //이제 이동 가능
         isHit = false;
     }
 
-    [ServerRpc]
+    [ServerRpc(RequireOwnership = false)]
     public void ResetStateServerRpc()
     {
         ResetPlayerState();
@@ -780,7 +780,7 @@ public class PlayerController : NetworkBehaviour
     // 주로 애니메이션 연동
     #region ClientRPCs
     [ClientRpc]
-    void SetTriggerClientRpc(string triggerName)
+    protected void SetTriggerClientRpc(string triggerName)
     {
         if (animator != null)
         {
@@ -789,7 +789,7 @@ public class PlayerController : NetworkBehaviour
     }
 
     [ClientRpc]
-    private void ResetAnimClientRpc()
+    protected void ResetAnimClientRpc()
     {
         if (animator == null) return;
 
