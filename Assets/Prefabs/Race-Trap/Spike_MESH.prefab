@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 3341891807899146382}
   - component: {fileID: 1859726550964033323}
   - component: {fileID: 4479925183712469985}
-  - component: {fileID: 7296434157289370797}
+  - component: {fileID: 8462794359611937463}
   m_Layer: 0
   m_Name: Spike_MESH
   m_TagString: Death
@@ -87,8 +87,8 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &7296434157289370797
-MeshCollider:
+--- !u!136 &8462794359611937463
+CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -105,7 +105,8 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 376554831931519963, guid: eb5633e1e1329ee4dae315dbf8b6ca11, type: 3}
+  serializedVersion: 2
+  m_Radius: 0.28032362
+  m_Height: 2.350477
+  m_Direction: 0
+  m_Center: {x: -0.021937251, y: 0, z: 0}
