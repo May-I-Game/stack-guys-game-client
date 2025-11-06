@@ -27,6 +27,8 @@ public class GameManager : NetworkBehaviour
     [SerializeField] private TMP_Text secondPlaceText;
     [SerializeField] private TMP_Text thirdPlaceText;
     [SerializeField] private Button mainButton;
+    [SerializeField] private TMP_Text QualifiedText;
+    [SerializeField] private GameObject gameUI;
 
     [Header("Settings")]
     [SerializeField] private int minPlayersToStart = 5;
@@ -113,10 +115,14 @@ public class GameManager : NetworkBehaviour
             isStartCountdownActive.OnValueChanged += UpdateStartCountdownVisibility;
             isEndCountdownActive.OnValueChanged += UpdateEndCountdownVisibility;
 
+            // 도착한 플레이어 수 변경 감지
+            rankings.OnListChanged += OnRankingsChanged;
+
             // 초기 상태 동기화 (새로 접속한 클라이언트를 위해)
             UpdatePlayerCountUI(0, currentPlayerCount.Value);
             UpdateStartCountdownVisibility(false, isStartCountdownActive.Value);
             UpdateEndCountdownVisibility(false, isEndCountdownActive.Value);
+            UpdateQualifiedUI();
 
             // 카운트다운이 진행 중이면 현재 시간도 업데이트
             if (isStartCountdownActive.Value || isEndCountdownActive.Value)
@@ -143,6 +149,9 @@ public class GameManager : NetworkBehaviour
             currentPlayerCount.OnValueChanged -= UpdatePlayerCountUI;
             isStartCountdownActive.OnValueChanged -= UpdateStartCountdownVisibility;
             isEndCountdownActive.OnValueChanged -= UpdateEndCountdownVisibility;
+
+            // 도착한 플레이어 수 변경 감지
+            rankings.OnListChanged -= OnRankingsChanged;
         }
     }
 
@@ -202,6 +211,20 @@ public class GameManager : NetworkBehaviour
         if (NowPlayerCount != null)
         {
             NowPlayerCount.text = $"현재 참가자: {newValue}명";
+        }
+        UpdateQualifiedUI();
+    }
+
+    private void OnRankingsChanged(NetworkListEvent<FixedString32Bytes> changeEvent)
+    {
+        UpdateQualifiedUI();
+    }
+
+    private void UpdateQualifiedUI()
+    {
+        if (QualifiedText != null)
+        {
+            QualifiedText.text = $"도착 : {rankings.Count} / {currentPlayerCount.Value}";
         }
     }
     private void UpdateStartCountdownVisibility(bool previousValue, bool newValue)
@@ -286,7 +309,7 @@ public class GameManager : NetworkBehaviour
 
         currentGameState.Value = GameState.Playing;
 
-        HideLobbyUIClientRpc();
+        HideLobbyUIShowGameUIClientRpc();
 
         int i = 0;
         foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
@@ -338,7 +361,7 @@ public class GameManager : NetworkBehaviour
         UpdateRankingUI();
     }
     [ClientRpc]
-    private void HideLobbyUIClientRpc()
+    private void HideLobbyUIShowGameUIClientRpc()
     {
         if (gameStartcountdown != null)
         {
@@ -347,6 +370,10 @@ public class GameManager : NetworkBehaviour
         if (NowPlayerCount != null)
         {
             NowPlayerCount.gameObject.SetActive(false);
+        }
+        if (gameUI != null)
+        {
+            gameUI.gameObject.SetActive(true);
         }
     }
     private void UpdateCountDownUI(float prviousValue, float newValue)
