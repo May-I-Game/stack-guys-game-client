@@ -191,7 +191,7 @@ public class NetworkGameManager : MonoBehaviour
         if (networkManager.IsClient && clientId == networkManager.LocalClientId)
         {
             Debug.Log("Disconnected from server");
-            SceneManager.LoadScene("LoginScene");
+            SceneManager.LoadScene("Login");
         }
     }
 
