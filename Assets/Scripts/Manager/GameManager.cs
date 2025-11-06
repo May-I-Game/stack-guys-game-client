@@ -218,6 +218,7 @@ public class GameManager : NetworkBehaviour
             gameEndcountdown.gameObject.SetActive(newValue);
         }
     }
+
     [ServerRpc(RequireOwnership = false)]
     public void PlayerReachedGoalServerRpc(string playerName, ulong clientId)
     {
@@ -229,7 +230,7 @@ public class GameManager : NetworkBehaviour
         PlayerController player = playerObject.GetComponent<PlayerController>();
         if (player != null)
         {
-            player.enabled = false;
+            player.inputEnabled = false;
         }
 
         // 순위에 추가

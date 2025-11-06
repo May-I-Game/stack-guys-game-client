@@ -224,7 +224,7 @@ public class PlayerController : NetworkBehaviour
     [ServerRpc]
     public void ResetStateServerRpc()
     {
-        ResetPlayerInput();
+        ResetPlayerState();
     }
     #endregion
 
@@ -628,24 +628,9 @@ public class PlayerController : NetworkBehaviour
             nt.Teleport(dest.position, dest.rotation, transform.localScale);
         }
 
-        ResetPlayerInput();
+        ResetPlayerState();
+    }
 
-        // 애니메이터도 각 클라에서 리셋
-        ResetAnimClientRpc();
-    }
-    private void ResetPlayerInput()
-    {
-        // 이동/점프 관련 상태 최소 초기화
-        netMoveDirection.Value = Vector3.zero;
-        netCurrentSpeed.Value = 0f;
-        isJumpQueued = false;
-        netIsGrounded.Value = true;
-        netIsDiving.Value = false;
-        netIsDiveGrounded.Value = false;
-        netIsDeath.Value = false;
-        canDive = false;
-        isHit = false;
-    }
 
     // 좌표를 이용한 텔레포트
     // 순간이동에도 쓰이므로 public
@@ -666,6 +651,11 @@ public class PlayerController : NetworkBehaviour
             nt.Teleport(pos, rot, transform.localScale);
         }
 
+        ResetPlayerState();
+    }
+
+    private void ResetPlayerState()
+    {
         // 이동/점프 관련 상태 최소 초기화
         netMoveDirection.Value = Vector3.zero;
         netCurrentSpeed.Value = 0f;

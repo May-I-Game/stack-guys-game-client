@@ -8,10 +8,10 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Login.unity
     guid: 72369e134ee2f67458b0b984178c585c
-  - enabled: 0
+  - enabled: 1
     path: Assets/Scenes/GameScene.unity
     guid: 26b894778761c7145a621f96751485cc
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/kang.unity
     guid: a0915f51729e86f4fa18081bcff71dee
   m_configObjects:
