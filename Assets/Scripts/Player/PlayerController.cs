@@ -176,7 +176,7 @@ public class PlayerController : NetworkBehaviour
             return;
         }
 
-        Debug.Log($"[이동] 플레이어 이동 Rpc 호출됨!: {direction}");
+        // Debug.Log($"[이동] 플레이어 이동 Rpc 호출됨!: {direction}");
 
         netMoveDirection.Value = direction;
 
