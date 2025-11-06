@@ -1,3 +1,4 @@
+using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -10,7 +11,22 @@ public class NetworkBotIdentity : NetworkBehaviour
     public bool IsBot = false;
 
     // 봇의 이름
-    public string BotName = "";
+    private NetworkVariable<FixedString64Bytes> networkBotName =
+    new NetworkVariable<FixedString64Bytes>("",
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Server);
+
+    public string BotName
+    {
+        get => networkBotName.Value.ToString();
+        set
+        {
+            if (IsServer)
+            {
+                networkBotName.Value = value;
+            }
+        }
+    }
 
     private static int botCounter = 0;
 
@@ -27,7 +43,7 @@ public class NetworkBotIdentity : NetworkBehaviour
     {
         string[] botNames = new string[]
         {
-            "Bot_A", "Bot_A", "Bot_C"
+            "Bot_A", "Bot_B", "Bot_C"
         };
 
         int nameIndex = botCounter % botNames.Length;
