@@ -1510,6 +1510,50 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!1 &763046930
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 763046931}
+  - component: {fileID: 763046932}
+  m_Layer: 0
+  m_Name: GameLiftServerManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &763046931
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 763046930}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 58.52527, y: 31.8571, z: 45.051533}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &763046932
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 763046930}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 928e983a870cca8458560bd3a78ae4f2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &912574216
 GameObject:
   m_ObjectHideFlags: 0
@@ -3059,8 +3103,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01e3e5f34683dc34b925cffa242a807d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serverAddress: 172.21.102.153
-  serverPort: 7779
+  matchApiUrl: http://54.180.24.20/api/find-game
   nameInput: {fileID: 912574218}
   characterSelectCamera: {fileID: 142083412}
   characterSelectPopup: {fileID: 1064280942}
@@ -5153,3 +5196,4 @@ SceneRoots:
   - {fileID: 1206528543}
   - {fileID: 1715763403}
   - {fileID: 1233099839}
+  - {fileID: 763046931}

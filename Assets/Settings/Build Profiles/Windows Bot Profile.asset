@@ -18,7 +18,7 @@ MonoBehaviour:
   m_PlatformId: 4e3c793746204150860bf175a9a41a05
   m_PlatformBuildProfile:
     rid: 2430352409323635501
-  m_OverrideGlobalSceneList: 0
+  m_OverrideGlobalSceneList: 1
   m_Scenes: []
   m_ScriptingDefines:
   - DUMMY_CLIENT
@@ -874,7 +874,7 @@ MonoBehaviour:
     - line: '|   m_RenderingPath: 1'
     - line: '|   m_MobileRenderingPath: 1'
     - line: '|   metroPackageName: stack-guys-game-client'
-    - line: '|   metroPackageVersion: '
+    - line: '|   metroPackageVersion: 1.0.0.0'
     - line: '|   metroCertificatePath: '
     - line: '|   metroCertificatePassword: '
     - line: '|   metroCertificateSubject: '
@@ -882,7 +882,7 @@ MonoBehaviour:
     - line: '|   metroCertificateNotAfter: 0000000000000000'
     - line: '|   metroApplicationDescription: stack-guys-game-client'
     - line: '|   wsaImages: {}'
-    - line: '|   metroTileShortName: '
+    - line: '|   metroTileShortName: stack-guys-bot-client'
     - line: '|   metroTileShowName: 0'
     - line: '|   metroMediumTileShowName: 0'
     - line: '|   metroLargeTileShowName: 0'
