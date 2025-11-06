@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 using UnityEditor;
 
 public class BotLauncher
@@ -8,10 +9,13 @@ public class BotLauncher
     private const string BuildPath = @"C:\Users\서정\Documents\GitHub\stack-guys\Build\Windows_Bot\stack-guys-bot-client.exe";
 
     // --- 실행할 봇의 개수 ---
-    private const int BotCount = 20;
+    private const int BotCount = 5;
+
+    // --- 봇 실행 사이의 딜레이 (밀리초 단위, 500 = 0.5초) ---
+    private const int LaunchDelayMs = 500;
 
     [MenuItem("Tools/Run Bots")]
-    private static void RunBots()
+    private static async Task RunBots()
     {
         // 빌드 경로가 비어있는지 확인
         if (string.IsNullOrEmpty(BuildPath))
@@ -36,6 +40,8 @@ public class BotLauncher
             Process.Start(startInfo);
 
             UnityEngine.Debug.Log($"봇 {i} 실행 완료. (log_bot_{i}.txt)");
+
+            await Task.Delay(LaunchDelayMs);
         }
     }
 

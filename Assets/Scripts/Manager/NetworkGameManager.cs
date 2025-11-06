@@ -160,12 +160,22 @@ public class NetworkGameManager : MonoBehaviour
     {
         if (networkManager.IsServer)
         {
-            Debug.Log($"[Server Log] Client connecting... Client ID: {clientId}");
-            Debug.Log($"[Server Log] Name: {clientPlayerNames[clientId]}, Character: {clientCharacterSelections[clientId]}");
-            Debug.Log($"[Server Log] Total players now: {networkManager.ConnectedClients.Count}");
+            // 옵저버 모드
+            if (!clientPlayerNames.ContainsKey(clientId))
+            {
+                Debug.Log($"[Server Log] Observer connected. Client ID: {clientId}");
+                Debug.Log($"[Server Log] Total players now: {networkManager.ConnectedClients.Count}");
+            }
 
-            //플레이어 스폰
-            SpawnPlayerForClient(clientId);
+            else
+            {
+                Debug.Log($"[Server Log] Client connecting... Client ID: {clientId}");
+                Debug.Log($"[Server Log] Name: {clientPlayerNames[clientId]}, Character: {clientCharacterSelections[clientId]}");
+                Debug.Log($"[Server Log] Total players now: {networkManager.ConnectedClients.Count}");
+
+                //플레이어 스폰
+                SpawnPlayerForClient(clientId);
+            }
         }
 
         if (networkManager.IsClient && clientId == networkManager.LocalClientId)
@@ -225,10 +235,16 @@ public class NetworkGameManager : MonoBehaviour
                 }
             }
             Debug.Log($"[Server] Client {request.ClientNetworkId}: Character={characterIndex}, Name={playerName}");
+
+            //서버 dictionary에 저장
+            clientCharacterSelections[request.ClientNetworkId] = characterIndex;
+            clientPlayerNames[request.ClientNetworkId] = playerName;
         }
-        //서버 dictionary에 저장
-        clientCharacterSelections[request.ClientNetworkId] = characterIndex;
-        clientPlayerNames[request.ClientNetworkId] = playerName;
+
+        else if (request.Payload == null)
+        {
+            Debug.Log($"[Server] Observer connection approved: {request.ClientNetworkId}");
+        }
 
         //연결 승인
         response.Approved = true;
@@ -274,11 +290,9 @@ public class NetworkGameManager : MonoBehaviour
 
         if (networkManager == null) return;
 
-        // 프레임레이트 제한 (서버가 아닌 경우)
-        Application.targetFrameRate = backgroundTargetFrameRate;
-        Debug.Log($"[NetworkGameManager] 백그라운드 FPS 제한: {backgroundTargetFrameRate}");
+        // TODO: 서버에 패킷전송 중지요청
 
-        // Pause 모드: 연결 유지, 플레이어 입력만 차단
+        // Pause 모드
         Debug.Log("[NetworkGameManager] 백그라운드 일시정지 모드 (연결 유지)");
         PausePlayer();
     }
@@ -292,10 +306,9 @@ public class NetworkGameManager : MonoBehaviour
 
         Debug.Log($"[NetworkGameManager] 포그라운드 복귀 (백그라운드 시간: {backgroundDuration:F1}초)");
 
-        // 프레임레이트 복원
-        Application.targetFrameRate = originalTargetFrameRate;
-
         if (networkManager == null) return;
+
+        // TODO: 서버에 패킷전송 재개요청
 
         // 너무 오래 백그라운드에 있었으면 연결이 끊겼을 수 있음
         if (backgroundDuration > maxBackgroundTime)

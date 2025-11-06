@@ -172,7 +172,7 @@ public class PlayerController : NetworkBehaviour
         // 충돌 중이거나 다이브 착지 중이면 입력 무시
         if (isHit || netIsDiveGrounded.Value)
         {
-            netMoveDirection.Value = Vector3.zero;
+            netMoveDirection.Value = Vector2.zero;
             return;
         }
 
