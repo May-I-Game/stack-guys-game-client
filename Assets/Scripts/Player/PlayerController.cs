@@ -29,7 +29,7 @@ public class PlayerController : NetworkBehaviour
     private Rigidbody rb;
     private PlayerInputHandler inputHandler;
 
-    private Vector3 lastMoveInput = Vector3.zero;
+    private Vector2 lastMoveInput = Vector2.zero;
     private bool isJumpQueued;
     private bool isGrabQueued;
 
@@ -37,7 +37,7 @@ public class PlayerController : NetworkBehaviour
 
     private float diveGroundedDuration = 0.65f; // 다이브 착지 애니메이션 길이
 
-    private NetworkVariable<Vector3> netMoveDirection = new NetworkVariable<Vector3>();
+    private NetworkVariable<Vector2> netMoveDirection = new NetworkVariable<Vector2>();
     private NetworkVariable<float> netCurrentSpeed = new NetworkVariable<float>();
 
     private NetworkVariable<bool> netIsGrounded = new NetworkVariable<bool>();
@@ -167,7 +167,7 @@ public class PlayerController : NetworkBehaviour
     // 클라에서 서버에게 요청할 Rpc 모음
     #region ServerRpcs
     [ServerRpc]
-    protected void MovePlayerServerRpc(Vector3 direction)
+    protected void MovePlayerServerRpc(Vector2 direction)
     {
         // 충돌 중이거나 다이브 착지 중이면 입력 무시
         if (isHit || netIsDiveGrounded.Value)
@@ -179,6 +179,7 @@ public class PlayerController : NetworkBehaviour
         Debug.Log($"[이동] 플레이어 이동 Rpc 호출됨!: {direction}");
 
         netMoveDirection.Value = direction;
+
         // 기본 이동 속도
         netCurrentSpeed.Value = walkSpeed;
     }
@@ -234,11 +235,15 @@ public class PlayerController : NetworkBehaviour
     private void PlayerMove()
     {
         // 이동
-        Vector3 movement = netMoveDirection.Value * netCurrentSpeed.Value * Time.fixedDeltaTime;
+        Vector3 movement = new Vector3(
+            netMoveDirection.Value.x * netCurrentSpeed.Value * Time.fixedDeltaTime,
+            0,
+            netMoveDirection.Value.y * netCurrentSpeed.Value * Time.fixedDeltaTime
+        );
         rb.MovePosition(rb.position + movement);
 
         // 회전
-        Quaternion targetRotation = Quaternion.LookRotation(netMoveDirection.Value);
+        Quaternion targetRotation = Quaternion.LookRotation(movement);
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime);
     }
 
@@ -587,7 +592,7 @@ public class PlayerController : NetworkBehaviour
 
         netIsDeath.Value = true;
         // 인풋벡터 초기화
-        netMoveDirection.Value = Vector3.zero;
+        netMoveDirection.Value = Vector2.zero;
         ReleaseGrab();
 
         SetTriggerClientRpc("Death");
@@ -657,7 +662,7 @@ public class PlayerController : NetworkBehaviour
     private void ResetPlayerState()
     {
         // 이동/점프 관련 상태 최소 초기화
-        netMoveDirection.Value = Vector3.zero;
+        netMoveDirection.Value = Vector2.zero;
         netCurrentSpeed.Value = 0f;
         isJumpQueued = false;
         netIsGrounded.Value = true;

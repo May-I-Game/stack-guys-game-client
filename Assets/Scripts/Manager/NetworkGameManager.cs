@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
@@ -8,13 +9,23 @@ public class NetworkGameManager : MonoBehaviour
     private static NetworkGameManager instance;
     private NetworkManager networkManager;
 
+    [Header("Game Settings")]
     [SerializeField] private bool isServerMod;
     [SerializeField] private string gameSceneName = "GameScene";
     [SerializeField] private GameObject[] characterPrefabs;
 
+    [Header("Background Handling")]
+    [SerializeField] private float maxBackgroundTime = 30f;
+    [SerializeField] private int backgroundTargetFrameRate = 10;
+
     private bool hasInitialized = false;
     private Dictionary<ulong, int> clientCharacterSelections = new Dictionary<ulong, int>();
     private Dictionary<ulong, string> clientPlayerNames = new Dictionary<ulong, string>();
+
+    // 백그라운드 처리 변수
+    private bool isInBackground = false;
+    private float backgroundStartTime = 0f;
+    private int originalTargetFrameRate;
 
     private void Awake()
     {
@@ -27,6 +38,8 @@ public class NetworkGameManager : MonoBehaviour
 
         instance = this;
         DontDestroyOnLoad(gameObject);
+
+        originalTargetFrameRate = Application.targetFrameRate;
     }
 
     private void Start()
@@ -62,17 +75,29 @@ public class NetworkGameManager : MonoBehaviour
             Debug.LogError("NetworkManger.Singleton is null!");
             return;
         }
-        // 이벤트 구독 전에 기존 구독 해제 (중복 방지)
-        networkManager.OnClientConnectedCallback -= OnClientConnected;
-        networkManager.OnClientDisconnectCallback -= OnClientDisconnected;
 
-        // 새로 구독
+        // 이벤트 구독
         networkManager.OnClientConnectedCallback += OnClientConnected;
         networkManager.OnClientDisconnectCallback += OnClientDisconnected;
 
         //connectionApproval 설정
         networkManager.NetworkConfig.ConnectionApproval = true;
         networkManager.ConnectionApprovalCallback += ApprovalCheck;
+    }
+
+    private void OnDestroy()
+    {
+        // instance가 자신일 때만 정리
+        if (instance == this)
+        {
+            if (networkManager != null)
+            {
+                networkManager.OnClientConnectedCallback -= OnClientConnected;
+                networkManager.OnClientDisconnectCallback -= OnClientDisconnected;
+                networkManager.ConnectionApprovalCallback -= ApprovalCheck;
+            }
+            instance = null;
+        }
     }
 
     private void StartServerAndLoadScene()
@@ -155,7 +180,7 @@ public class NetworkGameManager : MonoBehaviour
             Debug.Log($"[Server Log] Client disconnected. Client ID: {clientId}");
             Debug.Log($"[Server Log] Total players now: {networkManager.ConnectedClients.Count}");
 
-            //dictionary 정리
+            // dictionary 정리
             if (clientCharacterSelections.ContainsKey(clientId))
             {
                 clientCharacterSelections.Remove(clientId);
@@ -163,22 +188,10 @@ public class NetworkGameManager : MonoBehaviour
         }
 
         // 클라이언트의 경우만 Login으로 이동
-        if (networkManager.IsClient && !networkManager.IsServer && clientId == networkManager.LocalClientId)
+        if (networkManager.IsClient && clientId == networkManager.LocalClientId)
         {
             Debug.Log("Disconnected from server");
-        }
-    }
-    private void OnDestroy()
-    {
-        // instance가 자신일 때만 정리
-        if (instance == this)
-        {
-            if (networkManager != null)
-            {
-                networkManager.OnClientConnectedCallback -= OnClientConnected;
-                networkManager.OnClientDisconnectCallback -= OnClientDisconnected;
-            }
-            instance = null;
+            SceneManager.LoadScene("LoginScene");
         }
     }
 
@@ -216,8 +229,134 @@ public class NetworkGameManager : MonoBehaviour
         //서버 dictionary에 저장
         clientCharacterSelections[request.ClientNetworkId] = characterIndex;
         clientPlayerNames[request.ClientNetworkId] = playerName;
+
         //연결 승인
         response.Approved = true;
         response.CreatePlayerObject = false;
+    }
+
+    private void OnApplicationPause(bool pauseStatus)
+    {
+        if (pauseStatus)
+        {
+            // 백그라운드로 전환
+            OnEnterBackground();
+        }
+        else
+        {
+            // 포그라운드로 복귀
+            OnReturnForeground();
+        }
+    }
+
+    private void OnApplicationFocus(bool hasFocus)
+    {
+        if (!hasFocus && !isInBackground)
+        {
+            // 포커스 잃음 (Alt+Tab 등)
+            OnEnterBackground();
+        }
+        else if (hasFocus && isInBackground)
+        {
+            // 포커스 복귀
+            OnReturnForeground();
+        }
+    }
+
+    private void OnEnterBackground()
+    {
+        if (isInBackground) return;
+
+        isInBackground = true;
+        backgroundStartTime = Time.realtimeSinceStartup;
+
+        Debug.Log("[NetworkGameManager] 백그라운드 전환 감지");
+
+        if (networkManager == null) return;
+
+        // 프레임레이트 제한 (서버가 아닌 경우)
+        Application.targetFrameRate = backgroundTargetFrameRate;
+        Debug.Log($"[NetworkGameManager] 백그라운드 FPS 제한: {backgroundTargetFrameRate}");
+
+        // Pause 모드: 연결 유지, 플레이어 입력만 차단
+        Debug.Log("[NetworkGameManager] 백그라운드 일시정지 모드 (연결 유지)");
+        PausePlayer();
+    }
+
+    private void OnReturnForeground()
+    {
+        if (!isInBackground) return;
+
+        float backgroundDuration = Time.realtimeSinceStartup - backgroundStartTime;
+        isInBackground = false;
+
+        Debug.Log($"[NetworkGameManager] 포그라운드 복귀 (백그라운드 시간: {backgroundDuration:F1}초)");
+
+        // 프레임레이트 복원
+        Application.targetFrameRate = originalTargetFrameRate;
+
+        if (networkManager == null) return;
+
+        // 너무 오래 백그라운드에 있었으면 연결이 끊겼을 수 있음
+        if (backgroundDuration > maxBackgroundTime)
+        {
+            Debug.LogWarning("[NetworkGameManager] 백그라운드 시간 초과 - 연결 확인 필요");
+
+            if (!networkManager.IsConnectedClient)
+            {
+                Debug.LogError("[NetworkGameManager] 서버 연결 끊김 - 재연결 필요");
+                OnConnectionLost();
+                return;
+            }
+        }
+
+        // Pause 모드: 플레이어 제어 복원
+        Debug.Log("[NetworkGameManager] 포그라운드 복귀 - 플레이어 제어 재개");
+        ResumePlayer();
+    }
+
+    private void PausePlayer()
+    {
+        // 로컬 플레이어 찾기
+        if (networkManager.LocalClient != null && networkManager.LocalClient.PlayerObject != null)
+        {
+            GameObject playerObject = networkManager.LocalClient.PlayerObject.gameObject;
+            PlayerController controller = playerObject.GetComponent<PlayerController>();
+
+            if (controller != null)
+            {
+                // 입력 차단
+                controller.SetInputEnabled(false);
+                Debug.Log("[NetworkGameManager] 플레이어 입력 차단");
+            }
+        }
+    }
+
+    private void ResumePlayer()
+    {
+        // 로컬 플레이어 찾기
+        if (networkManager.LocalClient != null && networkManager.LocalClient.PlayerObject != null)
+        {
+            GameObject playerObject = networkManager.LocalClient.PlayerObject.gameObject;
+            PlayerController controller = playerObject.GetComponent<PlayerController>();
+
+            if (controller != null)
+            {
+                // 입력 재개
+                controller.SetInputEnabled(true);
+                Debug.Log("[NetworkGameManager] 플레이어 입력 재개");
+            }
+        }
+    }
+
+    private void OnConnectionLost()
+    {
+        // 연결 끊김 처리
+        Debug.LogWarning("[NetworkGameManager] 서버 연결 끊김 감지");
+
+        // TODO: UI 표시
+        // - "서버 연결이 끊어졌습니다" 메시지
+        // - 재연결 버튼
+        // - 메인 메뉴로 가기 버튼
     }
 }
