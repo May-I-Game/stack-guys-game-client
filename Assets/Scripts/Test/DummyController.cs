@@ -6,7 +6,7 @@ public class DummyController : PlayerController
     public float rotateIntervalMin = 1f;
     public float rotateIntervalMax = 1.5f;
     private float rotateTimer = 3f;
-    private Vector3 currentMoveDir = Vector3.zero;
+    private Vector2 currentMoveDir = Vector2.zero;
     public float jumpIntervalMin = 3f;
     public float jumpIntervalMax = 5f;
     private float jumpTimer = 3f;
@@ -31,7 +31,7 @@ public class DummyController : PlayerController
         if (rotateTimer < 0)
         {
             MovePlayerServerRpc(currentMoveDir);
-            currentMoveDir = new Vector3(Random.Range(-1f, 1f), 0, Random.Range(-1f, 1f));
+            currentMoveDir = new Vector2(Random.Range(-1f, 1f), Random.Range(-1f, 1f));
             rotateTimer = Random.Range(rotateIntervalMin, rotateIntervalMax);
         }
 

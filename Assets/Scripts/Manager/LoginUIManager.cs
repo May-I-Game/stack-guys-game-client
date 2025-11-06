@@ -2,8 +2,8 @@ using TMPro;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class LoginUIManager : MonoBehaviour
 {
@@ -65,47 +65,23 @@ public class LoginUIManager : MonoBehaviour
         }
         CancelInvoke(nameof(CheckConnectionTimeout));
     }
+
     // 현재 화면에 나와있는 캐릭터를 클릭했을 경우
     public void OnClickPresentCharacter()
     {
         characterSelectPopup.SetActive(true);
-        // Grid의 모든 자식에서 Button 컴포넌트 찾기
-        Button[] buttons = characterSelectPopup.GetComponentsInChildren<Button>();
-
-        for (int i = 0; i < buttons.Length; i++)
-        {
-            int index = i; // 클로저 문제 방지 (중요!)
-
-            // 기존 이벤트 제거 후 새로 추가
-            buttons[i].onClick.RemoveAllListeners();
-            buttons[i].onClick.AddListener(() => OnCharacterSelected(index));
-
-            // PointerDown 이벤트 추가 (소리용)
-            EventTrigger trigger = buttons[i].GetComponent<EventTrigger>();
-            if (trigger == null)
-            {
-                trigger = buttons[i].gameObject.AddComponent<EventTrigger>();
-            }
-
-            // 기존 이벤트 제거
-            trigger.triggers.Clear();
-
-            // PointerDown 이벤트 추가
-            EventTrigger.Entry entry = new EventTrigger.Entry();
-            entry.eventID = EventTriggerType.PointerDown;
-            entry.callback.AddListener((data) => { PlayButtonSound(); });
-            trigger.triggers.Add(entry);
-        }
     }
-    private void PlayButtonSound()
+
+    public void PlayButtonSound()
     {
         if (audioSource != null)
         {
             audioSource.PlayOneShot(audioSource.clip);
         }
     }
+
     //팝업의 캐릭터를 클릭했을 경우
-    private void OnCharacterSelected(int index)
+    public void OnCharacterSelected(int index)
     {
         //카메라 x위치 변경 : -2 * index
         characterSelectCamera.transform.localPosition = new Vector3(-2f * index, 0, 0);
@@ -116,11 +92,13 @@ public class LoginUIManager : MonoBehaviour
         // 팝업 닫기
         characterSelectPopup.SetActive(false);
     }
+
     // 팝업밖의 패널을 클릭했을 경우
     public void OnClickOuterPanel()
     {
         characterSelectPopup.SetActive(false);
     }
+
     // Start 버튼 눌렀을 경우, 캐릭터 index와 name을 서버로 전송 및 websocket연결
     public void OnClickStart()
     {
@@ -151,6 +129,30 @@ public class LoginUIManager : MonoBehaviour
 #endif
         ConnectToServer();
     }
+
+    public void OnClickStartObserver()
+    {
+        if (isConnecting)
+        {
+            Debug.Log("이미 연결 중입니다...");
+            return;
+        }
+
+        Debug.Log("Connecting as OBSERVER...");
+
+        //클라이언트 시작
+        bool startResult = NetworkManager.Singleton.StartClient();
+
+        //클라-서버 연결 실패했을 경우
+        if (!startResult)
+        {
+            Debug.Log("연결 실패");
+            isConnecting = false;
+            return;
+        }
+        Invoke(nameof(CheckConnectionTimeout), 10f);
+    }
+
     private void ConnectToServer()
     {
         if (NetworkManager.Singleton == null)
