@@ -10,7 +10,7 @@ public class PlayerInputHandler : NetworkBehaviour
     private bool grabButtonPressed = false;
 
     // PlayerController가 읽어갈 값
-    public Vector3 MoveInput { get; private set; }
+    public Vector2 MoveInput { get; private set; }
     public bool JumpInput { get; private set; }
     public bool GrabInput { get; private set; }
 
@@ -80,12 +80,12 @@ public class PlayerInputHandler : NetworkBehaviour
             // 메인 카메라 참조
             var cam = Camera.main != null ? Camera.main.transform : null;
 
-            Vector3 dir;
+            Vector2 dir;
             if (cam != null)
             {
                 // 카메라의 forward/right를 수평면(Y=0)에 투영해 기저벡터 생성
-                Vector3 camFwd = cam.forward; camFwd.y = 0f; camFwd.Normalize();
-                Vector3 camRight = cam.right; camRight.y = 0f; camRight.Normalize();
+                Vector2 camFwd = new Vector2(cam.forward.x, cam.forward.z).normalized;
+                Vector2 camRight = new Vector2(cam.right.x, cam.right.z).normalized;
 
                 // 입력(Vertical=앞/뒤, Horizontal=좌/우)을 카메라 기준으로 합성
                 dir = camFwd * vertical + camRight * horizontal;
@@ -93,7 +93,7 @@ public class PlayerInputHandler : NetworkBehaviour
             else
             {
                 // 카메라가 없으면 기존 월드 기준으로 대체
-                dir = new Vector3(horizontal, 0f, vertical);
+                dir = new Vector2(horizontal, vertical);
             }
 
             // 대각선 과입력(√2) 보정
