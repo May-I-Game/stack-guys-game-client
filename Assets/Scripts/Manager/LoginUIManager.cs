@@ -2,8 +2,6 @@ using TMPro;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 public class LoginUIManager : MonoBehaviour
 {
@@ -139,6 +137,8 @@ public class LoginUIManager : MonoBehaviour
         }
 
         Debug.Log("Connecting as OBSERVER...");
+
+        NetworkGameManager.instance.SetObserverMode();
 
         //클라이언트 시작
         bool startResult = NetworkManager.Singleton.StartClient();

@@ -17,10 +17,8 @@ public class ObserverCameraControl : MonoBehaviour
         if (NetworkManager.Singleton.IsClient)
         {
             // LocalClientId에 할당된 PlayerObject가 없으면 옵저버
-            if (NetworkManager.Singleton.LocalClient != null &&
-                NetworkManager.Singleton.LocalClient.PlayerObject == null)
+            if (NetworkGameManager.instance.isObserver)
             {
-                isObserver = true;
                 Debug.Log("--- OBSERVER MODE ACTIVATED ---");
 
                 Camera.main.GetComponent<CameraFollow>().enabled = false;
@@ -29,13 +27,16 @@ public class ObserverCameraControl : MonoBehaviour
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
             }
+
+            else
+            {
+                this.enabled = false;
+            }
         }
     }
 
     private void Update()
     {
-        if (!isObserver) return;
-
         // 커서 잠금
         if (Input.GetKeyDown(KeyCode.Mouse1))
         {

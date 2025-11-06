@@ -1,12 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class NetworkGameManager : MonoBehaviour
 {
-    private static NetworkGameManager instance;
+    public static NetworkGameManager instance;
     private NetworkManager networkManager;
 
     [Header("Game Settings")]
@@ -25,7 +26,8 @@ public class NetworkGameManager : MonoBehaviour
     // 백그라운드 처리 변수
     private bool isInBackground = false;
     private float backgroundStartTime = 0f;
-    private int originalTargetFrameRate;
+
+    public bool isObserver { get; private set; } = false;
 
     private void Awake()
     {
@@ -38,8 +40,6 @@ public class NetworkGameManager : MonoBehaviour
 
         instance = this;
         DontDestroyOnLoad(gameObject);
-
-        originalTargetFrameRate = Application.targetFrameRate;
     }
 
     private void Start()
@@ -211,7 +211,12 @@ public class NetworkGameManager : MonoBehaviour
         int characterIndex = 0;
         string playerName = null;
 
-        if (request.Payload != null && request.Payload.Length > 0)
+        if (isObserver)
+        {
+            Debug.Log($"[Server] Observer connection approved: {request.ClientNetworkId}");
+        }
+
+        else if (request.Payload != null && request.Payload.Length > 0)
         {
             //캐릭터 인덱스 받아오기
             characterIndex = request.Payload[0];
@@ -241,14 +246,14 @@ public class NetworkGameManager : MonoBehaviour
             clientPlayerNames[request.ClientNetworkId] = playerName;
         }
 
-        else if (request.Payload == null)
-        {
-            Debug.Log($"[Server] Observer connection approved: {request.ClientNetworkId}");
-        }
-
         //연결 승인
         response.Approved = true;
         response.CreatePlayerObject = false;
+    }
+
+    public void SetObserverMode()
+    {
+        isObserver = true;
     }
 
     private void OnApplicationPause(bool pauseStatus)
