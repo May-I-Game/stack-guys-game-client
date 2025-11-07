@@ -44,8 +44,16 @@ public class CameraFollow : MonoBehaviour
 
     void Start()
     {
-        // 초기 카메라 설정 (타겟/오프셋/초기 yaw 등 계산)
-        InitializeCamera();
+        if (Application.isBatchMode)
+        {
+            Destroy(this.gameObject);
+        }
+
+        else
+        {
+            // 초기 카메라 설정 (타겟/오프셋/초기 yaw 등 계산)
+            InitializeCamera();
+        }
     }
 
     // LateUpdate는 플레이어 이동/애니메이션이 끝난 뒤 카메라가 따라붙도록 해줌

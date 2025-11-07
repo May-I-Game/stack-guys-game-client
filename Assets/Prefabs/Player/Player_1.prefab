@@ -1678,6 +1678,8 @@ MonoBehaviour:
   holdDistance: 0.1
   throwForce: 5
   escapeRequiredJumps: 5
+  groundCheckDist: 0.1
+  groundCheckRadius: 0.5
   bounceForce: 5
   animator: {fileID: 964459002660691872}
   bodyPrefab: {fileID: 6666310234280264781, guid: 0708bba17fbec6249998b48e1a436e2b, type: 3}
