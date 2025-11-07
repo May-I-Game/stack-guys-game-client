@@ -745,23 +745,10 @@ public class PlayerController : NetworkBehaviour
         // 애니메이터도 각 클라에서 리셋
         ResetAnimClientRpc();
     }
-
-    // 플레이어 튕겨나가기 함수
-    private void BouncePlayer(Vector3 normal, float force)
-    {
-        // 현재 속도 초기화
-        rb.linearVelocity = Vector3.zero;
-
-        // 법선 방향으로 힘 가하기 (위쪽 방향 추가)
-        Vector3 bounceDirection = (normal + Vector3.up * 0.3f).normalized;
-        rb.AddForce(bounceDirection * force, ForceMode.Impulse);
-
-        Debug.Log($"[튕겨나가기] 방향: {bounceDirection}, 힘: {force}");
-    }
     #endregion
 
     // 충돌관리 로직
-    #region Collisions
+    #region Physics
     private void GroundCheck()
     {
         if (!IsServer) return;
@@ -873,6 +860,19 @@ public class PlayerController : NetworkBehaviour
                 // Debug.Log($"[경고] 매칭되지 않은 Tag: {collision.gameObject.tag}");
                 break;
         }
+    }
+
+    // 플레이어 튕겨나가기 함수
+    private void BouncePlayer(Vector3 normal, float force)
+    {
+        // 현재 속도 초기화
+        rb.linearVelocity = Vector3.zero;
+
+        // 법선 방향으로 힘 가하기 (위쪽 방향 추가)
+        Vector3 bounceDirection = (normal + Vector3.up * 0.3f).normalized;
+        rb.AddForce(bounceDirection * force, ForceMode.Impulse);
+
+        Debug.Log($"[튕겨나가기] 방향: {bounceDirection}, 힘: {force}");
     }
     #endregion
 
