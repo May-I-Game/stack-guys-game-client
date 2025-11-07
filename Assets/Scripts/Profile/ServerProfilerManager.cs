@@ -17,7 +17,7 @@ public class ServerProfilerManager : MonoBehaviour
     public float logInterval = 5f;
 
     [Tooltip("로그 파일 경로 (비어있으면 자동 생성)")]
-    public string logFilePath = @"C:\Users\kangk\OneDrive\Desktop\Unity Headless Server\stack_guys";
+    public string logFilePath = @"D:\";
 
     void Start()
     {

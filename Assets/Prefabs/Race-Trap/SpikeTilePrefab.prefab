@@ -9,7 +9,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7412646392294722038}
-  - component: {fileID: 7880473313811570416}
   m_Layer: 0
   m_Name: SpikeTilePrefab
   m_TagString: Untagged
@@ -36,27 +35,6 @@ Transform:
   - {fileID: 5448024030316931702}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!65 &7880473313811570416
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3629024314716638910}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 2.172219, y: 0.124739885, z: 2.1356742}
-  m_Center: {x: 1.0552357, y: -0.40084672, z: -0.5034219}
 --- !u!1001 &2057991899110018979
 PrefabInstance:
   m_ObjectHideFlags: 0

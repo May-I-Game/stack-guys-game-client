@@ -603,7 +603,7 @@ GameObject:
   - component: {fileID: 7162452904895061684}
   m_Layer: 0
   m_Name: Player_10_body
-  m_TagString: Player
+  m_TagString: Ground
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -782,7 +782,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  canBeGrabbed: 1
   netIsGrabbed:
     m_InternalValue: 0
   holder: {fileID: 0}
