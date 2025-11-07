@@ -44,7 +44,6 @@ public class PlayerController : NetworkBehaviour
 
     private Vector2 lastSentInput = Vector2.zero;  // 실제로 서버에 전송한 마지막 입력
     private float lastInputSendTime = 0f;  // 마지막 입력 전송 시간
-    private float lastSyncedVerticalVelocity = 0f;  // 마지막으로 동기화한 수직 속도
     private Vector3 lastHeldObjectPosition = Vector3.zero;  // 마지막 잡은 오브젝트 위치
     private float lastJumpTime = -999f;  // 마지막 점프 시간 (쿨다운용)
     private float lastGrabTime = -999f;  // 마지막 잡기 시간 (쿨다운용)
@@ -56,10 +55,7 @@ public class PlayerController : NetworkBehaviour
     private float diveGroundedDuration = 0.65f; // 다이브 착지 애니메이션 길이
 
     protected NetworkVariable<Vector2> netMoveDirection = new NetworkVariable<Vector2>();
-    protected NetworkVariable<float> netCurrentSpeed = new NetworkVariable<float>();
-
     protected NetworkVariable<bool> netIsGrounded = new NetworkVariable<bool>();
-    protected NetworkVariable<float> netVerticalVelocity = new NetworkVariable<float>();
     protected NetworkVariable<bool> netIsDiving = new NetworkVariable<bool>(false); // 공중 다이브 중인지
     protected NetworkVariable<bool> netIsDiveGrounded = new NetworkVariable<bool>(false); // 다이브 착지 상태 (이동 불가)
     protected NetworkVariable<bool> netIsDeath = new NetworkVariable<bool>(false); // 죽었는지?
@@ -205,9 +201,6 @@ public class PlayerController : NetworkBehaviour
             // 들기 처리
             PlayerHeld();
         }
-
-        // 애니메이션 업데이트
-        SyncAnimationState();
     }
 
     public void SetInputEnabled(bool enabled)
@@ -234,13 +227,6 @@ public class PlayerController : NetworkBehaviour
         if (directionDelta.magnitude >= inputDeltaThreshold || direction == Vector2.zero)
         {
             netMoveDirection.Value = direction;
-        }
-
-        // 속도 임계값 체크: 속도 변화가 클 때만 동기화
-        float speedDelta = Mathf.Abs(walkSpeed - netCurrentSpeed.Value);
-        if (speedDelta >= speedThreshold)
-        {
-            netCurrentSpeed.Value = walkSpeed;
         }
     }
 
@@ -296,15 +282,15 @@ public class PlayerController : NetworkBehaviour
     {
         // 이동
         Vector3 movement = new Vector3(
-            netMoveDirection.Value.x * netCurrentSpeed.Value * Time.fixedDeltaTime,
+            netMoveDirection.Value.x,
             0,
-            netMoveDirection.Value.y * netCurrentSpeed.Value * Time.fixedDeltaTime
-        );
+            netMoveDirection.Value.y
+        ) * walkSpeed * Time.fixedDeltaTime;
         rb.MovePosition(rb.position + movement);
 
         // 회전
         Quaternion targetRotation = Quaternion.LookRotation(movement);
-        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime);
+        transform.rotation = targetRotation;
     }
 
     private void PlayerJump()
@@ -733,7 +719,6 @@ public class PlayerController : NetworkBehaviour
     {
         // 이동/점프 관련 상태 최소 초기화
         netMoveDirection.Value = Vector2.zero;
-        netCurrentSpeed.Value = 0f;
         isJumpQueued = false;
         netIsGrounded.Value = true;
         netIsDiving.Value = false;
@@ -935,20 +920,6 @@ public class PlayerController : NetworkBehaviour
         SetTriggerClientRpc(triggerName);
     }
 
-    // NetworkVariable 업데이트 (최적화: 변화량이 클 때만)
-    private void SyncAnimationState()
-    {
-        float currentVerticalVelocity = rb.linearVelocity.y;
-        float velocityDelta = Mathf.Abs(currentVerticalVelocity - lastSyncedVerticalVelocity);
-
-        // 수직 속도가 임계값 이상 변했을 때만 동기화
-        if (velocityDelta >= verticalVelocityThreshold)
-        {
-            netVerticalVelocity.Value = currentVerticalVelocity;
-            lastSyncedVerticalVelocity = currentVerticalVelocity;
-        }
-    }
-
     protected void UpdateAnimation()
     {
         if (animator != null)
@@ -961,9 +932,6 @@ public class PlayerController : NetworkBehaviour
             animator.SetBool("IsDiving", netIsDiving.Value);
             // 다이브 착지 상태를 애니메이터에 전달
             animator.SetBool("IsDiveGrounded", netIsDiveGrounded.Value);
-            // 수직 속도를 애니메이터에 전달 (점프/낙하 애니메이션용)
-            animator.SetFloat("VerticalVelocity", netVerticalVelocity.Value);
-
             // 잡힌 상태를 애니메이터에 전달
             animator.SetBool("IsGrabbed", netIsGrabbed.Value);
         }

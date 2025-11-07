@@ -17,7 +17,6 @@ public class NetworkGameManager : MonoBehaviour
 
     [Header("Background Handling")]
     [SerializeField] private float maxBackgroundTime = 30f;
-    [SerializeField] private int backgroundTargetFrameRate = 10;
 
     private bool hasInitialized = false;
     private Dictionary<ulong, int> clientCharacterSelections = new Dictionary<ulong, int>();
