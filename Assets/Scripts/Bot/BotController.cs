@@ -204,7 +204,7 @@ public class BotController : PlayerController
                 Vector2 moveInput = new Vector2(direction.x, direction.z);
 
                 // 네트워크로 동기화되는 입력/속도 값 갱신
-                netMoveDirection.Value = moveInput; // 이번 프레임 이동 방향
+                moveDir = moveInput; // 이번 프레임 이동 방향
 
                 // NavMeshAgent 내부 위치(nextPosition)를 실제 Transform과 강제로 맞춤
                 navAgent.nextPosition = transform.position;
@@ -212,13 +212,13 @@ public class BotController : PlayerController
             else
             {
                 // 방향이 실질적으로 없으면(거의 0) —> 제자리 유지
-                netMoveDirection.Value = Vector2.zero;
+                moveDir = Vector2.zero;
             }
         }
         else
         {
             // 경로가 없거나, 이동 금지 상태면 —> 제자리 유지
-            netMoveDirection.Value = Vector2.zero;
+            moveDir = Vector2.zero;
         }
     }
 
