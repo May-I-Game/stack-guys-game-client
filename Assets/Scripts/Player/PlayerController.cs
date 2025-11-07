@@ -35,10 +35,6 @@ public class PlayerController : NetworkBehaviour
     public float verticalVelocityThreshold = 0.5f;  // 0.5 m/s 이상 변화만
     [Tooltip("이동 속도 동기화 임계값. 이 값 이상 변할 때만 동기화. 권장: 0.5")]
     public float speedThreshold = 0.5f;  // 0.5 m/s 이상 변화만
-    [Tooltip("점프 입력 쿨다운 (초). 연속 점프 방지. 권장: 0.2")]
-    public float jumpCooldown = 0.2f;  // 200ms
-    [Tooltip("잡기 입력 쿨다운 (초). 연속 잡기 방지. 권장: 0.3")]
-    public float grabCooldown = 0.3f;  // 300ms
 
     protected Rigidbody rb;
     private PlayerInputHandler inputHandler;
@@ -155,22 +151,14 @@ public class PlayerController : NetworkBehaviour
                 // 점프 입력 (쿨다운 체크)
                 if (inputHandler.JumpInput)
                 {
-                    if (Time.time - lastJumpTime >= jumpCooldown)
-                    {
-                        JumpPlayerServerRpc();
-                        lastJumpTime = Time.time;
-                    }
+                    JumpPlayerServerRpc();
                     inputHandler.ResetJumpInput();
                 }
 
                 // 잡기 입력 (쿨다운 체크)
                 if (inputHandler.GrabInput)
                 {
-                    if (Time.time - lastGrabTime >= grabCooldown)
-                    {
-                        GrabPlayerServerRpc();
-                        lastGrabTime = Time.time;
-                    }
+                    GrabPlayerServerRpc();
                     inputHandler.ResetGrabInput();
                 }
             }
