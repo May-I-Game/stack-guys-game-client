@@ -14,7 +14,7 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/kang.unity
     guid: a0915f51729e86f4fa18081bcff71dee
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/DoHoon.unity
     guid: 96e109a4dc1b50845862bfaa3f3b381e
   m_configObjects:

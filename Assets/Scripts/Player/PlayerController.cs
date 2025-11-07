@@ -28,11 +28,26 @@ public class PlayerController : NetworkBehaviour
     [Header("Animation")]
     public Animator animator;
 
+    [Header("Network Optimization")]
+    [Tooltip("입력 전송 최소 간격 (초). 모바일 조이스틱 떨림 방지. 권장: 0.033~0.05")]
+    public float inputSendInterval = 0.05f;  // 50ms = 20Hz
+    [Tooltip("입력 변화량 임계값. 이 값 이상 변할 때만 즉시 전송. 권장: 0.1")]
+    public float inputDeltaThreshold = 0.1f;  // 10% 변화
+    [Tooltip("수직 속도 동기화 임계값. 이 값 이상 변할 때만 동기화. 권장: 0.5")]
+    public float verticalVelocityThreshold = 0.5f;  // 0.5 m/s 이상 변화만
+    [Tooltip("이동 속도 동기화 임계값. 이 값 이상 변할 때만 동기화. 권장: 0.5")]
+    public float speedThreshold = 0.5f;  // 0.5 m/s 이상 변화만
+
     protected Rigidbody rb;
     private CapsuleCollider col;
     private PlayerInputHandler inputHandler;
 
-    private Vector2 lastMoveInput = Vector2.zero;
+    private Vector2 lastSentInput = Vector2.zero;  // 실제로 서버에 전송한 마지막 입력
+    private float lastInputSendTime = 0f;  // 마지막 입력 전송 시간
+    private float lastSyncedVerticalVelocity = 0f;  // 마지막으로 동기화한 수직 속도
+    private Vector3 lastHeldObjectPosition = Vector3.zero;  // 마지막 잡은 오브젝트 위치
+    private float lastJumpTime = -999f;  // 마지막 점프 시간 (쿨다운용)
+    private float lastGrabTime = -999f;  // 마지막 잡기 시간 (쿨다운용)
     private bool isJumpQueued;
     private bool isGrabQueued;
 
@@ -58,6 +73,7 @@ public class PlayerController : NetworkBehaviour
     protected NetworkVariable<ulong> netHoldingTargetId = new NetworkVariable<ulong>(0); // 누구를 잡고 있는지
 
     private GameObject holdingObject = null; // 실제로 들고 있는 오브젝트
+    private PlayerController heldPlayerCache = null; // 잡은 플레이어 캐시 (최적화)
     private int heldObjectOriginLayer;
     private int escapeJumpCount = 0; // 탈출 시도 횟수
 
@@ -100,18 +116,50 @@ public class PlayerController : NetworkBehaviour
             // 입력 허용시만 요청 처리
             if (inputEnabled)
             {
-                if (inputHandler.MoveInput != lastMoveInput)
+                Vector2 currentInput = inputHandler.MoveInput;
+
+                // ===== 입력 동기화 최적화 (모바일 조이스틱 기준) =====
+                float timeSinceLastSend = Time.time - lastInputSendTime;
+                float inputDelta = Vector2.Distance(currentInput, lastSentInput);
+
+                bool shouldSendInput = false;
+
+                // 조건 1: 이동 시작 (정지 → 이동)
+                if (lastSentInput.magnitude < 0.01f && currentInput.magnitude >= 0.1f)
                 {
-                    MovePlayerServerRpc(inputHandler.MoveInput);
-                    lastMoveInput = inputHandler.MoveInput;
+                    shouldSendInput = true;  // 즉시 전송 (반응성 최우선)
+                }
+                // 조건 2: 완전히 멈춤 (이동 → 정지)
+                else if (lastSentInput.magnitude >= 0.1f && currentInput.magnitude < 0.01f)
+                {
+                    shouldSendInput = true;  // 즉시 전송 (멈춤은 즉각 반영)
+                }
+                // 조건 3: 큰 방향 전환 (임계값 이상 변화)
+                else if (inputDelta >= inputDeltaThreshold)
+                {
+                    shouldSendInput = true;  // 즉시 전송 (급격한 방향 전환)
+                }
+                // 조건 4: 일정 시간마다 전송 (조이스틱 유지 시 주기적 동기화)
+                else if (timeSinceLastSend >= inputSendInterval && inputDelta > 0.001f)
+                {
+                    shouldSendInput = true;  // 주기적 전송 (미세 변화 누적 반영)
                 }
 
+                if (shouldSendInput)
+                {
+                    MovePlayerServerRpc(currentInput);
+                    lastSentInput = currentInput;
+                    lastInputSendTime = Time.time;
+                }
+
+                // 점프 입력 (쿨다운 체크)
                 if (inputHandler.JumpInput)
                 {
                     JumpPlayerServerRpc();
                     inputHandler.ResetJumpInput();
                 }
 
+                // 잡기 입력 (쿨다운 체크)
                 if (inputHandler.GrabInput)
                 {
                     GrabPlayerServerRpc();
@@ -126,43 +174,40 @@ public class PlayerController : NetworkBehaviour
     protected virtual void FixedUpdate()
     {
         // 서버만 로직 처리
-        if (IsServer)
+        if (!IsServer) return;
+        // 죽었으면 처리 무시
+        if (netIsDeath.Value) return;
+
+        // 땅 체크
+        GroundCheck();
+
+        // 이동 요청이 있으면
+        if (netMoveDirection.Value.magnitude >= 0.1f)
         {
-            // 죽었으면 처리 무시
-            if (!netIsDeath.Value)
-            {
-                GroundCheck();
-
-                // 이동 요청이 있으면
-                if (netMoveDirection.Value.magnitude >= 0.1f)
-                {
-                    // 이동 처리
-                    PlayerMove();
-                }
-                // 점프 요청이 있으면
-                if (isJumpQueued)
-                {
-                    // 점프 처리
-                    PlayerJump();
-                }
-                // 잡기 요청이 있으면
-                if (isGrabQueued)
-                {
-                    // 잡기 처리
-                    PlayerGrab();
-                }
-
-                // 잡고 있으면
-                if (netIsHolding.Value && holdingObject != null)
-                {
-                    // 들기 처리
-                    PlayerHeld();
-                }
-
-                // 애니메이션 업데이트
-                SyncAnimationState();
-            }
+            // 이동 처리
+            PlayerMove();
         }
+        // 점프 요청이 있으면
+        if (isJumpQueued)
+        {
+            // 점프 처리
+            PlayerJump();
+        }
+        // 잡기 요청이 있으면
+        if (isGrabQueued)
+        {
+            // 잡기 처리
+            PlayerGrab();
+        }
+        // 잡고 있으면
+        if (netIsHolding.Value && holdingObject != null)
+        {
+            // 들기 처리
+            PlayerHeld();
+        }
+
+        // 애니메이션 업데이트
+        SyncAnimationState();
     }
 
     public void SetInputEnabled(bool enabled)
@@ -184,10 +229,19 @@ public class PlayerController : NetworkBehaviour
 
         // Debug.Log($"[이동] 플레이어 이동 Rpc 호출됨!: {direction}");
 
-        netMoveDirection.Value = direction;
+        // 이동 방향 임계값 체크: 방향 변화가 크거나 멈출 때만 동기화
+        Vector2 directionDelta = direction - netMoveDirection.Value;
+        if (directionDelta.magnitude >= inputDeltaThreshold || direction == Vector2.zero)
+        {
+            netMoveDirection.Value = direction;
+        }
 
-        // 기본 이동 속도
-        netCurrentSpeed.Value = walkSpeed;
+        // 속도 임계값 체크: 속도 변화가 클 때만 동기화
+        float speedDelta = Mathf.Abs(walkSpeed - netCurrentSpeed.Value);
+        if (speedDelta >= speedThreshold)
+        {
+            netCurrentSpeed.Value = walkSpeed;
+        }
     }
 
     [ServerRpc(RequireOwnership = false)]
@@ -367,6 +421,7 @@ public class PlayerController : NetworkBehaviour
     private void GrabPlayer(PlayerController otherPlayer)
     {
         holdingObject = otherPlayer.gameObject;
+        heldPlayerCache = otherPlayer;  // 캐싱 (GetComponent 방지)
         netIsHolding.Value = true;
         netHoldingTargetId.Value = otherPlayer.NetworkObjectId;
 
@@ -440,6 +495,7 @@ public class PlayerController : NetworkBehaviour
         }
 
         holdingObject = null;
+        heldPlayerCache = null;  // 캐시 클리어
         netIsHolding.Value = false;
         netHoldingTargetId.Value = 0;
     }
@@ -490,13 +546,18 @@ public class PlayerController : NetworkBehaviour
             + transform.forward * holdDistance
             + Vector3.up * holdHeight;
 
-        holdingObject.transform.position = targetPosition;
-
-        // 플레이어를 들고 있는 경우 회전도 맞춤
-        PlayerController heldPlayer = holdingObject.GetComponent<PlayerController>();
-        if (heldPlayer != null)
+        // 최적화: 위치가 크게 변했을 때만 업데이트 (0.01m = 1cm 이상)
+        float positionDelta = Vector3.Distance(targetPosition, lastHeldObjectPosition);
+        if (positionDelta >= 0.01f)
         {
-            holdingObject.transform.rotation = transform.rotation;
+            holdingObject.transform.position = targetPosition;
+            lastHeldObjectPosition = targetPosition;
+
+            // 플레이어를 들고 있는 경우 회전도 맞춤 (캐시 사용)
+            if (heldPlayerCache != null)
+            {
+                holdingObject.transform.rotation = transform.rotation;
+            }
         }
     }
 
@@ -516,6 +577,7 @@ public class PlayerController : NetworkBehaviour
 
         // 잡고 있던 플레이어의 상태 해제
         grabbedBy.holdingObject = null;
+        grabbedBy.heldPlayerCache = null;  // 캐시 클리어
         grabbedBy.netIsHolding.Value = false;
         grabbedBy.netHoldingTargetId.Value = 0;
 
@@ -579,6 +641,7 @@ public class PlayerController : NetworkBehaviour
                 if (grabbedBy != null)
                 {
                     grabbedBy.holdingObject = null;
+                    grabbedBy.heldPlayerCache = null;  // 캐시 클리어
                     grabbedBy.netIsHolding.Value = false;
                     grabbedBy.netHoldingTargetId.Value = 0;
                 }
@@ -589,6 +652,7 @@ public class PlayerController : NetworkBehaviour
         netHoldingTargetId.Value = 0;
         netIsGrabbed.Value = false;
         netGrabberId.Value = 0;
+        heldPlayerCache = null;  // 캐시 클리어
         escapeJumpCount = 0;
     }
 
@@ -741,8 +805,6 @@ public class PlayerController : NetworkBehaviour
                 OnDiveLand();
             }
 
-            netIsGrounded.Value = true;
-
             if (canDive)
             {
                 canDive = false;
@@ -808,7 +870,7 @@ public class PlayerController : NetworkBehaviour
 
             default:
                 // 매칭되지 않은 Tag
-                //Debug.Log($"[경고] 매칭되지 않은 Tag: {collision.gameObject.tag}");
+                // Debug.Log($"[경고] 매칭되지 않은 Tag: {collision.gameObject.tag}");
                 break;
         }
     }
@@ -873,10 +935,18 @@ public class PlayerController : NetworkBehaviour
         SetTriggerClientRpc(triggerName);
     }
 
-    // NetworkVariable 업데이트
+    // NetworkVariable 업데이트 (최적화: 변화량이 클 때만)
     private void SyncAnimationState()
     {
-        netVerticalVelocity.Value = rb.linearVelocity.y;
+        float currentVerticalVelocity = rb.linearVelocity.y;
+        float velocityDelta = Mathf.Abs(currentVerticalVelocity - lastSyncedVerticalVelocity);
+
+        // 수직 속도가 임계값 이상 변했을 때만 동기화
+        if (velocityDelta >= verticalVelocityThreshold)
+        {
+            netVerticalVelocity.Value = currentVerticalVelocity;
+            lastSyncedVerticalVelocity = currentVerticalVelocity;
+        }
     }
 
     protected void UpdateAnimation()

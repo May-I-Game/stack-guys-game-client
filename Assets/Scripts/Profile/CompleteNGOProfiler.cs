@@ -76,11 +76,16 @@ public class CompleteNGOProfiler : NetworkBehaviour
     [SerializeField] private TMP_Text Ping;
     [SerializeField] private TMP_Text Fps;
 
+    [Header("UI Update Settings")]
+    [Tooltip("UI 업데이트 주기 (초). 권장: 0.05 (50ms)")]
+    [SerializeField] private float uiUpdateInterval = 0.05f;  // 50ms = 20Hz
+
     // 내부 변수 - 로깅 시스템
     private string logFilePath;
     private StringBuilder sb = new StringBuilder(2000);
     private bool isLogging = false;
     private float nextLogTime = 0;
+    private float nextUIUpdateTime = 0;  // UI 업데이트 시간 추적
 
     // 내부 변수 - 스크롤 뷰 위치 추적 (스크롤 기능 추가를 위해 필요)
     private Vector2 scrollPosition = Vector2.zero;
@@ -266,7 +271,8 @@ public class CompleteNGOProfiler : NetworkBehaviour
     /// <summary>
     /// 매 프레임 호출
     /// - 단축키 처리 (F6, F7, F8)
-    /// - 통계 업데이트 (FPS, 메모리, 네트워크 등)
+    /// - 통계 업데이트 (FPS, 메모리, 네트워크 등) - 매 프레임
+    /// - UI 업데이트 - 50ms 주기
     /// - 주기적 로깅 (logInterval마다)
     /// </summary>
     void Update()
@@ -279,8 +285,15 @@ public class CompleteNGOProfiler : NetworkBehaviour
         if (Input.GetKeyDown(KeyCode.F7)) StopLogging();    // 로깅 중지
         if (Input.GetKeyDown(KeyCode.F8)) TakeSnapshot();   // 즉시 스냅샷
 
-        // 통계 업데이트
+        // 통계 업데이트 (매 프레임 - 정확한 측정 위해)
         UpdateStats();
+
+        // UI 업데이트 (50ms 주기로 제한 - 최적화)
+        if (Time.time >= nextUIUpdateTime)
+        {
+            UpdateUI();
+            nextUIUpdateTime = Time.time + uiUpdateInterval;
+        }
 
         // ✅ Ping RPC 주기적으로 실행
         if (IsClient && trackNetwork)
@@ -332,9 +345,26 @@ public class CompleteNGOProfiler : NetworkBehaviour
         }
     }
 
+    // UI 업데이트 함수
+    /// <summary>
+    /// FPS와 Ping UI 텍스트 업데이트 (50ms 주기)
+    /// </summary>
+    private void UpdateUI()
+    {
+        if (trackPerformance && Fps != null)
+        {
+            Fps.text = $"FPS: {fps:F1}";
+        }
+
+        if (trackNetwork && Ping != null && !IsServer)
+        {
+            Ping.text = $"Ping: {ping:F0} ms";
+        }
+    }
+
     // 통계 업데이트 함수
     /// <summary>
-    /// 모든 통계 데이터 업데이트
+    /// 모든 통계 데이터 업데이트 (매 프레임)
     /// </summary>
     private void UpdateStats()
     {
@@ -666,29 +696,8 @@ public class CompleteNGOProfiler : NetworkBehaviour
         //GUILayout.Label($"**{statusIcon} | {roleIcon}**", GetBoldLabelStyle());
         //GUILayout.Space(5);
 
-        // ===== 네트워크 통계 =====
-        if (trackNetwork)
-        {
-            //GUILayout.Label("--- 🌐 네트워크 ---");
-            //GUILayout.Label($"송신: {sentRate / 1024:F1} KB/s");
-            //GUILayout.Label($"총 전송: {lastSentBytes / 1048576.0:F1} MB");
-            if (!IsServer)
-            {
-                Ping.text = $"Ping: {ping:F0} ms";
-            }
-            //GUILayout.Label($"패킷: {lastSentPackets}");
-            //GUILayout.Space(5);
-        }
-
-        // ===== 성능 통계 =====
-        if (trackPerformance)
-            //        {
-            //            GUILayout.Label("--- 🚀 성능 ---");
-            Fps.text =$"FPS: {fps:F1}";
-        //            GUILayout.Label($"프레임: {frameTime:F2} ms");
-        //            GUILayout.Label($"CPU 부하: {cpuLoadPercent:F1}%");
-        //            GUILayout.Space(5);
-        //        }
+        // ===== UI 업데이트는 UpdateUI()에서 50ms 주기로 처리됨 =====
+        // OnGUI()는 더 이상 UI 업데이트를 하지 않음 (최적화)
 
         //        // ===== 메모리 통계 =====
         //        if (trackMemory)
