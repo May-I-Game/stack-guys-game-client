@@ -128,13 +128,30 @@ public class BotManager : NetworkBehaviour
             pc.SetInputEnabled(false);
         }
 
-        // 네트워크 오브젝트로 스폰 (서버 + 모든 클라이언트에 동기화)
+        // 봇 이름 네트워크 오브젝트로 생성 및 설정 (PlayNameSync 사용)
         NetworkObject networkObject = botInstance.GetComponent<NetworkObject>();
         if (networkObject != null)
         {
+            // 서버 소유로 스폰
             networkObject.Spawn();
+
+            PlayerNameSync nameSync = botInstance.GetComponent<PlayerNameSync>();
+            if (nameSync != null)
+            {
+                // 고유한 봇 이름 생성
+                string botName = NetworkBotIdentity.GenerateBotName();
+
+                // 모든 클라이언트에 이름 동기화
+                nameSync.SetPlayerName(botName);
+                Debug.Log($"[BotManager] 봇 생성 완료: {botName}");
+            }
+            else
+            {
+                Debug.LogWarning("[BotManager] PlayerNameSync 컴포넌트가 없음");
+            }
+
+            // 생성된 봇을 리스트에 추가
             spawnedBots.Add(botInstance);
-            Debug.Log($"[BotManager] 봇 생성 완료: {botIdentity?.BotName ?? "Bot"} at {spawnPoint.name}");
         }
         else
         {
