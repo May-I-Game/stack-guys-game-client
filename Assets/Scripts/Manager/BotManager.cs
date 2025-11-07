@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class BotManager : NetworkBehaviour
 {
-    public static BotManager instance;                  // 싱글톤 패턴
+    public static BotManager Singleton;                  // 싱글톤 패턴
 
     [Header("Bot Prefab")]
     [SerializeField] private GameObject botPrefab;
@@ -44,9 +44,9 @@ public class BotManager : NetworkBehaviour
 
     private void Awake()
     {
-        if (instance == null)
+        if (Singleton == null)
         {
-            instance = this;
+            Singleton = this;
         }
         else
         {
@@ -57,9 +57,9 @@ public class BotManager : NetworkBehaviour
 
     private void OnDestroy()
     {
-        if (instance == this)
+        if (Singleton == this)
         {
-            instance = null;
+            Singleton = null;
         }
     }
 
@@ -122,13 +122,10 @@ public class BotManager : NetworkBehaviour
         }
 
         // 생성 직후 입력 차단 (시네마틱 끝나면 활성화)
-        if (disableInput)
+        var pc = botInstance.GetComponent<PlayerController>();
+        if (pc != null && disableInput)
         {
-            PlayerController botController = botInstance.GetComponent<PlayerController>();
-            if (botController != null)
-            {
-                botController.inputEnabled = false;
-            }
+            pc.SetInputEnabled(false);
         }
 
         // 네트워크 오브젝트로 스폰 (서버 + 모든 클라이언트에 동기화)
