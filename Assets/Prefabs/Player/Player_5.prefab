@@ -247,7 +247,6 @@ GameObject:
   - component: {fileID: 5993940140183317466}
   - component: {fileID: -3097860719756255655}
   - component: {fileID: -7551909706483703928}
-  - component: {fileID: -2040606855287464391}
   - component: {fileID: -5541547146567319279}
   m_Layer: 6
   m_Name: Player_5
@@ -396,8 +395,13 @@ MonoBehaviour:
   holdDistance: 0.1
   throwForce: 5
   escapeRequiredJumps: 5
+  groundCheckDist: 0.1
   bounceForce: 5
   animator: {fileID: 7670052221223162621}
+  inputSendInterval: 0.05
+  inputDeltaThreshold: 0.1
+  verticalVelocityThreshold: 0.5
+  speedThreshold: 0.5
   bodyPrefab: {fileID: 6763513074071986805, guid: b599242856d564c44a0758c51310ed67, type: 3}
   RespawnId:
     m_InternalValue: 0
@@ -463,18 +467,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   nameText: {fileID: 9128022758857899384}
---- !u!114 &-2040606855287464391
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 931570428631953014}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e0be88c815df128439b1d0cc928acbf7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &-5541547146567319279
 MonoBehaviour:
   m_ObjectHideFlags: 0
