@@ -336,7 +336,6 @@ GameObject:
   - component: {fileID: 7511652465529198422}
   - component: {fileID: -1386492044068464183}
   - component: {fileID: -8766823859583415564}
-  - component: {fileID: 7325145407893166317}
   - component: {fileID: -2965734152102634928}
   m_Layer: 6
   m_Name: Player_9
@@ -557,18 +556,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   nameText: {fileID: 3874270358793872119}
---- !u!114 &7325145407893166317
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2754731792468365018}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e0be88c815df128439b1d0cc928acbf7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &-2965734152102634928
 MonoBehaviour:
   m_ObjectHideFlags: 0
