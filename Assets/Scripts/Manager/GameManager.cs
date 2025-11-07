@@ -322,6 +322,10 @@ public class GameManager : NetworkBehaviour
             NetworkObject playerObject = client.PlayerObject;
             if (playerObject == null) continue;
 
+            // 봇이 아닌 실제 플레이어만 처리
+            NetworkBotIdentity botIdentity = playerObject.GetComponent<NetworkBotIdentity>();
+            if (botIdentity != null && botIdentity.IsBot) continue;
+
             NetworkTransform nt = playerObject.GetComponent<NetworkTransform>();
             if (nt == null) continue;
 
@@ -333,8 +337,21 @@ public class GameManager : NetworkBehaviour
 
             i++;
         }
+
+        // 남는 자리 봇으로 스폰
+        if (BotManager.Singleton != null)
+        {
+            BotManager.Singleton.SpawnBotsFromIndex(i, gameSpawnPoints);
+        }
+        else
+        {
+            Debug.LogWarning("[GameManager] BotManager.Singleton null");
+        }
+
         timelineStartTime.Value = NetworkManager.Singleton.ServerTime.Time + SYNC_BUFFER;
         shouldPlayTimeline.Value = true;
+
+        StartCoroutine(ServerEnableBotsAfterCinematic()); // 시네마틱이 끝나고 서버에서 봇을 활성화
     }
 
     private void EndGame()
@@ -345,6 +362,22 @@ public class GameManager : NetworkBehaviour
 
         // 클라에 결과 화면 표시
         ShowResultsClientRpc();
+    }
+
+    private IEnumerator ServerEnableBotsAfterCinematic()
+    {
+        // 클라이언트면 종료
+        if (!IsServer) yield break;
+
+        // 타임라인 종료 시각 = 시작 시각 + 재생 길이
+        double target = timelineStartTime.Value + timeline.duration;
+
+        // 한 프레임씩 대기
+        while (NetworkManager.Singleton.ServerTime.Time < target)
+            yield return null;
+
+        // 시네마틱이 끝나고 봇 활성화
+        BotManager.Singleton?.EnableAllBots();
     }
 
     [ClientRpc]
@@ -483,6 +516,12 @@ public class GameManager : NetworkBehaviour
         if (localPlayer != null)
         {
             localPlayer.SetInputEnabled(true);
+        }
+
+        // 시네마틱 끝나고 봇 입력 활성화
+        if (IsServer && BotManager.Singleton != null)
+        {
+            BotManager.Singleton.EnableAllBots();
         }
     }
     private PlayerController GetLocalPlayer()

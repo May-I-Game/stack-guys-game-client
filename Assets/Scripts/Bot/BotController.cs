@@ -49,7 +49,8 @@ public class BotController : PlayerController
         if (!IsServer) return;
         if (netIsDeath.Value) return;
 
-        if (navAgent != null && navAgent.enabled)
+        // 이동이 활성화 되어 있고 navAgent가 활성화가 되어 있을때 AI 작동
+        if (inputEnabled && navAgent != null && navAgent.enabled)
         {
             UpdateBotAI();
         }
