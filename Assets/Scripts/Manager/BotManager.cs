@@ -8,7 +8,7 @@ public class BotManager : NetworkBehaviour
     [SerializeField] private GameObject botPrefab;
 
     [Header("Bot Settings")]
-    [SerializeField] private int numberOfBots = 3; // 생성할 봇 수
+    [SerializeField] private int numberOfBots = 3;      // 생성할 봇 수
     [SerializeField] private Transform[] spawnPoints;
 
     private List<GameObject> spawnedBots = new List<GameObject>();
@@ -73,11 +73,11 @@ public class BotManager : NetworkBehaviour
     {
         // 스폰 위치 선택 (순환)
         Transform spawnPoint = spawnPoints[botIndex % spawnPoints.Length];
-        
+
         // 봇 인스턴스 생성
         GameObject botInstance = Instantiate(
-            botPrefab, 
-            spawnPoint.position, 
+            botPrefab,
+            spawnPoint.position,
             spawnPoint.rotation
         );
 
@@ -86,7 +86,6 @@ public class BotManager : NetworkBehaviour
         if (botIdentity != null)
         {
             botIdentity.IsBot = true;
-            // BotName을 설정하지 않으면 NetworkBotIdentity의 Awake()에서 자동 생성됨
         }
 
         // 네트워크 오브젝트로 스폰 (서버 소유)
@@ -104,11 +103,11 @@ public class BotManager : NetworkBehaviour
         }
     }
 
+    // 생성된 모든 봇 정리
     public override void OnNetworkDespawn()
     {
         if (IsServer)
         {
-            // 생성된 봇 정리
             foreach (var bot in spawnedBots)
             {
                 if (bot != null)
@@ -118,9 +117,11 @@ public class BotManager : NetworkBehaviour
                     {
                         netObj.Despawn();
                     }
+
                     Destroy(bot);
                 }
             }
+
             spawnedBots.Clear();
         }
     }
