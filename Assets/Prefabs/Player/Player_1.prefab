@@ -1679,9 +1679,15 @@ MonoBehaviour:
   throwForce: 5
   escapeRequiredJumps: 5
   groundCheckDist: 0.1
-  groundCheckRadius: 0.5
+  groundLayerMask:
+    serializedVersion: 2
+    m_Bits: 8
   bounceForce: 5
   animator: {fileID: 964459002660691872}
+  inputSendInterval: 0.05
+  inputDeltaThreshold: 0.1
+  verticalVelocityThreshold: 0.5
+  speedThreshold: 0.5
   bodyPrefab: {fileID: 6666310234280264781, guid: 0708bba17fbec6249998b48e1a436e2b, type: 3}
   RespawnId:
     m_InternalValue: 0

@@ -71,7 +71,7 @@ public class CompleteNGOProfiler : NetworkBehaviour
     [SerializeField] private bool trackFileAccess = true;
 
     [Tooltip("로그를 저장할 고정된 절대 경로. 비어있으면 Application.persistentDataPath를 사용합니다.")]
-    [SerializeField] private string fixedLogDirectory = "C:\\Users\\user\\Documents\\GitHub\\stack-guys\\Build\\Profiller";
+    [SerializeField] private string fixedLogDirectory = "";
 
     [SerializeField] private TMP_Text Ping;
     [SerializeField] private TMP_Text Fps;
