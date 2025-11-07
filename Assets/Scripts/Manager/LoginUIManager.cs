@@ -29,7 +29,7 @@ public class LoginUIManager : MonoBehaviour
     private bool isConnecting = false;
     private AudioSource audioSource;
 
-    private const int MAX_NAME_BYTES = 16;
+    private const int MAX_NAME_BYTES = 48;
 
     void Start()
     {

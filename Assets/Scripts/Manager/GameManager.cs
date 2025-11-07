@@ -31,7 +31,6 @@ public class GameManager : NetworkBehaviour
     [SerializeField] private GameObject gameUI;
 
     [Header("Settings")]
-    [SerializeField] private int minPlayersToStart = 5;
     [SerializeField] private float startCountdownTime = 5f;
     [SerializeField] private float endCountdownTime = 10f;
     [SerializeField] private string mainSceneName = "Login";
@@ -154,6 +153,30 @@ public class GameManager : NetworkBehaviour
             rankings.OnListChanged -= OnRankingsChanged;
         }
     }
+    private void Update()
+    {
+        // 클라이언트에서 Ctrl+Y 키 입력 감지
+        if (IsClient && currentGameState.Value == GameState.Lobby)
+        {
+            if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && Input.GetKeyDown(KeyCode.Y))
+            {
+                RequestStartGameServerRpc();
+            }
+        }
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void RequestStartGameServerRpc()
+    {
+        // 이미 카운트다운 중이면 무시
+        if (isCountingDown) return;
+
+        // 조건 없이 바로 카운트다운 시작
+        isCountingDown = true;
+        isStartCountdownActive.Value = true;
+        countdownCoroutine = StartCoroutine(StartGameCountdown());
+        Debug.Log("게임 시작 카운트다운 시작! (Ctrl+Y 입력)");
+    }
 
     private void HandleClientConnected(ulong clientId)
     {
@@ -187,24 +210,6 @@ public class GameManager : NetworkBehaviour
 
         int playerCount = NetworkManager.Singleton.ConnectedClientsList.Count;
         currentPlayerCount.Value = playerCount;
-        if (playerCount >= minPlayersToStart && !isCountingDown)
-        {
-            // 카운트다운 시작
-            isCountingDown = true;
-            isStartCountdownActive.Value = true;
-            countdownCoroutine = StartCoroutine(StartGameCountdown());
-
-        }
-        else if (playerCount < minPlayersToStart && isCountingDown)
-        {
-            isCountingDown = false;
-            isStartCountdownActive.Value = false;
-            // 카운트다운 중지
-            if (countdownCoroutine != null)
-            {
-                StopCoroutine(countdownCoroutine);
-            }
-        }
     }
     private void UpdatePlayerCountUI(int priviousValue, int newValue)
     {
