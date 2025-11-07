@@ -22,6 +22,7 @@ public class PlayerController : NetworkBehaviour
 
     [Header("Collision")]
     public float groundCheckDist = 0.1f;
+    private RaycastHit[] groundHits = new RaycastHit[3];
     public float bounceForce = 5f; // 튕겨나가는 힘
 
     [Header("Animation")]
@@ -705,28 +706,33 @@ public class PlayerController : NetworkBehaviour
         Vector3 bottomSphereCenter = col.center + (Vector3.down * offsetDist);
         Vector3 castOrigin = transform.TransformPoint(bottomSphereCenter);
         float scale = transform.localScale.y;
-        float scaledRadius = col.radius * scale;
+        float scaledRadius = col.radius * scale * 0.95f;
         float scaledDistance = groundCheckDist * scale;
 
-        RaycastHit[] hits = new RaycastHit[5];
-        Physics.SphereCastNonAlloc(
+        int hitCount = Physics.SphereCastNonAlloc(
             castOrigin,
             scaledRadius,
             Vector3.down,
-            hits,
+            groundHits,
             scaledDistance
         );
 
         bool isGrounded = false;
-        foreach (RaycastHit hit in hits)
+        for (int i = 0; i < hitCount; i++)
         {
+            RaycastHit hit = groundHits[i];
+
             // 자기자신 제외
             if (hit.collider == null || hit.collider == col) continue;
+            // 경사로/벽면 제외
+            if (hit.normal.y < 0.5f) continue;
 
             //Debug.Log($"{hit.collider.name}을 땅으로 감지!!");
             isGrounded = true;
             break;
         }
+
+        netIsGrounded.Value = isGrounded;
 
         if (isGrounded && rb.linearVelocity.y <= 0.1f)
         {
@@ -742,11 +748,6 @@ public class PlayerController : NetworkBehaviour
                 canDive = false;
             }
         }
-
-        else
-        {
-            netIsGrounded.Value = false;
-        }
     }
 
     private void OnDrawGizmos()
@@ -755,7 +756,7 @@ public class PlayerController : NetworkBehaviour
         Vector3 bottomSphereCenter = col.center + (Vector3.down * offsetDist);
         Vector3 castOrigin = transform.TransformPoint(bottomSphereCenter);
         float scale = transform.localScale.y;
-        float scaledRadius = col.radius * scale;
+        float scaledRadius = col.radius * scale * 0.95f;
         float scaledDistance = groundCheckDist * scale;
 
         Vector3 startPos = castOrigin;
