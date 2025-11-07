@@ -327,12 +327,11 @@ public class NetworkGameManager : MonoBehaviour
             if (!networkManager.IsConnectedClient)
             {
                 Debug.LogError("[NetworkGameManager] 서버 연결 끊김 - 재연결 필요");
-                OnConnectionLost();
                 return;
             }
         }
 
-        // Pause 모드: 플레이어 제어 복원
+        // Resume 모드: 플레이어 제어 복원
         Debug.Log("[NetworkGameManager] 포그라운드 복귀 - 플레이어 제어 재개");
         ResumePlayer();
     }
@@ -369,16 +368,5 @@ public class NetworkGameManager : MonoBehaviour
                 Debug.Log("[NetworkGameManager] 플레이어 입력 재개");
             }
         }
-    }
-
-    private void OnConnectionLost()
-    {
-        // 연결 끊김 처리
-        Debug.LogWarning("[NetworkGameManager] 서버 연결 끊김 감지");
-
-        // TODO: UI 표시
-        // - "서버 연결이 끊어졌습니다" 메시지
-        // - 재연결 버튼
-        // - 메인 메뉴로 가기 버튼
     }
 }
