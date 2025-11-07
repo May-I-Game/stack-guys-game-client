@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using TMPro;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
@@ -11,7 +12,7 @@ using UnityEngine.Profiling;
 
 /// <summary>
 /// CompleteNGOProfiler - Unity Netcode for GameObjects (NGO) 전용 프로파일러
-/// 
+///
 /// [추적 항목]
 /// 1. 네트워크: 패킷 송신량, 송신 속도, 핑(RTT)
 /// 2. 성능: FPS, 프레임 타임, CPU 부하율
@@ -19,23 +20,23 @@ using UnityEngine.Profiling;
 /// 4. 렌더링: Batches, Triangles, Vertices, SetPassCalls (에디터에서만 정확)
 /// 5. Physics: FixedUpdate 시간 (물리 시뮬레이션)
 /// 6. 파일 액세스: 파일 읽기/쓰기 횟수 (FileAccessTracker 사용 필요)
-/// 
+///
 /// [사용 방법]
 /// 1. NetworkManager GameObject에 이 컴포넌트 추가
 /// 2. Inspector에서 추적 항목 체크
 /// 3. 게임 실행 시 자동 로깅 시작 (Auto Start On Connect)
 /// 4. 수동 제어: F6=시작, F7=중지, F8=즉시 스냅샷
-/// 
+///
 /// [로그 파일]
 /// - 위치: Application.persistentDataPath/ngo_[role]_[timestamp].csv
 /// - 형식: CSV (Excel로 열기 가능)
 /// - 업데이트: logInterval 초마다 자동 기록
-/// 
+///
 /// [중요]
 /// - 렌더링 통계는 Unity Editor에서만 정확함 (빌드에서는 0)
 /// - 파일 액세스는 FileAccessTracker 사용 시에만 추적됨
 /// - WebGL에서는 IndexedDB에 저장됨
-/// 
+///
 /// </summary>
 public class CompleteNGOProfiler : NetworkBehaviour
 {
@@ -72,53 +73,68 @@ public class CompleteNGOProfiler : NetworkBehaviour
     [Tooltip("로그를 저장할 고정된 절대 경로. 비어있으면 Application.persistentDataPath를 사용합니다.")]
     [SerializeField] private string fixedLogDirectory = "C:\\Users\\user\\Documents\\GitHub\\stack-guys\\Build\\Profiller";
 
-    // 내부 변수 - 로깅 시스템
+    [SerializeField] private TMP_Text Ping;
+    [SerializeField] private TMP_Text Fps;
 
-    private string logFilePath;                    // CSV 파일 경로
-    private StringBuilder sb = new StringBuilder(2000);  // CSV 문자열 빌더
-    private bool isLogging = false;                // 현재 로깅 중인지 여부
-    private float nextLogTime = 0;                 // 다음 로그 기록 시간
+    // 내부 변수 - 로깅 시스템
+    private string logFilePath;
+    private StringBuilder sb = new StringBuilder(2000);
+    private bool isLogging = false;
+    private float nextLogTime = 0;
+
+    // 내부 변수 - 스크롤 뷰 위치 추적 (스크롤 기능 추가를 위해 필요)
+    private Vector2 scrollPosition = Vector2.zero;
+    private GUIStyle boldLabelStyle; // 캐시용 멤버 변수
 
     // 네트워크 통계 변수
-    private ulong lastSentBytes = 0;               // 이전 측정 시점의 총 송신 바이트
-    private ulong lastSentPackets = 0;             // 이전 측정 시점의 총 송신 패킷
-    private float sentRate = 0;                    // 초당 송신 속도 (bytes/s)
-    private float ping = 0;                        // 서버-클라이언트 간 왕복 시간 (ms)
+    private ulong lastSentBytes = 0;
+    private ulong lastSentPackets = 0;
+    private float sentRate = 0;
+    private float ping = 0;
+
+    // 새 RTT 측정 변수 (RPC 기반)
+    private double lastPingSendTime;
+    private float pingRpcTimer = 0f;
+    private const float pingRpcInterval = 0.3f; // RPC 핑 측정 주기
 
     // 성능 통계 변수
-    private float fps = 0;                         // 현재 FPS
-    private float minFPS = 999;                    // 최소 FPS (리셋 시 999로 초기화)
-    private float maxFPS = 0;                      // 최대 FPS
-    private float frameTime = 0;                   // 프레임 시간 (ms)
+    private float fps = 0;
+    private float minFPS = 999;
+    private float maxFPS = 0;
+    private float frameTime = 0;
 
     // 메모리 통계 변수
-    private long usedMemoryMB = 0;                 // 사용 중인 메모리 (MB)
-    private long monoMemoryMB = 0;                 // Mono Heap 메모리 (MB)
-    private int gcCount = 0;                       // Garbage Collection 발생 횟수
-    private int lastGCCount = 0;                   // 이전 GC 카운트 (증가 감지용)
+    private long usedMemoryMB = 0;
+    private long monoMemoryMB = 0;
+    private int gcCount = 0;
+    private int lastGCCount = 0;
 
     // 렌더링 통계 변수 (Unity Editor에서만 정확)
-    private int batches = 0;                       // Draw Call 배치 수
-    private int triangles = 0;                     // 렌더링된 삼각형 수
-    private int vertices = 0;                      // 렌더링된 버텍스 수
-    private int setPassCalls = 0;                  // SetPass Call 수
+    private int batches = 0;
+    private int triangles = 0;
+    private int vertices = 0;
+    private int setPassCalls = 0;
 
     // Physics 통계 변수
-    private Stopwatch physicsStopwatch = new Stopwatch();  // Physics 시간 측정용
-    private float physicsTimeMs = 0;               // FixedUpdate 실행 시간 (ms)
+    private Stopwatch physicsStopwatch = new Stopwatch();
+    private float physicsTimeMs = 0;
 
     // 파일 액세스 통계 변수
-    private int fileReadCount = 0;                 // 파일 읽기 횟수
-    private int fileWriteCount = 0;                // 파일 쓰기 횟수
+    private int fileReadCount = 0;
+    private int fileWriteCount = 0;
 
     // CPU 부하 변수
-    private float cpuLoadPercent = 0;              // CPU 부하율 (60 FPS 기준 %)
+    private float cpuLoadPercent = 0;
 
     // NGO 네트워크 관련 변수
-    private NetworkManager nm;                     // NetworkManager 싱글톤 캐시
-    private UnityTransport utp;                    // UTP Transport 캐시
-    private FieldInfo statsField;                  // UTP 통계 필드 (리플렉션)
-    private Type statsType;                        // UTP 통계 타입 (리플렉션)
+    private NetworkManager nm;
+    private UnityTransport utp;
+    private FieldInfo statsField;
+    private Type statsType;
+
+    private float displayPing = 0;
+    private System.Collections.Generic.List<float> pingHistory = new System.Collections.Generic.List<float>(30);
+    private const int PING_HISTORY_COUNT = 30; // 30 프레임(또는 0.5초) 평균
 
     // Unity 생명주기 - 초기화
     /// <summary>
@@ -206,20 +222,20 @@ public class CompleteNGOProfiler : NetworkBehaviour
     /// </summary>
     private void InitializeLog()
     {
-        // ... (역할, 타임스탬프 생략)
-        string role = "..."; // 역할
-        string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss"); // 타임스탬프
+        // 역할 정의
+        string role = IsServer ? (IsClient ? "host" : "server") : (IsClient ? "client" : "unknown");
+        string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
 
         // 1. 기본 저장 경로 설정 (fixedLogDirectory가 설정되어 있으면 그것을 사용)
         string baseDirectory;
         if (!string.IsNullOrEmpty(fixedLogDirectory))
         {
-            // 고정 경로 사용: Inspector에 입력한 경로가 baseDirectory가 됩니다.
+            // 고정 경로 사용
             baseDirectory = fixedLogDirectory;
         }
         else
         {
-            // 안전 경로 사용: Inspector가 비어있으면 유니티 기본 저장 경로 사용
+            // 안전 경로 사용
             baseDirectory = Application.persistentDataPath;
         }
 
@@ -242,7 +258,8 @@ public class CompleteNGOProfiler : NetworkBehaviour
         // 3. 로그 파일 경로 생성 (올바른 경로 결합)
         logFilePath = Path.Combine(baseDirectory, $"ngo_{role}_{timestamp}.csv");
 
-        // ... (WriteHeader() 호출 등 생략)
+        // 4. 헤더 작성 (파일 초기화)
+        WriteHeader();
     }
 
     // Unity 생명주기 - 업데이트
@@ -265,12 +282,37 @@ public class CompleteNGOProfiler : NetworkBehaviour
         // 통계 업데이트
         UpdateStats();
 
+        // ✅ Ping RPC 주기적으로 실행
+        if (IsClient && trackNetwork)
+        {
+            pingRpcTimer += Time.deltaTime;
+            if (pingRpcTimer >= pingRpcInterval)
+            {
+                pingRpcTimer = 0f;
+                lastPingSendTime = NetworkManager.LocalTime.Time;
+                PingServerRpc(lastPingSendTime);
+            }
+        }
+
         // 로깅 중이고 다음 로그 시간이 됐으면 스냅샷
         if (isLogging && Time.time >= nextLogTime)
         {
             TakeSnapshot();
             nextLogTime = Time.time + logInterval;
         }
+    }
+
+    // ✅ Ping RPC (round-trip)
+    [Rpc(SendTo.Server)]
+    private void PingServerRpc(double timestamp)
+    {
+        PongClientRpc(timestamp);
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    private void PongClientRpc(double timestamp)
+    {
+        double now = NetworkManager.LocalTime.Time;
     }
 
     void FixedUpdate()
@@ -293,25 +335,27 @@ public class CompleteNGOProfiler : NetworkBehaviour
     // 통계 업데이트 함수
     /// <summary>
     /// 모든 통계 데이터 업데이트
-    /// - 네트워크: 핑 측정
-    /// - 성능: FPS, 프레임 타임, CPU 부하 계산
-    /// - 메모리: 사용량, GC 카운트
-    /// - 렌더링: Batches, Triangles 등 (에디터에서만)
     /// </summary>
     private void UpdateStats()
     {
         // ===== 네트워크: 핑 측정 (클라이언트만) =====
-        if (trackNetwork && utp != null && !nm.IsServer)
+        try
         {
-            try
-            {
-                // UTP의 GetCurrentRtt로 서버와의 왕복 시간 측정
-                ping = utp.GetCurrentRtt(nm.LocalClientId);
-            }
-            catch
-            {
-                ping = 0;  // 실패 시 0
-            }
+            ping = utp.GetCurrentRtt(0);
+        }
+        catch { /* ... */ }
+
+        // RTT 값을 이동 평균으로 필터링하여 UI에 표시
+        if (pingHistory.Count >= PING_HISTORY_COUNT)
+        {
+            pingHistory.RemoveAt(0); // 가장 오래된 값 제거
+        }
+        pingHistory.Add(ping); // 새 값 추가
+
+        float totalPing = 0;
+        foreach (float p in pingHistory)
+        {
+            totalPing += p;
         }
 
         // ===== 성능: FPS 및 CPU 부하 =====
@@ -355,11 +399,18 @@ public class CompleteNGOProfiler : NetworkBehaviour
         if (trackRendering)
         {
 #if UNITY_EDITOR
-            // 에디터에서는 UnityStats API 사용 가능
-            batches = UnityEditor.UnityStats.batches;
-            triangles = UnityEditor.UnityStats.triangles;
-            vertices = UnityEditor.UnityStats.vertices;
-            setPassCalls = UnityEditor.UnityStats.setPassCalls;
+            // UnityStats는 UnityEditor 네임스페이스에 있습니다.
+            try
+            {
+                batches = UnityEditor.UnityStats.batches;
+                triangles = UnityEditor.UnityStats.triangles;
+                vertices = UnityEditor.UnityStats.vertices;
+                setPassCalls = UnityEditor.UnityStats.setPassCalls;
+            }
+            catch (System.Exception)
+            {
+                // 에디터에서도 UnityStats가 접근 불가능할 수 있음
+            }
 #else
             // 빌드에서는 통계 접근 불가 (0으로 설정)
             batches = 0;
@@ -373,9 +424,6 @@ public class CompleteNGOProfiler : NetworkBehaviour
     // 로깅 제어 함수
     /// <summary>
     /// 로깅 시작
-    /// - isLogging을 true로 설정
-    /// - FPS 통계 리셋
-    /// - 네트워크 통계 리셋
     /// </summary>
     public void StartLogging()
     {
@@ -387,14 +435,14 @@ public class CompleteNGOProfiler : NetworkBehaviour
         maxFPS = 0;
         lastSentBytes = 0;
         lastSentPackets = 0;
+        fileReadCount = 0;
+        fileWriteCount = 0;
 
         UnityEngine.Debug.Log("[CompleteNGOProfiler] 로깅 시작!");
     }
 
     /// <summary>
     /// 로깅 중지
-    /// - isLogging을 false로 설정
-    /// - 파일 경로 출력
     /// </summary>
     public void StopLogging()
     {
@@ -406,39 +454,37 @@ public class CompleteNGOProfiler : NetworkBehaviour
 
     /// <summary>
     /// CSV 헤더 작성
-    /// - 활성화된 추적 항목에 따라 헤더 컬럼 생성
-    /// - 파일 초기화 (기존 파일 덮어쓰기)
     /// </summary>
     private void WriteHeader()
     {
         sb.Clear();
 
         // 기본 정보
-        sb.Append("TS,Role,ClientID,");
+        sb.Append("TS,ClientID,");
 
         // 네트워크 헤더
         if (trackNetwork)
-            sb.Append("NET(Send,TotalMB,Ping,Pkts),");
+            sb.Append("Net-Send(KB/s),Net-Total(MB),Net-Ping(ms),Net-Pkts,");
 
         // 성능 헤더
         if (trackPerformance)
-            sb.Append("PERF(FPS,Min,Max,FT(ms),CPU(%)),");
+            sb.Append("Perf-FPS,Perf-MinFPS,Perf-MaxFPS,Perf-FT(ms),Perf-CPU(%),");
 
         // 메모리 헤더
         if (trackMemory)
-            sb.Append("MEM(Used,Mono,GC),");
+            sb.Append("Mem-Used(MB),Mem-Mono(MB),Mem-GC,");
 
         // 렌더링 헤더
         if (trackRendering)
-            sb.Append("RENDER(Batches,Tris,Verts,SetPass),");
+            sb.Append("Render-Batch,Render-Tris,Render-Verts,Render-SPC,");
 
         // Physics 헤더
         if (trackPhysics)
-            sb.Append("PHYS(Time(ms)),");
+            sb.Append("Phys-Time(ms),");
 
         // 파일 액세스 헤더
         if (trackFileAccess)
-            sb.Append("FILE(Reads,Writes),");
+            sb.Append("File-Reads,File-Writes,");
 
         sb.AppendLine();
 
@@ -455,10 +501,6 @@ public class CompleteNGOProfiler : NetworkBehaviour
 
     /// <summary>
     /// 현재 통계의 스냅샷을 CSV 파일에 기록
-    /// - 네트워크 통계 가져오기 (UTP 리플렉션)
-    /// - 송신 속도 계산
-    /// - CSV 한 줄 작성
-    /// - 파일에 추가
     /// </summary>
     private void TakeSnapshot()
     {
@@ -495,59 +537,59 @@ public class CompleteNGOProfiler : NetworkBehaviour
         lastSentBytes = currentSentBytes;
         lastSentPackets = currentSentPackets;
 
-        // ===== CSV 데이터 작성 시작 (레이블 추가) =====
+        // ===== CSV 데이터 작성 시작 =====
 
         // 기본 정보
-        sb.Append($"TS:{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff},");
-        sb.Append($"ID:{nm.LocalClientId},");
+        sb.Append($"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff},");
+        sb.Append($"{nm.LocalClientId},");
 
         // 네트워크 데이터
         if (trackNetwork)
         {
-            sb.Append($"Net-Send(KB/s):{sentRate / 1024:F2},");      // KB/s
-            sb.Append($"Net-Total(MB):{currentSentBytes / 1048576.0:F2},"); // MB (누적 총 전송량)
-            sb.Append($"Net-Ping(ms):{ping:F1},");                 // ms
-            sb.Append($"Net-Pkts:{packetDelta},");                 // 패킷 수 (직전 interval 동안)
+            sb.Append($"{sentRate / 1024:F2},");               // KB/s
+            sb.Append($"{currentSentBytes / 1048576.0:F2},");  // MB (누적 총 전송량)
+            sb.Append($"{ping:F1},");                           // ms
+            sb.Append($"{packetDelta},");                       // 패킷 수 (직전 interval 동안)
         }
 
         // 성능 데이터
         if (trackPerformance)
         {
-            sb.Append($"Perf-FPS:{fps:F1},");
-            sb.Append($"Perf-MinFPS:{minFPS:F1},");
-            sb.Append($"Perf-MaxFPS:{maxFPS:F1},");
-            sb.Append($"Perf-FT(ms):{frameTime:F2},");
-            sb.Append($"Perf-CPU(%):{cpuLoadPercent:F1},");
+            sb.Append($"{fps:F1},");
+            sb.Append($"{minFPS:F1},");
+            sb.Append($"{maxFPS:F1},");
+            sb.Append($"{frameTime:F2},");
+            sb.Append($"{cpuLoadPercent:F1},");
         }
 
         // 메모리 데이터
         if (trackMemory)
         {
-            sb.Append($"Mem-Used(MB):{usedMemoryMB},");
-            sb.Append($"Mem-Mono(MB):{monoMemoryMB},");
-            sb.Append($"Mem-GC:{gcCount},");
+            sb.Append($"{usedMemoryMB},");
+            sb.Append($"{monoMemoryMB},");
+            sb.Append($"{gcCount},");
         }
 
         // 렌더링 데이터
         if (trackRendering)
         {
-            sb.Append($"Render-Batch:{batches},");
-            sb.Append($"Render-Tris:{triangles},");
-            sb.Append($"Render-Verts:{vertices},");
-            sb.Append($"Render-SPC:{setPassCalls},");
+            sb.Append($"{batches},");
+            sb.Append($"{triangles},");
+            sb.Append($"{vertices},");
+            sb.Append($"{setPassCalls},");
         }
 
         // Physics 데이터
         if (trackPhysics)
         {
-            sb.Append($"Phys-Time(ms):{physicsTimeMs:F2},");
+            sb.Append($"{physicsTimeMs:F2},");
         }
 
         // 파일 액세스 데이터
         if (trackFileAccess)
         {
-            sb.Append($"File-Reads:{fileReadCount},");
-            sb.Append($"File-Writes:{fileWriteCount},");
+            sb.Append($"{fileReadCount},");
+            sb.Append($"{fileWriteCount},");
         }
 
         sb.AppendLine();
@@ -583,98 +625,118 @@ public class CompleteNGOProfiler : NetworkBehaviour
         fileWriteCount++;
     }
 
-    // Unity GUI - 디버그 UI
+    // 헬퍼 함수 - 볼드 스타일 설정
+    private GUIStyle GetBoldLabelStyle()
+    {
+        // 런타임에 스타일을 생성하여 캐시합니다.
+        if (boldLabelStyle == null)
+        {
+            boldLabelStyle = new GUIStyle(GUI.skin.label);
+            boldLabelStyle.fontStyle = FontStyle.Bold;
+        }
+        return boldLabelStyle;
+    }
 
+    // Unity GUI - 디버그 UI (스크롤 기능 추가됨)
     /// <summary>
     /// 화면에 디버그 UI 표시
     /// - showDebugUI가 true일 때만 표시
-    /// - 네트워크, 성능, 메모리, 렌더링, Physics, 파일 통계
-    /// - 단축키 안내
+    /// - 스크롤 뷰를 사용하여 내용이 많아도 스크롤 가능
     /// </summary>
     void OnGUI()
     {
         // UI 비활성화 또는 네트워크 미시작 시 리턴
-        if (!showDebugUI || !nm.IsListening) return;
+        //if (!showDebugUI || nm == null || !nm.IsListening) return;
 
         // UI 박스 크기
-        int w = 380;
-        int h = 400;
+        // 스크롤을 보여주기 위해 높이를 제한합니다.
+        //int w = 380;
+        //int h = 250;
 
-        // 배경 박스
-        GUI.Box(new Rect(10, 10, w, h), "");
-        GUILayout.BeginArea(new Rect(15, 15, w - 10, h - 10));
+        // 1. 배경 박스
+        //GUI.Box(new Rect(10, 10, w, h), "");
+        //GUILayout.BeginArea(new Rect(15, 15, w - 10, h - 10));
+
+        //// 2. 스크롤 뷰 시작
+        //scrollPosition = GUILayout.BeginScrollView(scrollPosition, GUILayout.Width(w - 10), GUILayout.Height(h - 10));
 
         // ===== 타이틀 =====
-        string statusIcon = isLogging ? "REC" : "IDLE";
-        string roleIcon = IsServer ? (IsClient ? "HOST" : "SERVER") : "CLIENT";
-        GUILayout.Label($"{statusIcon} | {roleIcon}");
-        GUILayout.Space(5);
+        //string statusIcon = isLogging ? "🟢 REC" : "⚫ IDLE";
+        //string roleIcon = IsServer ? (IsClient ? "HOST" : "SERVER") : "CLIENT";
+        //GUILayout.Label($"**{statusIcon} | {roleIcon}**", GetBoldLabelStyle());
+        //GUILayout.Space(5);
 
         // ===== 네트워크 통계 =====
         if (trackNetwork)
         {
-            GUILayout.Label("━━━ 네트워크 ━━━");
-            GUILayout.Label($"송신: {sentRate / 1024:F1} KB/s");
-            GUILayout.Label($"총 전송: {lastSentBytes / 1048576.0:F1} MB");
+            //GUILayout.Label("--- 🌐 네트워크 ---");
+            //GUILayout.Label($"송신: {sentRate / 1024:F1} KB/s");
+            //GUILayout.Label($"총 전송: {lastSentBytes / 1048576.0:F1} MB");
             if (!IsServer)
-                GUILayout.Label($"핑: {ping:F0} ms");
-            GUILayout.Label($"패킷: {lastSentPackets}");
-            GUILayout.Space(5);
+            {
+                Ping.text = $"Ping: {ping:F0} ms";
+            }
+            //GUILayout.Label($"패킷: {lastSentPackets}");
+            //GUILayout.Space(5);
         }
 
         // ===== 성능 통계 =====
         if (trackPerformance)
-        {
-            GUILayout.Label("━━━ 성능 ━━━");
-            GUILayout.Label($"FPS: {fps:F1} (Min {minFPS:F1}, Max {maxFPS:F1})");
-            GUILayout.Label($"프레임: {frameTime:F2} ms");
-            GUILayout.Label($"CPU 부하: {cpuLoadPercent:F1}%");
-            GUILayout.Space(5);
-        }
+            //        {
+            //            GUILayout.Label("--- 🚀 성능 ---");
+            Fps.text =$"FPS: {fps:F1}";
+        //            GUILayout.Label($"프레임: {frameTime:F2} ms");
+        //            GUILayout.Label($"CPU 부하: {cpuLoadPercent:F1}%");
+        //            GUILayout.Space(5);
+        //        }
 
-        // ===== 메모리 통계 =====
-        if (trackMemory)
-        {
-            GUILayout.Label("━━━ 메모리 ━━━");
-            GUILayout.Label($"사용: {usedMemoryMB} MB");
-            GUILayout.Label($"Mono: {monoMemoryMB} MB");
-            GUILayout.Label($"GC: {gcCount}회");
-            GUILayout.Space(5);
-        }
+        //        // ===== 메모리 통계 =====
+        //        if (trackMemory)
+        //        {
+        //            GUILayout.Label("--- 💾 메모리 ---");
+        //            GUILayout.Label($"사용: {usedMemoryMB} MB");
+        //            GUILayout.Label($"Mono: {monoMemoryMB} MB");
+        //            GUILayout.Label($"GC: {gcCount}회");
+        //            GUILayout.Space(5);
+        //        }
 
-        // ===== 렌더링 통계 =====
-        if (trackRendering)
-        {
-            GUILayout.Label("━━━ 렌더링 ━━━");
-#if UNITY_EDITOR
-            GUILayout.Label($"Batches: {batches}");
-            GUILayout.Label($"Triangles: {triangles}");
-#else
-            GUILayout.Label("렌더링: Editor에서만");
-#endif
-            GUILayout.Space(5);
-        }
+        //        // ===== 렌더링 통계 =====
+        //        if (trackRendering)
+        //        {
+        //            GUILayout.Label("--- 🖼️ 렌더링 ---");
+        //#if UNITY_EDITOR
+        //            GUILayout.Label($"Batches: {batches}");
+        //            GUILayout.Label($"Triangles: {triangles}");
+        //#else
+        //            GUILayout.Label("렌더링: Editor에서만");
+        //#endif
+        //            GUILayout.Space(5);
+        //        }
 
-        // ===== Physics 통계 =====
-        if (trackPhysics)
-        {
-            GUILayout.Label("━━━ Physics ━━━");
-            GUILayout.Label($"시간: {physicsTimeMs:F2} ms");
-            GUILayout.Space(5);
-        }
+        //        // ===== Physics 통계 =====
+        //        if (trackPhysics)
+        //        {
+        //            GUILayout.Label("--- 💥 Physics ---");
+        //            GUILayout.Label($"시간: {physicsTimeMs:F2} ms");
+        //            GUILayout.Space(5);
+        //        }
 
-        // ===== 파일 액세스 통계 =====
-        if (trackFileAccess)
-        {
-            GUILayout.Label("━━━ 파일 액세스 ━━━");
-            GUILayout.Label($"읽기: {fileReadCount}");
-            GUILayout.Label($"쓰기: {fileWriteCount}");
-        }
+        //        // ===== 파일 액세스 통계 =====
+        //        if (trackFileAccess)
+        //        {
+        //            GUILayout.Label("--- 📂 파일 액세스 ---");
+        //            GUILayout.Label($"읽기: {fileReadCount}");
+        //            GUILayout.Label($"쓰기: {fileWriteCount}");
+        //        }
 
-        // ===== 단축키 안내 =====
-        GUILayout.Space(10);
-        GUILayout.Label("F6: 시작 | F7: 중지 | F8: 스냅샷");
+        //        // ===== 단축키 안내 =====
+        //        GUILayout.Space(10);
+        //        GUILayout.Label("F6: 시작 | F7: 중지 | F8: 스냅샷");
 
-        GUILayout.EndArea();
+        //        // 3. 스크롤 뷰 종료
+        //        GUILayout.EndScrollView();
+
+        //        // 4. 영역 종료
+        //        GUILayout.EndArea();
     }
 }
