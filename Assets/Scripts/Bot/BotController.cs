@@ -25,7 +25,7 @@ public class BotController : PlayerController
     protected override void Update()
     {
         // 봇은 서버에서만 업데이트
-        if (!IsServer) return;
+        if (IsServer) return;
 
         UpdateAnimation();
     }
