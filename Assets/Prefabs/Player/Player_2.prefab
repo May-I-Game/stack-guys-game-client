@@ -1636,7 +1636,6 @@ GameObject:
   - component: {fileID: 8142101460634325304}
   - component: {fileID: -8795291928621014513}
   - component: {fileID: 5990477660407527889}
-  - component: {fileID: -6407294457347824725}
   - component: {fileID: -1451850711876682352}
   m_Layer: 6
   m_Name: Player_2
@@ -1793,8 +1792,8 @@ MonoBehaviour:
   animator: {fileID: 7755540166501527799}
   inputSendInterval: 0.05
   inputDeltaThreshold: 0.1
-  verticalVelocityThreshold: 0.5
   speedThreshold: 0.5
+  groundCheckInterval: 2
   bodyPrefab: {fileID: 4668154431405572433, guid: 9d234e9d54bea214a9a7da77198ccafe, type: 3}
   RespawnId:
     m_InternalValue: 0
@@ -1836,7 +1835,7 @@ MonoBehaviour:
   SyncScaleX: 0
   SyncScaleY: 0
   SyncScaleZ: 0
-  PositionThreshold: 0.01
+  PositionThreshold: 0.005
   RotAngleThreshold: 0.1
   ScaleThreshold: 0.01
   UseQuaternionSynchronization: 0
@@ -1860,18 +1859,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   nameText: {fileID: 3179607228803485898}
---- !u!114 &-6407294457347824725
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8763665469170833523}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e0be88c815df128439b1d0cc928acbf7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &-1451850711876682352
 MonoBehaviour:
   m_ObjectHideFlags: 0
