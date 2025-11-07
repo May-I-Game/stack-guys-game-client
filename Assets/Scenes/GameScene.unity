@@ -27814,7 +27814,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!320 &742404446
 PlayableDirector:
   m_ObjectHideFlags: 0
@@ -58941,7 +58941,6 @@ MonoBehaviour:
   mainButton: {fileID: 1398200893}
   QualifiedText: {fileID: 1561068659}
   gameUI: {fileID: 1255888823}
-  minPlayersToStart: 1
   startCountdownTime: 10
   endCountdownTime: 10
   mainSceneName: Login
