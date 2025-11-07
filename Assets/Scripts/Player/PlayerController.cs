@@ -33,6 +33,8 @@ public class PlayerController : NetworkBehaviour
     public float inputDeltaThreshold = 0.1f;  // 10% 변화
     [Tooltip("수직 속도 동기화 임계값. 이 값 이상 변할 때만 동기화. 권장: 0.5")]
     public float verticalVelocityThreshold = 0.5f;  // 0.5 m/s 이상 변화만
+    [Tooltip("이동 속도 동기화 임계값. 이 값 이상 변할 때만 동기화. 권장: 0.5")]
+    public float speedThreshold = 0.5f;  // 0.5 m/s 이상 변화만
     [Tooltip("점프 입력 쿨다운 (초). 연속 점프 방지. 권장: 0.2")]
     public float jumpCooldown = 0.2f;  // 200ms
     [Tooltip("잡기 입력 쿨다운 (초). 연속 잡기 방지. 권장: 0.3")]
@@ -180,41 +182,37 @@ public class PlayerController : NetworkBehaviour
     protected virtual void FixedUpdate()
     {
         // 서버만 로직 처리
-        if (IsServer)
+        if (!IsServer) return;
+        // 죽었으면 처리 무시
+        if (netIsDeath.Value) return;
+
+        // 이동 요청이 있으면
+        if (netMoveDirection.Value.magnitude >= 0.1f)
         {
-            // 죽었으면 처리 무시
-            if (!netIsDeath.Value)
-            {
-                // 이동 요청이 있으면
-                if (netMoveDirection.Value.magnitude >= 0.1f)
-                {
-                    // 이동 처리
-                    PlayerMove();
-                }
-                // 점프 요청이 있으면
-                if (isJumpQueued)
-                {
-                    // 점프 처리
-                    PlayerJump();
-                }
-                // 잡기 요청이 있으면
-                if (isGrabQueued)
-                {
-                    // 잡기 처리
-                    PlayerGrab();
-                }
-
-                // 잡고 있으면
-                if (netIsHolding.Value && holdingObject != null)
-                {
-                    // 들기 처리
-                    PlayerHeld();
-                }
-
-                // 애니메이션 업데이트
-                SyncAnimationState();
-            }
+            // 이동 처리
+            PlayerMove();
         }
+        // 점프 요청이 있으면
+        if (isJumpQueued)
+        {
+            // 점프 처리
+            PlayerJump();
+        }
+        // 잡기 요청이 있으면
+        if (isGrabQueued)
+        {
+            // 잡기 처리
+            PlayerGrab();
+        }
+        // 잡고 있으면
+        if (netIsHolding.Value && holdingObject != null)
+        {
+            // 들기 처리
+            PlayerHeld();
+        }
+
+        // 애니메이션 업데이트
+        SyncAnimationState();
     }
 
     public void SetInputEnabled(bool enabled)
@@ -236,10 +234,19 @@ public class PlayerController : NetworkBehaviour
 
         // Debug.Log($"[이동] 플레이어 이동 Rpc 호출됨!: {direction}");
 
-        netMoveDirection.Value = direction;
+        // 이동 방향 임계값 체크: 방향 변화가 크거나 멈출 때만 동기화
+        Vector2 directionDelta = direction - netMoveDirection.Value;
+        if (directionDelta.magnitude >= inputDeltaThreshold || direction == Vector2.zero)
+        {
+            netMoveDirection.Value = direction;
+        }
 
-        // 기본 이동 속도
-        netCurrentSpeed.Value = walkSpeed;
+        // 속도 임계값 체크: 속도 변화가 클 때만 동기화
+        float speedDelta = Mathf.Abs(walkSpeed - netCurrentSpeed.Value);
+        if (speedDelta >= speedThreshold)
+        {
+            netCurrentSpeed.Value = walkSpeed;
+        }
     }
 
     [ServerRpc(RequireOwnership = false)]
@@ -779,7 +786,11 @@ public class PlayerController : NetworkBehaviour
                 // 수직 속도가 거의 0이거나 아래로 떨어지는 중일 때만 착지로 판단
                 if (rb.linearVelocity.y <= 0.1f)
                 {
-                    netIsGrounded.Value = true;
+                    // 상태가 바뀔 때만 동기화 (최적화)
+                    if (!netIsGrounded.Value)
+                    {
+                        netIsGrounded.Value = true;
+                    }
 
                     // 땅에 닿으면 다이브 불가능 상태로 초기화
                     if (canDive)
@@ -800,7 +811,11 @@ public class PlayerController : NetworkBehaviour
         // 실제로 위로 올라가는 중일 때만 땅에서 떠났다고 판단
         if (rb.linearVelocity.y > 0.1f)
         {
-            netIsGrounded.Value = false;
+            // 상태가 바뀔 때만 동기화 (최적화)
+            if (netIsGrounded.Value)
+            {
+                netIsGrounded.Value = false;
+            }
         }
     }
 
