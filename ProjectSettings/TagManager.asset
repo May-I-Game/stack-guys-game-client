@@ -12,6 +12,8 @@ TagManager:
   - StrongObstacles
   - Death
   - Platform
+  - Goal
+  - Waypoint
   layers:
   - Default
   - TransparentFX
