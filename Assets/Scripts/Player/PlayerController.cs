@@ -723,7 +723,7 @@ public class PlayerController : NetworkBehaviour
             // 자기자신 제외
             if (hit.collider == null || hit.collider == col) continue;
 
-            Debug.Log($"{hit.collider.name}을 땅으로 감지!!");
+            //Debug.Log($"{hit.collider.name}을 땅으로 감지!!");
             isGrounded = true;
             break;
         }
@@ -807,7 +807,7 @@ public class PlayerController : NetworkBehaviour
 
             default:
                 // 매칭되지 않은 Tag
-                Debug.Log($"[경고] 매칭되지 않은 Tag: {collision.gameObject.tag}");
+                //Debug.Log($"[경고] 매칭되지 않은 Tag: {collision.gameObject.tag}");
                 break;
         }
     }
