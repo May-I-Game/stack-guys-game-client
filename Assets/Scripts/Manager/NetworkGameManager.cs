@@ -140,7 +140,7 @@ public class NetworkGameManager : MonoBehaviour
             if (nameSync != null)
             {
                 nameSync.SetPlayerName(playerName);
-                Debug.Log($"[Server] Set PlayerName NetworkVariable to '{playerName}' for client {clientId}");
+                // Debug.Log($"[Server] Set PlayerName NetworkVariable to '{playerName}' for client {clientId}");
             }
 
             Debug.Log($"[Server] Spawned character {characterIndex} with name '{playerName}' for client {clientId}");
