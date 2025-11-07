@@ -1554,6 +1554,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 928e983a870cca8458560bd3a78ae4f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _gamePort: 7779
 --- !u!1 &912574216
 GameObject:
   m_ObjectHideFlags: 0
@@ -3103,7 +3104,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01e3e5f34683dc34b925cffa242a807d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serverAddress: 127.0.0.1
+  serverAddress: 172.21.102.153
   serverPort: 7779
   matchApiUrl: http://54.180.24.20/api/find-game
   nameInput: {fileID: 912574218}
@@ -4561,7 +4562,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 18b8a20568e1f0b4fb3fb1cea7d973ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isServerMod: 1
+  isServerMod: 0
   gameSceneName: GameScene
   characterPrefabs:
   - {fileID: 5785324236016558479, guid: a43ef8e1e961de34fb719499a2851b9a, type: 3}

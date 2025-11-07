@@ -6,10 +6,10 @@ using UnityEditor;
 public class BotLauncher
 {
     // --- 여기에 빌드된 .exe 파일의 전체 경로를 입력하세요 ---
-    private const string BuildPath = @"C:\Users\서정\Documents\GitHub\stack-guys\Build\Windows_Bot\stack-guys-bot-client.exe";
+    private const string BuildPath = @"C:\Users\kangk\OneDrive\Desktop\Unity Headless Server\bot_build\stack-guys-bot-client.exe";
 
     // --- 실행할 봇의 개수 ---
-    private const int BotCount = 5;
+    private const int BotCount = 10;
 
     // --- 봇 실행 사이의 딜레이 (밀리초 단위, 500 = 0.5초) ---
     private const int LaunchDelayMs = 500;
