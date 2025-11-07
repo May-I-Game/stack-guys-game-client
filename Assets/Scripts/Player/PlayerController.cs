@@ -21,12 +21,14 @@ public class PlayerController : NetworkBehaviour
     public int escapeRequiredJumps = 5; // 탈출에 필요한 점프 횟수
 
     [Header("Collision")]
+    public float groundCheckDist = 0.1f;
     public float bounceForce = 5f; // 튕겨나가는 힘
 
     [Header("Animation")]
     public Animator animator;
 
     protected Rigidbody rb;
+    private CapsuleCollider col;
     private PlayerInputHandler inputHandler;
 
     private Vector2 lastMoveInput = Vector2.zero;
@@ -80,6 +82,7 @@ public class PlayerController : NetworkBehaviour
     protected virtual void Start()
     {
         rb = GetComponent<Rigidbody>();
+        col = GetComponent<CapsuleCollider>();
         inputHandler = GetComponent<PlayerInputHandler>();
         nt = GetComponent<NetworkTransform>();
         respawnManager = FindFirstObjectByType<RespawnManager>();
@@ -127,6 +130,8 @@ public class PlayerController : NetworkBehaviour
             // 죽었으면 처리 무시
             if (!netIsDeath.Value)
             {
+                GroundCheck();
+
                 // 이동 요청이 있으면
                 if (netMoveDirection.Value.magnitude >= 0.1f)
                 {
@@ -692,48 +697,80 @@ public class PlayerController : NetworkBehaviour
 
     // 충돌관리 로직
     #region Collisions
-    // Collider로 땅 감지
-    private void OnCollisionStay(Collision collision)
+    private void GroundCheck()
     {
         if (!IsServer) return;
 
-        // 충돌한 오브젝트가 아래쪽에 있으면 땅으로 판단
-        foreach (ContactPoint contact in collision.contacts)
+        float offsetDist = col.height / 2f - col.radius;
+        Vector3 bottomSphereCenter = col.center + (Vector3.down * offsetDist);
+        Vector3 castOrigin = transform.TransformPoint(bottomSphereCenter);
+        float scale = transform.localScale.y;
+        float scaledRadius = col.radius * scale;
+        float scaledDistance = groundCheckDist * scale;
+
+        RaycastHit[] hits = new RaycastHit[5];
+        Physics.SphereCastNonAlloc(
+            castOrigin,
+            scaledRadius,
+            Vector3.down,
+            hits,
+            scaledDistance
+        );
+
+        bool isGrounded = false;
+        foreach (RaycastHit hit in hits)
         {
-            if (contact.normal.y > 0.5f) // 법선 벡터가 위를 향하면 땅
+            // 자기자신 제외
+            if (hit.collider == null || hit.collider == col) continue;
+
+            Debug.Log($"{hit.collider.name}을 땅으로 감지!!");
+            isGrounded = true;
+            break;
+        }
+
+        if (isGrounded && rb.linearVelocity.y <= 0.1f)
+        {
+            if (netIsDiving.Value)
             {
-                // 다이브 중이었다면 착지 처리
-                if (netIsDiving.Value)
-                {
-                    OnDiveLand();
-                }
+                OnDiveLand();
+            }
 
-                // 수직 속도가 거의 0이거나 아래로 떨어지는 중일 때만 착지로 판단
-                if (rb.linearVelocity.y <= 0.1f)
-                {
-                    netIsGrounded.Value = true;
+            netIsGrounded.Value = true;
 
-                    // 땅에 닿으면 다이브 불가능 상태로 초기화
-                    if (canDive)
-                    {
-                        canDive = false;
-                    }
-                }
-
-                return;
+            if (canDive)
+            {
+                canDive = false;
             }
         }
-    }
 
-    private void OnCollisionExit(Collision collision)
-    {
-        if (!IsServer) return;
-
-        // 실제로 위로 올라가는 중일 때만 땅에서 떠났다고 판단
-        if (rb.linearVelocity.y > 0.1f)
+        else
         {
             netIsGrounded.Value = false;
         }
+    }
+
+    private void OnDrawGizmos()
+    {
+        float offsetDist = col.height / 2f - col.radius;
+        Vector3 bottomSphereCenter = col.center + (Vector3.down * offsetDist);
+        Vector3 castOrigin = transform.TransformPoint(bottomSphereCenter);
+        float scale = transform.localScale.y;
+        float scaledRadius = col.radius * scale;
+        float scaledDistance = groundCheckDist * scale;
+
+        Vector3 startPos = castOrigin;
+        Vector3 endPos = startPos + Vector3.down * scaledDistance;
+
+        Gizmos.color = netIsGrounded.Value ? Color.green : Color.red;
+
+        // 시작점 구
+        Gizmos.DrawWireSphere(startPos, scaledRadius);
+
+        // 끝점 구
+        Gizmos.DrawWireSphere(endPos, scaledRadius);
+
+        // 연결선
+        Gizmos.DrawLine(startPos, endPos);
     }
 
     // 특정 물체와 충돌할 때
