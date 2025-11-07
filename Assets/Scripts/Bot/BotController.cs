@@ -205,7 +205,6 @@ public class BotController : PlayerController
 
                 // 네트워크로 동기화되는 입력/속도 값 갱신
                 netMoveDirection.Value = moveInput; // 이번 프레임 이동 방향
-                netCurrentSpeed.Value = walkSpeed;  // 이번 프레임 이동 속도
 
                 // NavMeshAgent 내부 위치(nextPosition)를 실제 Transform과 강제로 맞춤
                 navAgent.nextPosition = transform.position;

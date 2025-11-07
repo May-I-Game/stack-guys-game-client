@@ -8,7 +8,6 @@ public class ObserverCameraControl : MonoBehaviour
     public float shiftSpeed = 20f;
     public float sensitivity = 2f;
 
-    private bool isObserver = false;
     private float rotationX = 0f;
     private float rotationY = 0f;
 

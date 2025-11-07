@@ -288,7 +288,7 @@ AnimatorStateMachine:
   m_ChildStates:
   - serializedVersion: 1
     m_State: {fileID: 4069147331754673830}
-    m_Position: {x: -130, y: 240, z: 0}
+    m_Position: {x: -130, y: 150, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 5016153113884684158}
     m_Position: {x: -130, y: 430, z: 0}
@@ -315,7 +315,7 @@ AnimatorStateMachine:
     m_Position: {x: 360, y: 430, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 6487897169015582853}
-    m_Position: {x: 360, y: 690, z: 0}
+    m_Position: {x: 360, y: 680, z: 0}
   m_ChildStateMachines: []
   m_AnyStateTransitions:
   - {fileID: 7126949385318040963}
@@ -326,7 +326,7 @@ AnimatorStateMachine:
   m_EntryTransitions: []
   m_StateMachineTransitions: {}
   m_StateMachineBehaviours: []
-  m_AnyStatePosition: {x: 380, y: 590, z: 0}
+  m_AnyStatePosition: {x: 380, y: 580, z: 0}
   m_EntryPosition: {x: 250, y: 50, z: 0}
   m_ExitPosition: {x: 460, y: 50, z: 0}
   m_ParentStateMachinePosition: {x: 800, y: 20, z: 0}
@@ -394,12 +394,6 @@ AnimatorController:
   m_Name: PlayerAnim
   serializedVersion: 5
   m_AnimatorParameters:
-  - m_Name: VerticalVelocity
-    m_Type: 1
-    m_DefaultFloat: 0
-    m_DefaultInt: 0
-    m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
   - m_Name: IsMoving
     m_Type: 4
     m_DefaultFloat: 0
@@ -581,8 +575,8 @@ AnimatorStateTransition:
   m_PrefabAsset: {fileID: 0}
   m_Name: 
   m_Conditions:
-  - m_ConditionMode: 3
-    m_ConditionEvent: VerticalVelocity
+  - m_ConditionMode: 2
+    m_ConditionEvent: IsGrounded
     m_EventTreshold: 0.1
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 5016153113884684158}
@@ -663,8 +657,8 @@ AnimatorStateTransition:
   m_PrefabAsset: {fileID: 0}
   m_Name: 
   m_Conditions:
-  - m_ConditionMode: 3
-    m_ConditionEvent: VerticalVelocity
+  - m_ConditionMode: 2
+    m_ConditionEvent: IsGrounded
     m_EventTreshold: 0.1
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 5016153113884684158}
