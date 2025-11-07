@@ -1,4 +1,3 @@
-using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -10,40 +9,15 @@ public class NetworkBotIdentity : NetworkBehaviour
     [Header("Bot Settings")]
     public bool IsBot = false;
 
-    // 봇의 이름
-    private NetworkVariable<FixedString64Bytes> networkBotName =
-    new NetworkVariable<FixedString64Bytes>("",
-        NetworkVariableReadPermission.Everyone,
-        NetworkVariableWritePermission.Server);
-
-    public string BotName
-    {
-        get => networkBotName.Value.ToString();
-        set
-        {
-            if (IsServer)
-            {
-                networkBotName.Value = value;
-            }
-        }
-    }
-
+    // 모든 인스턴스가 공유하는 카운터
     private static int botCounter = 0;
 
-    private void Awake()
-    {
-        if (IsBot && string.IsNullOrEmpty(BotName))
-        {
-            BotName = GenerateBotName();
-        }
-    }
-
     // 봇 이름 생성
-    private string GenerateBotName()
+    public static string GenerateBotName()
     {
         string[] botNames = new string[]
         {
-            "Bot_A", "Bot_B", "Bot_C"
+            "Bot"
         };
 
         int nameIndex = botCounter % botNames.Length;
@@ -59,19 +33,5 @@ public class NetworkBotIdentity : NetworkBehaviour
 
         var botIdentity = player.GetComponent<NetworkBotIdentity>();
         return botIdentity != null && botIdentity.IsBot;
-    }
-
-    // 캐릭터 이름 가져오기
-    public string GetDisplayName()
-    {
-        if (IsBot)
-        {
-            return BotName;
-        }
-        else
-        {
-            // 실제 캐릭터 이름
-            return $"Player_{OwnerClientId}";
-        }
     }
 }
