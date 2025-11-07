@@ -1,11 +1,11 @@
+using System.Collections;
 using TMPro;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using UnityEngine.Networking;
-using System.Collections;
+using UnityEngine.UI;
 
 /// <summary>
 /// LoginUIManager
@@ -15,6 +15,10 @@ using System.Collections;
 /// </summary>
 public class LoginUIManager : MonoBehaviour
 {
+    // 에디터에서 접속할 주소
+    [SerializeField] public string serverAddress = "127.0.0.1";
+    [SerializeField] ushort serverPort = 7779;
+
     [SerializeField] private string matchApiUrl = "http://54.180.24.20/api/find-game"; // FastAPI 주소
     [SerializeField] private TMP_InputField nameInput;
     [SerializeField] private Camera characterSelectCamera;
@@ -131,7 +135,11 @@ public class LoginUIManager : MonoBehaviour
         Debug.Log("Entering fullscreen (WebGL)");
 #endif
 
+#if UNITY_EDITOR
+        ConnectToServer(serverAddress, serverPort, null);
+#else
         StartCoroutine(FindGameAndConnect());
+#endif
     }
 
     // ========================== FastAPI 매치 요청 ==========================
