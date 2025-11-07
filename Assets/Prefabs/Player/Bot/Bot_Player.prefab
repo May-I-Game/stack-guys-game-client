@@ -1677,15 +1677,25 @@ MonoBehaviour:
   holdDistance: 0.1
   throwForce: 5
   escapeRequiredJumps: 5
+  groundCheckDist: 0.1
+  groundLayerMask:
+    serializedVersion: 2
+    m_Bits: 8
   bounceForce: 5
   animator: {fileID: 0}
+  inputSendInterval: 0.05
+  inputDeltaThreshold: 0.1
+  verticalVelocityThreshold: 0.5
+  speedThreshold: 0.5
   bodyPrefab: {fileID: 6666310234280264781, guid: df039cf0004bb1746b7374f3511b1325, type: 3}
   RespawnId:
     m_InternalValue: 0
   respawnManager: {fileID: 0}
   inputEnabled: 1
-  actionIntervalMin: 3
-  actionIntervalMax: 5
+  rotateIntervalMin: 1
+  rotateIntervalMax: 1.5
+  jumpIntervalMin: 3
+  jumpIntervalMax: 5
 --- !u!114 &2593437910564063128
 MonoBehaviour:
   m_ObjectHideFlags: 0

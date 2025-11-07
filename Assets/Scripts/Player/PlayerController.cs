@@ -23,6 +23,7 @@ public class PlayerController : NetworkBehaviour
     [Header("Collision")]
     public float groundCheckDist = 0.1f;
     private RaycastHit[] groundHits = new RaycastHit[3];
+    public LayerMask groundLayerMask = -1; // 땅으로 인식할 레이어 (최적화용, -1 = 모든 레이어)
     public float bounceForce = 5f; // 튕겨나가는 힘
 
     [Header("Animation")]
@@ -35,6 +36,8 @@ public class PlayerController : NetworkBehaviour
     public float inputDeltaThreshold = 0.1f;  // 10% 변화
     [Tooltip("이동 속도 동기화 임계값. 이 값 이상 변할 때만 동기화. 권장: 0.5")]
     public float speedThreshold = 0.5f;  // 0.5 m/s 이상 변화만
+    [Tooltip("땅 체크 간격 (프레임). 1=매프레임, 2=2프레임마다. 권장: 2")]
+    public int groundCheckInterval = 2;  // 2프레임마다 체크 (50Hz → 25Hz)
 
     protected Rigidbody rb;
     private CapsuleCollider col;
@@ -48,6 +51,7 @@ public class PlayerController : NetworkBehaviour
     private float lastGrabTime = -999f;  // 마지막 잡기 시간 (쿨다운용)
     private bool isJumpQueued;
     private bool isGrabQueued;
+    private Vector3 deathPosition;  // 죽은 위치 저장용
 
     public GameObject bodyPrefab;
 
@@ -174,29 +178,41 @@ public class PlayerController : NetworkBehaviour
         // 죽었으면 처리 무시
         if (netIsDeath.Value) return;
 
+        ServerPerformanceProfiler.Start("PlayerController.FixedUpdate");
         // 땅 체크
+        ServerPerformanceProfiler.Start("PlayerController.GroundCheck");
         GroundCheck();
+        ServerPerformanceProfiler.End("PlayerController.GroundCheck");
+        ServerPerformanceProfiler.Start("PlayerController.Move");
         // 이동 처리
         PlayerMove();
+        ServerPerformanceProfiler.End("PlayerController.Move");
 
         // 점프 요청이 있으면
         if (isJumpQueued)
         {
             // 점프 처리
+            ServerPerformanceProfiler.Start("PlayerController.Jump");
             PlayerJump();
+            ServerPerformanceProfiler.End("PlayerController.Jump");
         }
         // 잡기 요청이 있으면
         if (isGrabQueued)
         {
             // 잡기 처리
+            ServerPerformanceProfiler.Start("PlayerController.Grab");
             PlayerGrab();
+            ServerPerformanceProfiler.End("PlayerController.Grab");
         }
         // 잡고 있으면
         if (isHolding && holdingObject != null)
         {
             // 들기 처리
+            ServerPerformanceProfiler.Start("PlayerController.Holding");
             PlayerHeld();
+            ServerPerformanceProfiler.End("PlayerController.Holding");
         }
+        ServerPerformanceProfiler.End("PlayerController.FixedUpdate");
     }
 
     public void SetInputEnabled(bool enabled)
@@ -652,6 +668,9 @@ public class PlayerController : NetworkBehaviour
     {
         if (netIsDeath.Value) return;
 
+        // 죽은 위치 저장 (시체 생성용)
+        deathPosition = transform.position;
+
         netIsDeath.Value = true;
         // 인풋벡터 초기화
         moveDir = Vector2.zero;
@@ -667,7 +686,8 @@ public class PlayerController : NetworkBehaviour
 
         if (bodyPrefab != null)
         {
-            GameObject bodyInstance = Instantiate(bodyPrefab, transform.position, transform.rotation);
+            // 저장된 죽은 위치에 시체 생성
+            GameObject bodyInstance = Instantiate(bodyPrefab, deathPosition, transform.rotation);
             NetworkObject networkBody = bodyInstance.GetComponent<NetworkObject>();
 
             if (networkBody != null)
@@ -744,6 +764,10 @@ public class PlayerController : NetworkBehaviour
     {
         if (!IsServer) return;
 
+        // 프레임 스키핑: Unity 전역 프레임 카운터 사용 (모든 플레이어가 동기화됨)
+        if (Time.frameCount % groundCheckInterval != 0) return;
+
+        // 캐싱된 계산 (매번 계산하지 않도록)
         float offsetDist = col.height / 2f - col.radius;
         Vector3 bottomSphereCenter = col.center + (Vector3.down * offsetDist);
         Vector3 castOrigin = transform.TransformPoint(bottomSphereCenter);
@@ -756,7 +780,8 @@ public class PlayerController : NetworkBehaviour
             scaledRadius,
             Vector3.down,
             groundHits,
-            scaledDistance
+            scaledDistance,
+            groundLayerMask  // LayerMask로 필터링 (Physics 쿼리 최적화)
         );
 
         bool isGrounded = false;
@@ -766,16 +791,18 @@ public class PlayerController : NetworkBehaviour
 
             // 자기자신 제외
             if (hit.collider == null || hit.collider == col) continue;
-            // 경사로/벽면 제외
-            if (hit.normal.y < 0.5f) continue;
+            // 경사로/벽면 제외 (0.7 = 약 45도 경사)
+            if (hit.normal.y < 0.7f) continue;
 
-            Debug.Log($"{hit.collider.name}을 땅으로 감지!!");
+            // Debug.Log($"{hit.collider.name}을 땅으로 감지!!");
             isGrounded = true;
             break;
         }
 
+        // NetworkVariable은 값이 실제로 변경될 때만 업데이트 (Netcode 자동 처리)
         netIsGrounded.Value = isGrounded;
 
+        // 착지 시 처리 (최적화: 조건을 미리 체크)
         if (isGrounded && rb.linearVelocity.y <= 0.1f)
         {
             if (netIsDiving.Value)

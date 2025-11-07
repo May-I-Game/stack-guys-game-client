@@ -1003,7 +1003,7 @@ GameObject:
   - component: {fileID: 7045508634173038973}
   m_Layer: 0
   m_Name: Player_12_body
-  m_TagString: Player
+  m_TagString: Ground
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

@@ -1490,6 +1490,10 @@ MonoBehaviour:
   holdDistance: 0.1
   throwForce: 5
   escapeRequiredJumps: 5
+  groundCheckDist: 0.1
+  groundLayerMask:
+    serializedVersion: 2
+    m_Bits: 8
   bounceForce: 5
   animator: {fileID: 0}
   inputSendInterval: 0.05
@@ -1502,11 +1506,7 @@ MonoBehaviour:
   respawnManager: {fileID: 0}
   inputEnabled: 1
   updatePathInterval: 0.5
-  waypoints:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  waypointTag: Waypoint
   useRandomWaypoint: 1
   waypointReachedDistance: 2
 --- !u!1 &5935630077146863053
