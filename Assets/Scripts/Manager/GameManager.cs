@@ -322,6 +322,10 @@ public class GameManager : NetworkBehaviour
             NetworkObject playerObject = client.PlayerObject;
             if (playerObject == null) continue;
 
+            // 봇이 아닌 실제 플레이어만 처리
+            NetworkBotIdentity botIdentity = playerObject.GetComponent<NetworkBotIdentity>();
+            if (botIdentity != null && botIdentity.IsBot) continue;
+
             NetworkTransform nt = playerObject.GetComponent<NetworkTransform>();
             if (nt == null) continue;
 
@@ -333,6 +337,17 @@ public class GameManager : NetworkBehaviour
 
             i++;
         }
+
+        // 남는 자리 봇으로 스폰
+        if (BotManager.instance != null)
+        {
+            BotManager.instance.SpawnBotsFromIndex(i, gameSpawnPoints);
+        }
+        else
+        {
+            Debug.LogWarning("[GameManager] BotManager.instance가 null");
+        }
+
         timelineStartTime.Value = NetworkManager.Singleton.ServerTime.Time + SYNC_BUFFER;
         shouldPlayTimeline.Value = true;
     }
@@ -483,6 +498,12 @@ public class GameManager : NetworkBehaviour
         if (localPlayer != null)
         {
             localPlayer.SetInputEnabled(true);
+        }
+
+        // 시네마틱 끝나고 봇 입력 활성화
+        if (IsServer && BotManager.instance != null)
+        {
+            BotManager.instance.EnableAllBots();
         }
     }
     private PlayerController GetLocalPlayer()
