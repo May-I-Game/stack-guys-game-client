@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.AI;
@@ -7,7 +6,9 @@ using UnityEngine.AI;
 public class BotController : PlayerController
 {
     [Header("Bot Settings")]
-    [SerializeField] private float updatePathInterval = 0.5f;       // 경로 업데이트 주기
+    [SerializeField] private float updatePathInterval = 2;       // 경로 업데이트 주기
+    [SerializeField] private float waypointSearchInterval = 2f;     // 웨이포인트 재탐색 주기
+    [SerializeField] private float forwardThreshold = 1f;           // 전진 판정 거리
 
     [Header("Random Path Settings")]
     [SerializeField] private string waypointTag = "Waypoint";       // 웨이포인트 태그
@@ -15,13 +16,13 @@ public class BotController : PlayerController
     [SerializeField] private float waypointReachedDistance = 0.5f;  // 웨이포인트 도달 거리
 
     private Transform[] waypoints;                                  // 자동으로 찾은 웨이포인트들
-
     private NavMeshAgent navAgent;
     private Transform goalTransform;
     private Transform currentWaypoint;                              // 현재 목표 웨이포인트
     private bool isGoingToWaypoint = false;                         // 웨이포인트로 가는 중인가?
     private float nextPathUpdateTime;                               // 다음 업데이트 시간
-
+    private float nextWaypointSearchTime;                           // 다음 웨이포인트 재탐색 시간
+    
     protected override void Update()
     { 
         UpdateAnimation();
@@ -49,22 +50,29 @@ public class BotController : PlayerController
         }
 
         FindGoal();
+        RefreshWaypoints();                                     // 초기 웨이포인트 탐색
 
         // 웨이포인트 자동 찾기
-        FindWaypoints();
+        //FindWaypoints();
 
-        // 웨이포인트 사용 시 랜덤 선택
-        if (useRandomWaypoint && waypoints != null && waypoints.Length > 0)
-        {
-            SelectRandomWaypoint();
-        }
-
+        //// 웨이포인트 사용 시 랜덤 선택
+        //if (useRandomWaypoint && waypoints != null && waypoints.Length > 0)
+        //{
+        //    SelectRandomWaypoint();
+        //}
     }
 
     protected override void FixedUpdate()
     {
         if (!IsServer) return;
         if (netIsDeath.Value) return;
+
+        // 웨이포인트 주기적으로 재탐색
+        if (Time.time > nextWaypointSearchTime)
+        {
+            RefreshWaypoints();
+            nextWaypointSearchTime = Time.time + waypointSearchInterval;
+        }
 
         // 이동이 활성화 되어 있고 navAgent가 활성화가 되어 있을때 AI 작동
         if (inputEnabled && navAgent != null && navAgent.enabled)
@@ -106,45 +114,112 @@ public class BotController : PlayerController
         if (goal != null)
         {
             goalTransform = goal.transform;
-            Debug.Log($"[Bot] 골 지점 발견: {goal.name}");
-        }
-        else
-        {
-            Debug.LogWarning("[Bot] Goal 태그를 가진 오브젝트 없음");
         }
     }
 
-    private void FindWaypoints()
+    // 웨이포인트 재탐색, 전진 방향 웨이포인트 선택
+    private void RefreshWaypoints()
     {
         if (!IsServer) return;
 
-        // Waypoint 태그를 가진 모든 오브젝트 찾기
         GameObject[] waypointObjects = GameObject.FindGameObjectsWithTag(waypointTag);
 
+        // 웨이포인터들이 있을때
         if (waypointObjects.Length > 0)
         {
-            // 웨이포인트를 담을 변수 할당
             waypoints = new Transform[waypointObjects.Length];
-
             for (int i = 0; i < waypointObjects.Length; i++)
             {
-                // 게임 오브젝트의 트랜스폼들을 저장
                 waypoints[i] = waypointObjects[i].transform;
             }
+
+            if (useRandomWaypoint && waypoints.Length > 0)
+            {
+                SelectForwardWaypoint();                     // 앞쪽 웨이포인트만 선택
+            }
+        }
+        else
+        {
+            waypoints = null;
         }
     }
 
-    private void SelectRandomWaypoint()
+    // 전진 방향 웨이포인트만 선택 (일직선 맵 최적화)
+    private void SelectForwardWaypoint()
     {
         if (waypoints == null || waypoints.Length == 0) return;
 
-        // 랜덤으로 웨이포인트 선택
-        int randomIndex = Random.Range(0, waypoints.Length);
-        currentWaypoint = waypoints[randomIndex];
+        System.Collections.Generic.List<Transform> forwardWaypoints = new System.Collections.Generic.List<Transform>();
+        
+        foreach (Transform wp in waypoints)
+        {
+            // Z 축 기준으로 앞에 있는 웨이포인트만 선택
+            if (wp.position.z > transform.position.z + forwardThreshold)
+            {
+                forwardWaypoints.Add(wp);
+            }
+        }
+
+        // 앞에 웨이포인트가 없으면 골로 직행
+        if (forwardWaypoints.Count == 0)
+        {
+            isGoingToWaypoint = false;
+            return;
+        }
+
+        // 가장 가까운 앞쪽 웨이포인트 선택
+        //Transform closestWaypoint = forwardWaypoints[0];
+        //float closestDistance = Vector3.Distance(transform.position, closestWaypoint.position);
+
+        //foreach (Transform wp in forwardWaypoints)
+        //{
+        //    float distance = Vector3.Distance(transform.position, wp.position);
+        //    if (distance < closestDistance)
+        //    {
+        //        closestDistance = distance;
+        //        closestWaypoint = wp;
+        //    }
+        //}
+
+        int randomIndex = Random.Range(0, forwardWaypoints.Count);
+        currentWaypoint = forwardWaypoints[randomIndex];
         isGoingToWaypoint = true;
 
-        Debug.Log($"[Bot] 랜덤 웨이포인트: {currentWaypoint.name}");
+        //currentWaypoint = closestWaypoint;
+        //isGoingToWaypoint = true;
+
     }
+
+    //private void FindWaypoints()
+    //{
+    //    if (!IsServer) return;
+
+    //    // Waypoint 태그를 가진 모든 오브젝트 찾기
+    //    GameObject[] waypointObjects = GameObject.FindGameObjectsWithTag(waypointTag);
+
+    //    if (waypointObjects.Length > 0)
+    //    {
+    //        // 웨이포인트를 담을 변수 할당
+    //        waypoints = new Transform[waypointObjects.Length];
+
+    //        for (int i = 0; i < waypointObjects.Length; i++)
+    //        {
+    //            // 게임 오브젝트의 트랜스폼들을 저장
+    //            waypoints[i] = waypointObjects[i].transform;
+    //        }
+    //    }
+    //}
+
+    //private void SelectRandomWaypoint()
+    //{
+    //    if (waypoints == null || waypoints.Length == 0) return;
+
+    //    // 랜덤으로 웨이포인트 선택
+    //    int randomIndex = Random.Range(0, waypoints.Length);
+    //    currentWaypoint = waypoints[randomIndex];
+    //    isGoingToWaypoint = true;
+
+    //}
 
     private void UpdateBotAI()
     {
@@ -172,8 +247,8 @@ public class BotController : PlayerController
                 // 정해둔 도달 거리보다 짧으면 도착
                 if (distanceToWaypoint < waypointReachedDistance)
                 {
-                    Debug.Log($"[Bot] 웨이포인트 도착!");
-                    isGoingToWaypoint = false;
+                    // 즉시 다음 목표 선택
+                    SelectForwardWaypoint();
                 }
                 else
                 {
@@ -190,6 +265,11 @@ public class BotController : PlayerController
                         nextPathUpdateTime = Time.time + updatePathInterval;
                     }
                 }
+            }
+            // 웨이포인트가 없으면 다시 선택
+            else if (!isGoingToWaypoint)
+            {
+                SelectForwardWaypoint();
             }
         }
         // 웨이포인트 통과 후 골로 직진
@@ -247,3 +327,7 @@ public class BotController : PlayerController
         // 부모 클래스의 카메라 설정을 무시
     }
 }
+
+// 1. 웨이포인트 시스템 활성 → 전진 방향 랜덤 선택
+// 2. 앞쪽 웨이포인트 없음 → Goal로 직진
+// 3. 웨이포인트 미사용 → Goal로 직진
