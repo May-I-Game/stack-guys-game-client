@@ -1,4 +1,5 @@
 using Unity.Netcode;
+using Unity.Netcode.Components;
 using UnityEngine;
 
 public class PlayerBody : NetworkBehaviour
@@ -9,7 +10,35 @@ public class PlayerBody : NetworkBehaviour
 
         if (collision.gameObject.CompareTag("Ocean"))
         {
-            this.gameObject.GetComponent<NetworkObject>().Despawn(destroy: false);
+            ConverToLocalClientRpc();
         }
+    }
+
+    [ClientRpc]
+    private void ConverToLocalClientRpc()
+    {
+        ConvertToLocal();
+    }
+
+    private void ConvertToLocal()
+    {
+        // NetworkTransform이 있다면 비활성화
+        var networkTransform = GetComponent<NetworkTransform>();
+        if (networkTransform != null)
+        {
+            networkTransform.enabled = false;
+        }
+
+        // NetworkObject 비활성화
+        var netWorkObject = GetComponent<NetworkObject>();
+        if (netWorkObject != null)
+        {
+            netWorkObject.enabled = false;
+        }
+
+        // 마지막으로 자기 자신 비활성화
+        this.enabled = false;
+
+        Debug.Log($"{this.gameObject}: 네트워크 동기화 중단, 로컬 모드로 전환");
     }
 }

@@ -180,13 +180,9 @@ public class PlayerController : NetworkBehaviour
 
         ServerPerformanceProfiler.Start("PlayerController.FixedUpdate");
         // 땅 체크
-        ServerPerformanceProfiler.Start("PlayerController.GroundCheck");
         GroundCheck();
-        ServerPerformanceProfiler.End("PlayerController.GroundCheck");
-        ServerPerformanceProfiler.Start("PlayerController.Move");
         // 이동 처리
         PlayerMove();
-        ServerPerformanceProfiler.End("PlayerController.Move");
 
         // 점프 요청이 있으면
         if (isJumpQueued)
@@ -295,6 +291,7 @@ public class PlayerController : NetworkBehaviour
         // 이동 요청이 있으면
         if (moveDir.magnitude >= 0.1f)
         {
+            ServerPerformanceProfiler.Start("PlayerController.Move");
             // 이동
             Vector3 movement = new Vector3(
                 moveDir.x,
@@ -307,11 +304,12 @@ public class PlayerController : NetworkBehaviour
             Quaternion targetRotation = Quaternion.LookRotation(movement);
             transform.rotation = targetRotation;
 
-            if (netIsMove.Value != true) netIsMove.Value = true;
+            netIsMove.Value = true;
+            ServerPerformanceProfiler.End("PlayerController.Move");
         }
         else
         {
-            if (netIsMove.Value != false) netIsMove.Value = false;
+            netIsMove.Value = false;
         }
     }
 
@@ -767,6 +765,7 @@ public class PlayerController : NetworkBehaviour
         // 프레임 스키핑: Unity 전역 프레임 카운터 사용 (모든 플레이어가 동기화됨)
         if (Time.frameCount % groundCheckInterval != 0) return;
 
+        ServerPerformanceProfiler.Start("PlayerController.GroundCheck");
         // 캐싱된 계산 (매번 계산하지 않도록)
         float offsetDist = col.height / 2f - col.radius;
         Vector3 bottomSphereCenter = col.center + (Vector3.down * offsetDist);
@@ -815,6 +814,7 @@ public class PlayerController : NetworkBehaviour
                 canDive = false;
             }
         }
+        ServerPerformanceProfiler.End("PlayerController.GroundCheck");
     }
 
     private void OnDrawGizmos()
