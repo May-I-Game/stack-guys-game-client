@@ -138,6 +138,25 @@ public static class ServerPerformanceProfiler
         logLines.Add($"Time: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
         logLines.Add($"Interval: {logInterval}초");
         logLines.Add("");
+
+        // Tick Rate 정보 추가
+        float tickRate = ServerTickRateMonitor.GetCurrentTickRate();
+        float targetTickRate = ServerTickRateMonitor.GetTargetTickRate();
+        float frameTimeMs = ServerTickRateMonitor.GetAverageFrameTimeMs();
+        float fixedUpdateTimeMs = ServerTickRateMonitor.GetAverageFixedUpdateTimeMs();
+        float performance = ServerTickRateMonitor.GetTickRatePerformance();
+
+        if (tickRate > 0)
+        {
+            string perfStatus = performance >= 95f ? "GOOD" : performance >= 80f ? "WARNING" : "CRITICAL";
+            logLines.Add("--- Tick Rate Summary ---");
+            logLines.Add($"Target Tick Rate:        {targetTickRate:F1} Hz");
+            logLines.Add($"Actual Tick Rate:        {tickRate:F2} Hz ({performance:F1}%) [{perfStatus}]");
+            logLines.Add($"Avg Frame Time:          {frameTimeMs:F3} ms");
+            logLines.Add($"Avg FixedUpdate Time:    {fixedUpdateTimeMs:F3} ms");
+            logLines.Add("");
+        }
+
         logLines.Add(string.Format("{0,-30} {1,10} {2,12} {3,12} {4,12} {5,12}",
             "Name", "Calls", "Total(ms)", "Avg(ms)", "Min(ms)", "Max(ms)"));
         logLines.Add(new string('-', 100));
@@ -165,14 +184,14 @@ public static class ServerPerformanceProfiler
         UnityEngine.Debug.Log(fullLog);
 
         // 파일 출력
-        try
-        {
-            File.AppendAllText(logFilePath, fullLog + "\n\n");
-        }
-        catch (Exception e)
-        {
-            UnityEngine.Debug.LogError($"[ServerProfiler] 로그 파일 쓰기 실패: {e.Message}");
-        }
+        // try
+        // {
+        //     File.AppendAllText(logFilePath, fullLog + "\n\n");
+        // }
+        // catch (Exception e)
+        // {
+        //     UnityEngine.Debug.LogError($"[ServerProfiler] 로그 파일 쓰기 실패: {e.Message}");
+        // }
 
         // 데이터 초기화 (다음 측정을 위해)
         ResetStats();

@@ -22,9 +22,9 @@ public class BotController : PlayerController
     private bool isGoingToWaypoint = false;                         // 웨이포인트로 가는 중인가?
     private float nextPathUpdateTime;                               // 다음 업데이트 시간
     private float nextWaypointSearchTime;                           // 다음 웨이포인트 재탐색 시간
-    
+
     protected override void Update()
-    { 
+    {
         UpdateAnimation();
     }
 
@@ -67,6 +67,7 @@ public class BotController : PlayerController
         if (!IsServer) return;
         if (netIsDeath.Value) return;
 
+        ServerPerformanceProfiler.Start("BotController.FixedUpdate");
         // 웨이포인트 주기적으로 재탐색
         if (Time.time > nextWaypointSearchTime)
         {
@@ -77,7 +78,9 @@ public class BotController : PlayerController
         // 이동이 활성화 되어 있고 navAgent가 활성화가 되어 있을때 AI 작동
         if (inputEnabled && navAgent != null && navAgent.enabled)
         {
+            ServerPerformanceProfiler.Start("BotController.BotUpdate");
             UpdateBotAI();
+            ServerPerformanceProfiler.End("BotController.BotUpdate");
         }
 
         // 땅 체크
@@ -103,6 +106,8 @@ public class BotController : PlayerController
         {
             PlayerHeld();
         }
+
+        ServerPerformanceProfiler.End("BotController.FixedUpdate");
     }
 
     private void FindGoal()
@@ -150,7 +155,7 @@ public class BotController : PlayerController
         if (waypoints == null || waypoints.Length == 0) return;
 
         System.Collections.Generic.List<Transform> forwardWaypoints = new System.Collections.Generic.List<Transform>();
-        
+
         foreach (Transform wp in waypoints)
         {
             // Z 축 기준으로 앞에 있는 웨이포인트만 선택
