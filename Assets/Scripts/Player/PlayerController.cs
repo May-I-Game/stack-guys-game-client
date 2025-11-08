@@ -47,8 +47,8 @@ public class PlayerController : NetworkBehaviour
     private Vector2 lastSentInput = Vector2.zero;  // 실제로 서버에 전송한 마지막 입력
     private float lastInputSendTime = 0f;  // 마지막 입력 전송 시간
     private Vector3 lastHeldObjectPosition = Vector3.zero;  // 마지막 잡은 오브젝트 위치
-    private bool isJumpQueued;
-    private bool isGrabQueued;
+    protected bool isJumpQueued;
+    protected bool isGrabQueued;
     private Vector3 deathPosition;  // 죽은 위치 저장용
 
     public GameObject bodyPrefab;
