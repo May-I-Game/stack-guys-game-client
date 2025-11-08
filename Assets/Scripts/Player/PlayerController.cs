@@ -95,6 +95,14 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
+    public override void OnNetworkDespawn()
+    {
+        if (IsServer)
+        {
+            ReleaseGrab();
+        }
+    }
+
     protected virtual void Start()
     {
         rb = GetComponent<Rigidbody>();
