@@ -77,7 +77,18 @@ public class BotController : PlayerController
         // 이동이 활성화 되어 있고 navAgent가 활성화가 되어 있을때 AI 작동
         if (inputEnabled && navAgent != null && navAgent.enabled)
         {
-            UpdateBotAI();
+            // 목표 지점이 없으면 목표 찾기
+            if (goalTransform == null && Time.time > nextPathUpdateTime)
+            {
+                FindGoal();
+                nextPathUpdateTime = Time.time + updatePathInterval;  // 스팸 호출 방지
+            }
+            
+            // 목표 지점이 있으면 길찾기 로직
+            if (goalTransform != null)
+            {
+                UpdateBotAI();
+            }
         }
 
         // 땅 체크
@@ -218,23 +229,10 @@ public class BotController : PlayerController
     //    int randomIndex = Random.Range(0, waypoints.Length);
     //    currentWaypoint = waypoints[randomIndex];
     //    isGoingToWaypoint = true;
-
     //}
 
     private void UpdateBotAI()
     {
-        // 골이 없으면 중단
-        if (goalTransform == null)
-        {
-            if (Time.time > nextPathUpdateTime)
-            {
-                FindGoal();
-                nextPathUpdateTime = Time.time + updatePathInterval;  // 스팸 호출 방지
-            }
-
-            return;
-        }
-
         // 웨이포인트 시스템 사용
         if (useRandomWaypoint && waypoints != null && waypoints.Length > 0)
         {
