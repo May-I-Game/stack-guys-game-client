@@ -1,16 +1,16 @@
 #if UNITY_SERVER
 using Aws.GameLift.Server;
-using Amazon.GameLift.Model;            // ÇÊ¿ä ½Ã À¯Áö
+using Amazon.GameLift.Model;            // í•„ìš” ì‹œ ìœ ì§€
 using System.Collections.Generic;
 using UnityEngine;
 
 public class GameLiftServerManager : MonoBehaviour
 {
-    private int _gamePort = 7779; // ±âº»°ª
+    private int _gamePort = 7779; // ê¸°ë³¸ê°’
 
     void Start()
     {
-        // 1) ¸í·ÉÁÙ ÀÎ¼ö·Î Æ÷Æ® ¹Ş±â:  -port 7779  ¶Ç´Â  -port 7780 ...
+        // 1) ëª…ë ¹ì¤„ ì¸ìˆ˜ë¡œ í¬íŠ¸ ë°›ê¸°:  -port 7779  ë˜ëŠ”  -port 7780 ...
         _gamePort = GetPortFromArgs(7779);
 
         var init = GameLiftServerAPI.InitSDK();
@@ -20,15 +20,15 @@ public class GameLiftServerManager : MonoBehaviour
             return;
         }
 
-        // 2) GameLift¿¡ ÇÁ·Î¼¼½º ÁØºñ ¾Ë¸®±â + health/terminate Äİ¹é
+        // 2) GameLiftì— í”„ë¡œì„¸ìŠ¤ ì¤€ë¹„ ì•Œë¦¬ê¸° + health/terminate ì½œë°±
         var processParams = new ProcessParameters(
             onStartGameSession: (gameSession) =>
             {
-                // ¼¼¼Ç È°¼ºÈ­ Àü¿¡ NGO/UTP ¸®½¼ Æ÷Æ®¸¦ µ¿ÀûÀ¸·Î ¼¼ÆÃ
+                // ì„¸ì…˜ í™œì„±í™” ì „ì— NGO/UTP ë¦¬ìŠ¨ í¬íŠ¸ë¥¼ ë™ì ìœ¼ë¡œ ì„¸íŒ…
                 var transport = Object.FindFirstObjectByType<Unity.Netcode.Transports.UTP.UnityTransport>();
                 if (transport != null)
                 {
-                    // ÁÖ¼Ò´Â ¼­¹ö ¸®½¼¿ë: 0.0.0.0, Æ÷Æ®´Â _gamePort
+                    // ì£¼ì†ŒëŠ” ì„œë²„ ë¦¬ìŠ¨ìš©: 0.0.0.0, í¬íŠ¸ëŠ” _gamePort
                     // (SetConnectionData(string address, ushort port, string listenAddress))
                     transport.SetConnectionData("0.0.0.0", (ushort)_gamePort, "0.0.0.0");
                 }
@@ -37,7 +37,7 @@ public class GameLiftServerManager : MonoBehaviour
                     Debug.LogError("UnityTransport not found on server scene!");
                 }
 
-                // GameLift¿¡ ¼¼¼Ç È°¼ºÈ­ ¾Ë¸²
+                // GameLiftì— ì„¸ì…˜ í™œì„±í™” ì•Œë¦¼
                 var activate = GameLiftServerAPI.ActivateGameSession();
                 if (!activate.Success)
                 {
@@ -45,7 +45,7 @@ public class GameLiftServerManager : MonoBehaviour
                     return;
                 }
 
-                // NGO ¼­¹ö ½ÃÀÛ
+                // NGO ì„œë²„ ì‹œì‘
                 var nm = Unity.Netcode.NetworkManager.Singleton;
                 if (nm != null)
                 {
@@ -64,19 +64,19 @@ public class GameLiftServerManager : MonoBehaviour
             },
             onUpdateGameSession: (update) =>
             {
-                // ÇÊ¿ä½Ã ¼¼¼Ç ¼Ó¼º ¾÷µ¥ÀÌÆ® Ã³¸® (¿É¼Ç)
+                // í•„ìš”ì‹œ ì„¸ì…˜ ì†ì„± ì—…ë°ì´íŠ¸ ì²˜ë¦¬ (ì˜µì…˜)
             },
             onProcessTerminate: () =>
             {
-                // Á¾·á ½ÅÈ£: Á¤¸® ÈÄ Á¾·á
+                // ì¢…ë£Œ ì‹ í˜¸: ì •ë¦¬ í›„ ì¢…ë£Œ
                 GameLiftServerAPI.ProcessEnding();
             },
             onHealthCheck: () =>
             {
-                // Çï½º Ã¼Å©: ¿ÜºÎ ÀÇÁ¸¼º È®ÀÎ ·ÎÁ÷À» ³ÖÀ» ¼ö ÀÖÀ½
+                // í—¬ìŠ¤ ì²´í¬: ì™¸ë¶€ ì˜ì¡´ì„± í™•ì¸ ë¡œì§ì„ ë„£ì„ ìˆ˜ ìˆìŒ
                 return true;
             },
-            port: _gamePort,  // 3) GameLift°¡ ÀÎÁöÇÒ ÀÌ ÇÁ·Î¼¼½ºÀÇ Æ÷Æ® (µ¿ÀÏ Æ÷Æ® »ç¿ë)
+            port: _gamePort,  // 3) GameLiftê°€ ì¸ì§€í•  ì´ í”„ë¡œì„¸ìŠ¤ì˜ í¬íŠ¸ (ë™ì¼ í¬íŠ¸ ì‚¬ìš©)
             logParameters: new LogParameters(new List<string>
             {
                 "/local/game/logs/gameliftserver.log"
