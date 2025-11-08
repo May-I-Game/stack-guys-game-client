@@ -73,7 +73,7 @@ public class PlayerController : NetworkBehaviour
     private ulong grabberId = 0; // 누구한테 잡혔는지
     private ulong holdingTargetId = 0; // 누구를 잡고있는지
 
-    private GameObject holdingObject = null; // 실제로 들고 있는 오브젝트
+    protected GameObject holdingObject = null; // 실제로 들고 있는 오브젝트
     private PlayerController heldPlayerCache = null; // 잡은 플레이어 캐시 (최적화)
     private int heldObjectOriginLayer;
     private int escapeJumpCount = 0; // 탈출 시도 횟수
@@ -222,7 +222,7 @@ public class PlayerController : NetworkBehaviour
 
     // 클라에서 서버에게 요청할 Rpc 모음, 봇의 소유권 문제 때문에 false 설정
     #region ServerRpcs
-    [ServerRpc(RequireOwnership = false)]
+    [ServerRpc]
     protected void MovePlayerServerRpc(Vector2 direction)
     {
         // 충돌 중이거나 다이브 착지 중이면 입력 무시
@@ -242,7 +242,7 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
-    [ServerRpc(RequireOwnership = false)]
+    [ServerRpc]
     protected void JumpPlayerServerRpc()
     {
         // 충돌 중이거나 다이브 착지 중이면 입력 무시
@@ -254,7 +254,7 @@ public class PlayerController : NetworkBehaviour
         isJumpQueued = true;
     }
 
-    [ServerRpc(RequireOwnership = false)]
+    [ServerRpc]
     private void GrabPlayerServerRpc()
     {
         // 충돌 중이거나 공중에 있거나 다이브 착지 중이거나 잡힌 상태면 입력 무시

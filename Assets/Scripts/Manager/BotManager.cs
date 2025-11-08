@@ -55,8 +55,10 @@ public class BotManager : NetworkBehaviour
         }
     }
 
-    private void OnDestroy()
+    public override void OnDestroy()
     {
+        base.OnDestroy();
+
         if (Singleton == this)
         {
             Singleton = null;
