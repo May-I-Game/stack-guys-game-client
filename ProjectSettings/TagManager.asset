@@ -14,6 +14,7 @@ TagManager:
   - Platform
   - Goal
   - Waypoint
+  - Ocean
   layers:
   - Default
   - TransparentFX

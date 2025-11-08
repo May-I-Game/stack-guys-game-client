@@ -849,6 +849,7 @@ public class PlayerController : NetworkBehaviour
         // Tag로 구분하여 다른 애니메이션 재생
         switch (collision.gameObject.tag)
         {
+            case "Ocean":
             case "Death":
                 // 캐릭터가 가지고 있는 리스폰 인덱스로 이동
                 PlayerDeath();

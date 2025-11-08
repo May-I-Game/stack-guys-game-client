@@ -1001,6 +1001,7 @@ GameObject:
   - component: {fileID: 1456118814513252411}
   - component: {fileID: 5361939342774940937}
   - component: {fileID: 7045508634173038973}
+  - component: {fileID: -174028575713740521}
   m_Layer: 0
   m_Name: Bot_Server_body
   m_TagString: Ground
@@ -1185,6 +1186,19 @@ MonoBehaviour:
   netIsGrabbed:
     m_InternalValue: 0
   holder: {fileID: 0}
+--- !u!114 &-174028575713740521
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5814155081040976887}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76d521799c0a70c489d47333eaab0964, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!1 &6045987602649897956
 GameObject:
   m_ObjectHideFlags: 0
