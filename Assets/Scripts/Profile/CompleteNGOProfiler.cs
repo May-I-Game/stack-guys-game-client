@@ -278,10 +278,6 @@ public class CompleteNGOProfiler : NetworkBehaviour
         // NetworkManager가 없거나 네트워크가 시작 안 됐으면 리턴
         if (nm == null || !nm.IsListening) return;
 
-        // 단축키 처리
-        // if (Input.GetKeyDown(KeyCode.F6)) StartLogging();   // 로깅 시작
-        // if (Input.GetKeyDown(KeyCode.F7)) StopLogging();    // 로깅 중지
-        // if (Input.GetKeyDown(KeyCode.F8)) TakeSnapshot();   // 즉시 스냅샷
 
         // 통계 업데이트
         UpdateStats();
@@ -318,6 +314,23 @@ public class CompleteNGOProfiler : NetworkBehaviour
     private void PongClientRpc(double timestamp)
     {
         double now = NetworkManager.LocalTime.Time;
+    }
+
+    void FixedUpdate()
+    {
+        if (trackPhysics)
+        {
+            physicsStopwatch.Restart();
+        }
+    }
+
+    void LateUpdate()
+    {
+        if (trackPhysics && physicsStopwatch.IsRunning)
+        {
+            physicsStopwatch.Stop();
+            physicsTimeMs = (float)physicsStopwatch.Elapsed.TotalMilliseconds;
+        }
     }
 
     // 통계 업데이트 함수
@@ -363,6 +376,49 @@ public class CompleteNGOProfiler : NetworkBehaviour
             // CPU 부하율 계산 (60 FPS를 100%로 가정)
             float targetFrameTime = 1f / 60f;
             cpuLoadPercent = Mathf.Clamp01(Time.deltaTime / targetFrameTime) * 100f;
+        }
+
+        // ===== 메모리: 사용량 및 GC =====
+        if (trackMemory)
+        {
+            // 총 할당된 메모리 (MB)
+            usedMemoryMB = Profiler.GetTotalAllocatedMemoryLong() / 1048576;
+
+            // Mono Heap 메모리 (MB)
+            monoMemoryMB = Profiler.GetMonoUsedSizeLong() / 1048576;
+
+            // GC 발생 횟수 추적 (Generation 0 기준)
+            int currentGCCount = GC.CollectionCount(0);
+            if (currentGCCount > lastGCCount)
+            {
+                gcCount++;
+                lastGCCount = currentGCCount;
+            }
+        }
+
+        // ===== 렌더링: 통계 (Unity Editor에서만 정확) =====
+        if (trackRendering)
+        {
+#if UNITY_EDITOR
+            // UnityStats는 UnityEditor 네임스페이스에 있습니다.
+            try
+            {
+                batches = UnityEditor.UnityStats.batches;
+                triangles = UnityEditor.UnityStats.triangles;
+                vertices = UnityEditor.UnityStats.vertices;
+                setPassCalls = UnityEditor.UnityStats.setPassCalls;
+            }
+            catch (System.Exception)
+            {
+                // 에디터에서도 UnityStats가 접근 불가능할 수 있음
+            }
+#else
+            // 빌드에서는 통계 접근 불가 (0으로 설정)
+            batches = 0;
+            triangles = 0;
+            vertices = 0;
+            setPassCalls = 0;
+#endif
         }
     }
 
@@ -550,6 +606,37 @@ public class CompleteNGOProfiler : NetworkBehaviour
         }
     }
 
+    // 공개 API - 파일 액세스 추적
+
+    /// <summary>
+    /// 파일 읽기 이벤트 기록
+    /// - FileAccessTracker에서 호출됨
+    /// </summary>
+    public void LogFileRead()
+    {
+        fileReadCount++;
+    }
+
+    /// <summary>
+    /// 파일 쓰기 이벤트 기록
+    /// - FileAccessTracker에서 호출됨
+    /// </summary>
+    public void LogFileWrite()
+    {
+        fileWriteCount++;
+    }
+
+    // 헬퍼 함수 - 볼드 스타일 설정
+    private GUIStyle GetBoldLabelStyle()
+    {
+        // 런타임에 스타일을 생성하여 캐시합니다.
+        if (boldLabelStyle == null)
+        {
+            boldLabelStyle = new GUIStyle(GUI.skin.label);
+            boldLabelStyle.fontStyle = FontStyle.Bold;
+        }
+        return boldLabelStyle;
+    }
 
     // Unity GUI - 디버그 UI (스크롤 기능 추가됨)
     /// <summary>

@@ -62517,7 +62517,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  logInterval: 1
+  logInterval: 10
   autoStartOnConnect: 1
   showDebugUI: 1
   trackNetwork: 1
