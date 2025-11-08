@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 813346066230743}
   m_Layer: 0
   m_Name: Ocean
-  m_TagString: Death
+  m_TagString: Ocean
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
