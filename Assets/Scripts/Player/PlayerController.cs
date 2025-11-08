@@ -117,9 +117,16 @@ public class PlayerController : NetworkBehaviour
 
     protected virtual void Update()
     {
-        if (!IsOwner) return;
-        // 입력 허용시만 요청 처리
-        if (!inputEnabled) return;
+        //클라이언트만 Update 수행
+        if (IsServer) return;
+
+        //본인이 아닌 캐릭터, 혹은 input이 비활성화 되어있을 때는 애니메이션만 최신화
+        if (!IsOwner || !inputEnabled)
+        {
+            UpdateAnimation();
+            return;
+        }
+
         Vector2 currentInput = inputHandler.MoveInput;
 
         // ===== 입력 동기화 최적화 (모바일 조이스틱 기준) =====
