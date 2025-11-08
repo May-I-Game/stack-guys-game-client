@@ -82,20 +82,6 @@ public class LoginUIManager : MonoBehaviour
     {
         if (characterSelectPopup == null) return;
         characterSelectPopup.SetActive(true);
-
-        Button[] buttons = characterSelectPopup.GetComponentsInChildren<Button>(true);
-        for (int i = 0; i < buttons.Length; i++)
-        {
-            int index = i;
-            buttons[i].onClick.RemoveAllListeners();
-            buttons[i].onClick.AddListener(() => OnCharacterSelected(index));
-
-            var trigger = buttons[i].GetComponent<EventTrigger>() ?? buttons[i].gameObject.AddComponent<EventTrigger>();
-            trigger.triggers.Clear();
-            var entry = new EventTrigger.Entry { eventID = EventTriggerType.PointerDown };
-            entry.callback.AddListener(_ => PlayButtonSound());
-            trigger.triggers.Add(entry);
-        }
     }
 
     private void PlayButtonSound()
