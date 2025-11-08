@@ -23,6 +23,7 @@ public class PlayerController : NetworkBehaviour
     [Header("Collision")]
     public float groundCheckDist = 0.1f;
     private RaycastHit[] groundHits = new RaycastHit[3];
+    private Collider[] grabColliders = new Collider[10]; // GC 최적화: 사전 할당
     public LayerMask groundLayerMask = -1; // 땅으로 인식할 레이어 (최적화용, -1 = 모든 레이어)
     public float bounceForce = 5f; // 튕겨나가는 힘
 
@@ -46,6 +47,9 @@ public class PlayerController : NetworkBehaviour
     protected Vector2 moveDir = Vector2.zero;
     private Vector2 lastSentInput = Vector2.zero;  // 실제로 서버에 전송한 마지막 입력
     private float lastInputSendTime = 0f;  // 마지막 입력 전송 시간
+
+    // GC 최적화: WaitForSeconds 캐싱
+    private WaitForSeconds botRespawnWait;
     private Vector3 lastHeldObjectPosition = Vector3.zero;  // 마지막 잡은 오브젝트 위치
     protected bool isJumpQueued;
     protected bool isGrabQueued;
@@ -110,6 +114,9 @@ public class PlayerController : NetworkBehaviour
         inputHandler = GetComponent<PlayerInputHandler>();
         nt = GetComponent<NetworkTransform>();
         respawnManager = FindFirstObjectByType<RespawnManager>();
+
+        // GC 최적화: WaitForSeconds 사전 생성
+        botRespawnWait = new WaitForSeconds(2.3f);
 
         // Animator가 설정되지 않았다면 자동으로 찾기
         animator = animator != null ? animator : GetComponent<Animator>();
@@ -268,7 +275,8 @@ public class PlayerController : NetworkBehaviour
         isGrabQueued = true;
     }
 
-    [ServerRpc(RequireOwnership = false)]
+    // 버그 수정: Owner만 호출하도록 제한 (시체 중복 생성 방지)
+    [ServerRpc]
     public void RespawnPlayerServerRpc()
     {
         DoRespawn();
@@ -405,10 +413,13 @@ public class PlayerController : NetworkBehaviour
 
     private void TryGrab()
     {
-        // 범위 내 잡을 수 있는 오브젝트에 잡기시도
-        Collider[] colliders = Physics.OverlapSphere(transform.position, grabRange);
-        foreach (Collider col in colliders)
+        // GC 최적화: NonAlloc 버전 사용
+        int count = Physics.OverlapSphereNonAlloc(transform.position, grabRange, grabColliders);
+
+        for (int i = 0; i < count; i++)
         {
+            Collider col = grabColliders[i];
+
             // 자기자신 제외
             if (col.gameObject == this.gameObject) continue;
 
@@ -681,6 +692,19 @@ public class PlayerController : NetworkBehaviour
         ReleaseGrab();
 
         SetTriggerClientRpc("Death");
+
+        // 봇은 서버가 Owner이므로 직접 리스폰 타이머 시작
+        if (IsServer && this is BotController)
+        {
+            StartCoroutine(BotRespawnDelay());
+        }
+    }
+
+    // 봇 전용 리스폰 타이머 (애니메이션 길이 2.3초)
+    private System.Collections.IEnumerator BotRespawnDelay()
+    {
+        yield return botRespawnWait;  // GC 최적화: 캐싱된 WaitForSeconds 사용
+        DoRespawn();
     }
 
     // Death 애니메이션에서 호출됨
@@ -897,7 +921,7 @@ public class PlayerController : NetworkBehaviour
         Vector3 bounceDirection = (normal + Vector3.up * 0.3f).normalized;
         rb.AddForce(bounceDirection * force, ForceMode.Impulse);
 
-        Debug.Log($"[튕겨나가기] 방향: {bounceDirection}, 힘: {force}");
+        // Debug.Log($"[튕겨나가기] 방향: {bounceDirection}, 힘: {force}");
     }
     #endregion
 

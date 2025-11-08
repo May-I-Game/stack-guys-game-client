@@ -36508,6 +36508,7 @@ GameObject:
   m_Component:
   - component: {fileID: 971201074}
   - component: {fileID: 971201073}
+  - component: {fileID: 971201075}
   m_Layer: 0
   m_Name: ServerProfiler
   m_TagString: Untagged
@@ -36546,6 +36547,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &971201075
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 971201072}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b66df35f3be135d4a93df977f67bc643, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  serverOnly: 1
+  enableMonitoring: 1
 --- !u!1001 &973792693
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -62529,16 +62544,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  logInterval: 10
-  autoStartOnConnect: 1
-  showDebugUI: 1
-  trackNetwork: 1
-  trackPerformance: 1
-  trackMemory: 0
-  trackRendering: 0
-  trackPhysics: 0
-  trackFileAccess: 0
-  fixedLogDirectory: C:\Users\user\Documents\GitHub\stack-guys\Build\Profiller
   Ping: {fileID: 110435179}
   Fps: {fileID: 2001983297}
 --- !u!114 &1657112972
