@@ -49,8 +49,8 @@ public class PlayerController : NetworkBehaviour
     private Vector3 lastHeldObjectPosition = Vector3.zero;  // 마지막 잡은 오브젝트 위치
     private float lastJumpTime = -999f;  // 마지막 점프 시간 (쿨다운용)
     private float lastGrabTime = -999f;  // 마지막 잡기 시간 (쿨다운용)
-    private bool isJumpQueued;
-    private bool isGrabQueued;
+    protected bool isJumpQueued;
+    protected bool isGrabQueued;
     private Vector3 deathPosition;  // 죽은 위치 저장용
 
     public GameObject bodyPrefab;
@@ -73,7 +73,7 @@ public class PlayerController : NetworkBehaviour
     private ulong grabberId = 0; // 누구한테 잡혔는지
     private ulong holdingTargetId = 0; // 누구를 잡고있는지
 
-    private GameObject holdingObject = null; // 실제로 들고 있는 오브젝트
+    protected GameObject holdingObject = null; // 실제로 들고 있는 오브젝트
     private PlayerController heldPlayerCache = null; // 잡은 플레이어 캐시 (최적화)
     private int heldObjectOriginLayer;
     private int escapeJumpCount = 0; // 탈출 시도 횟수
@@ -218,7 +218,7 @@ public class PlayerController : NetworkBehaviour
 
     // 클라에서 서버에게 요청할 Rpc 모음, 봇의 소유권 문제 때문에 false 설정
     #region ServerRpcs
-    [ServerRpc(RequireOwnership = false)]
+    [ServerRpc]
     protected void MovePlayerServerRpc(Vector2 direction)
     {
         // 충돌 중이거나 다이브 착지 중이면 입력 무시
@@ -238,7 +238,7 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
-    [ServerRpc(RequireOwnership = false)]
+    [ServerRpc]
     protected void JumpPlayerServerRpc()
     {
         // 충돌 중이거나 다이브 착지 중이면 입력 무시
@@ -250,7 +250,7 @@ public class PlayerController : NetworkBehaviour
         isJumpQueued = true;
     }
 
-    [ServerRpc(RequireOwnership = false)]
+    [ServerRpc]
     private void GrabPlayerServerRpc()
     {
         // 충돌 중이거나 공중에 있거나 다이브 착지 중이거나 잡힌 상태면 입력 무시
@@ -286,7 +286,7 @@ public class PlayerController : NetworkBehaviour
     // 서버에서 실제로 실행할 로직
     // 여기에 있는 모든 로직은 서버만 실행해야함!!!!!!!!
     #region ServerLogic
-    private void PlayerMove()
+    protected void PlayerMove()
     {
         // 이동 요청이 있으면
         if (moveDir.magnitude >= 0.1f)
@@ -313,7 +313,7 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
-    private void PlayerJump()
+    protected void PlayerJump()
     {
         // 잡혔으면 탈출시도
         if (netIsGrabbed.Value)
@@ -380,7 +380,7 @@ public class PlayerController : NetworkBehaviour
         netIsDiveGrounded.Value = false;
     }
 
-    private void PlayerGrab()
+    protected void PlayerGrab()
     {
         // 잡기중이 아니면 잡기시도
         if (!isHolding)
@@ -545,7 +545,7 @@ public class PlayerController : NetworkBehaviour
         Debug.Log("[잡기] 오브젝트를 던졌습니다");
     }
 
-    private void PlayerHeld()
+    protected void PlayerHeld()
     {
         // 머리 위 위치 계산
         Vector3 targetPosition = transform.position
@@ -758,7 +758,7 @@ public class PlayerController : NetworkBehaviour
 
     // 충돌관리 로직
     #region Physics
-    private void GroundCheck()
+    protected void GroundCheck()
     {
         if (!IsServer) return;
 
