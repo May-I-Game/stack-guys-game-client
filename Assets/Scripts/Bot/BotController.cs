@@ -23,10 +23,7 @@ public class BotController : PlayerController
     private float nextPathUpdateTime;                               // 다음 업데이트 시간
 
     protected override void Update()
-    {
-        // 봇은 서버에서만 업데이트
-        if (IsServer) return;
-
+    { 
         UpdateAnimation();
     }
 
@@ -75,7 +72,29 @@ public class BotController : PlayerController
             UpdateBotAI();
         }
 
-        base.FixedUpdate();
+        // 땅 체크
+        GroundCheck();
+
+        // 이동 처리
+        PlayerMove();
+
+        // 점프 요청이 있으면 점프
+        if (isJumpQueued)
+        {
+            PlayerJump();
+        }
+
+        // 잡기 요청이 있으면 잡기 처리
+        if (isGrabQueued)
+        {
+            PlayerGrab();
+        }
+
+        // 잡고 있으면
+        if (isHolding && holdingObject != null)
+        {
+            PlayerHeld();
+        }
     }
 
     private void FindGoal()

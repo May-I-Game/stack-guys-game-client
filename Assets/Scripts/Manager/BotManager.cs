@@ -55,8 +55,10 @@ public class BotManager : NetworkBehaviour
         }
     }
 
-    private void OnDestroy()
+    public override void OnDestroy()
     {
+        base.OnDestroy();
+
         if (Singleton == this)
         {
             Singleton = null;
@@ -122,10 +124,10 @@ public class BotManager : NetworkBehaviour
         }
 
         // 생성 직후 입력 차단 (시네마틱 끝나면 활성화)
-        var pc = botInstance.GetComponent<PlayerController>();
-        if (pc != null && disableInput)
+        var botController = botInstance.GetComponent<PlayerController>();
+        if (botController != null && disableInput)
         {
-            pc.SetInputEnabled(false);
+            botController.SetInputEnabled(false);
         }
 
         // 봇 이름 네트워크 오브젝트로 생성 및 설정 (PlayNameSync 사용)
