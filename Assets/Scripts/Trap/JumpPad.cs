@@ -6,7 +6,7 @@ public class JumpPad : NetworkBehaviour
 {
     [Header("점프 설정")]
     [SerializeField] private float launchForce = 20f;   // 발사 힘
-    [SerializeField] private float launchAngle = 45f;   // 발사 각도
+    // [SerializeField] private float launchAngle = 45f;   // 발사 각도
 
     [Header("쿨다운 설정")]
     [SerializeField] private float cooldownTime = 0.5f; // 연속 발동 방지

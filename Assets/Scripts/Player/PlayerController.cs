@@ -71,7 +71,7 @@ public class PlayerController : NetworkBehaviour
     private ulong grabberId = 0; // 누구한테 잡혔는지
     private ulong holdingTargetId = 0; // 누구를 잡고있는지
 
-    private GameObject holdingObject = null; // 실제로 들고 있는 오브젝트
+    protected GameObject holdingObject = null; // 실제로 들고 있는 오브젝트
     private PlayerController heldPlayerCache = null; // 잡은 플레이어 캐시 (최적화)
     private int heldObjectOriginLayer;
     private int escapeJumpCount = 0; // 탈출 시도 횟수
@@ -178,13 +178,9 @@ public class PlayerController : NetworkBehaviour
 
         ServerPerformanceProfiler.Start("PlayerController.FixedUpdate");
         // 땅 체크
-        ServerPerformanceProfiler.Start("PlayerController.GroundCheck");
         GroundCheck();
-        ServerPerformanceProfiler.End("PlayerController.GroundCheck");
-        ServerPerformanceProfiler.Start("PlayerController.Move");
         // 이동 처리
         PlayerMove();
-        ServerPerformanceProfiler.End("PlayerController.Move");
 
         // 점프 요청이 있으면
         if (isJumpQueued)
@@ -220,7 +216,7 @@ public class PlayerController : NetworkBehaviour
 
     // 클라에서 서버에게 요청할 Rpc 모음, 봇의 소유권 문제 때문에 false 설정
     #region ServerRpcs
-    [ServerRpc(RequireOwnership = false)]
+    [ServerRpc]
     protected void MovePlayerServerRpc(Vector2 direction)
     {
         // 충돌 중이거나 다이브 착지 중이면 입력 무시
@@ -240,7 +236,7 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
-    [ServerRpc(RequireOwnership = false)]
+    [ServerRpc]
     protected void JumpPlayerServerRpc()
     {
         // 충돌 중이거나 다이브 착지 중이면 입력 무시
@@ -252,7 +248,7 @@ public class PlayerController : NetworkBehaviour
         isJumpQueued = true;
     }
 
-    [ServerRpc(RequireOwnership = false)]
+    [ServerRpc]
     private void GrabPlayerServerRpc()
     {
         // 충돌 중이거나 공중에 있거나 다이브 착지 중이거나 잡힌 상태면 입력 무시
@@ -288,11 +284,12 @@ public class PlayerController : NetworkBehaviour
     // 서버에서 실제로 실행할 로직
     // 여기에 있는 모든 로직은 서버만 실행해야함!!!!!!!!
     #region ServerLogic
-    private void PlayerMove()
+    protected void PlayerMove()
     {
         // 이동 요청이 있으면
         if (moveDir.magnitude >= 0.1f)
         {
+            ServerPerformanceProfiler.Start("PlayerController.Move");
             // 이동
             Vector3 movement = new Vector3(
                 moveDir.x,
@@ -305,15 +302,16 @@ public class PlayerController : NetworkBehaviour
             Quaternion targetRotation = Quaternion.LookRotation(movement);
             transform.rotation = targetRotation;
 
-            if (netIsMove.Value != true) netIsMove.Value = true;
+            netIsMove.Value = true;
+            ServerPerformanceProfiler.End("PlayerController.Move");
         }
         else
         {
-            if (netIsMove.Value != false) netIsMove.Value = false;
+            netIsMove.Value = false;
         }
     }
 
-    private void PlayerJump()
+    protected void PlayerJump()
     {
         // 잡혔으면 탈출시도
         if (netIsGrabbed.Value)
@@ -380,7 +378,7 @@ public class PlayerController : NetworkBehaviour
         netIsDiveGrounded.Value = false;
     }
 
-    private void PlayerGrab()
+    protected void PlayerGrab()
     {
         // 잡기중이 아니면 잡기시도
         if (!isHolding)
@@ -545,7 +543,7 @@ public class PlayerController : NetworkBehaviour
         Debug.Log("[잡기] 오브젝트를 던졌습니다");
     }
 
-    private void PlayerHeld()
+    protected void PlayerHeld()
     {
         // 머리 위 위치 계산
         Vector3 targetPosition = transform.position
@@ -758,13 +756,14 @@ public class PlayerController : NetworkBehaviour
 
     // 충돌관리 로직
     #region Physics
-    private void GroundCheck()
+    protected void GroundCheck()
     {
         if (!IsServer) return;
 
         // 프레임 스키핑: Unity 전역 프레임 카운터 사용 (모든 플레이어가 동기화됨)
         if (Time.frameCount % groundCheckInterval != 0) return;
 
+        ServerPerformanceProfiler.Start("PlayerController.GroundCheck");
         // 캐싱된 계산 (매번 계산하지 않도록)
         float offsetDist = col.height / 2f - col.radius;
         Vector3 bottomSphereCenter = col.center + (Vector3.down * offsetDist);
@@ -813,6 +812,7 @@ public class PlayerController : NetworkBehaviour
                 canDive = false;
             }
         }
+        ServerPerformanceProfiler.End("PlayerController.GroundCheck");
     }
 
     private void OnDrawGizmos()
@@ -847,6 +847,7 @@ public class PlayerController : NetworkBehaviour
         // Tag로 구분하여 다른 애니메이션 재생
         switch (collision.gameObject.tag)
         {
+            case "Ocean":
             case "Death":
                 // 캐릭터가 가지고 있는 리스폰 인덱스로 이동
                 PlayerDeath();

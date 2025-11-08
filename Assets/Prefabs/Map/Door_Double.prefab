@@ -102,6 +102,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 84c64ec856cfaa047b8648234ed59c21, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2352985189821707166}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 84c64ec856cfaa047b8648234ed59c21, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -4537850808458122588}
     - targetCorrespondingSourceObject: {fileID: 413238043241048579, guid: 84c64ec856cfaa047b8648234ed59c21, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2168769854638778572}
@@ -183,6 +186,26 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 3.4621322, y: 4.7307534, z: 0.5352883}
   m_Center: {x: 0.0017613174, y: 1.8653816, z: 0.005399226}
+--- !u!114 &-4537850808458122588
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4213156638685593221}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e3fdca004f2d45fe8abbed571a8abd5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SerializedVersion: 0
+  m_OverrideArea: 0
+  m_Area: 0
+  m_OverrideGenerateLinks: 0
+  m_GenerateLinks: 0
+  m_IgnoreFromBuild: 1
+  m_ApplyToChildren: 1
+  m_AffectedAgents: ffffffff
 --- !u!4 &4614214129801446875 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -670559981744650737, guid: 84c64ec856cfaa047b8648234ed59c21, type: 3}

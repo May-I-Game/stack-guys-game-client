@@ -1756,11 +1756,11 @@ GameObject:
   m_Component:
   - component: {fileID: 4588108657435510553}
   - component: {fileID: 366309141632675463}
-  - component: {fileID: 7415182554873931956}
   - component: {fileID: -1896197351260510767}
   - component: {fileID: 2411028735759513891}
   - component: {fileID: 5535848250039296769}
   - component: {fileID: 6357143597061271924}
+  - component: {fileID: 4817689077021742354}
   m_Layer: 0
   m_Name: Player_6_body
   m_TagString: Ground
@@ -1814,29 +1814,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 112
   m_CollisionDetection: 0
---- !u!136 &7415182554873931956
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8774186256892484800}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 0
-  serializedVersion: 2
-  m_Radius: 0.5
-  m_Height: 1.85
-  m_Direction: 2
-  m_Center: {x: -0.6, y: 0.5, z: -0.5}
 --- !u!65 &-1896197351260510767
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1945,3 +1922,16 @@ MonoBehaviour:
   netIsGrabbed:
     m_InternalValue: 0
   holder: {fileID: 0}
+--- !u!114 &4817689077021742354
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8774186256892484800}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76d521799c0a70c489d47333eaab0964, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
