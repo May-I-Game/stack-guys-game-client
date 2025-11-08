@@ -117,61 +117,57 @@ public class PlayerController : NetworkBehaviour
 
     protected virtual void Update()
     {
-        if (IsOwner)
+        if (!IsOwner) return;
+        // 입력 허용시만 요청 처리
+        if (!inputEnabled) return;
+        Vector2 currentInput = inputHandler.MoveInput;
+
+        // ===== 입력 동기화 최적화 (모바일 조이스틱 기준) =====
+        float timeSinceLastSend = Time.time - lastInputSendTime;
+        float inputDelta = Vector2.Distance(currentInput, lastSentInput);
+
+        bool shouldSendInput = false;
+
+        // 조건 1: 이동 시작 (정지 → 이동)
+        if (lastSentInput.magnitude < 0.01f && currentInput.magnitude >= 0.1f)
         {
-            // 입력 허용시만 요청 처리
-            if (inputEnabled)
-            {
-                Vector2 currentInput = inputHandler.MoveInput;
+            shouldSendInput = true;  // 즉시 전송 (반응성 최우선)
+        }
+        // 조건 2: 완전히 멈춤 (이동 → 정지)
+        else if (lastSentInput.magnitude >= 0.1f && currentInput.magnitude < 0.01f)
+        {
+            shouldSendInput = true;  // 즉시 전송 (멈춤은 즉각 반영)
+        }
+        // 조건 3: 큰 방향 전환 (임계값 이상 변화)
+        else if (inputDelta >= inputDeltaThreshold)
+        {
+            shouldSendInput = true;  // 즉시 전송 (급격한 방향 전환)
+        }
+        // 조건 4: 일정 시간마다 전송 (조이스틱 유지 시 주기적 동기화)
+        else if (timeSinceLastSend >= inputSendInterval && inputDelta > 0.001f)
+        {
+            shouldSendInput = true;  // 주기적 전송 (미세 변화 누적 반영)
+        }
 
-                // ===== 입력 동기화 최적화 (모바일 조이스틱 기준) =====
-                float timeSinceLastSend = Time.time - lastInputSendTime;
-                float inputDelta = Vector2.Distance(currentInput, lastSentInput);
+        if (shouldSendInput)
+        {
+            MovePlayerServerRpc(currentInput);
+            lastSentInput = currentInput;
+            lastInputSendTime = Time.time;
+        }
 
-                bool shouldSendInput = false;
+        // 점프 입력
+        if (inputHandler.JumpInput)
+        {
+            JumpPlayerServerRpc();
+            inputHandler.ResetJumpInput();
+        }
 
-                // 조건 1: 이동 시작 (정지 → 이동)
-                if (lastSentInput.magnitude < 0.01f && currentInput.magnitude >= 0.1f)
-                {
-                    shouldSendInput = true;  // 즉시 전송 (반응성 최우선)
-                }
-                // 조건 2: 완전히 멈춤 (이동 → 정지)
-                else if (lastSentInput.magnitude >= 0.1f && currentInput.magnitude < 0.01f)
-                {
-                    shouldSendInput = true;  // 즉시 전송 (멈춤은 즉각 반영)
-                }
-                // 조건 3: 큰 방향 전환 (임계값 이상 변화)
-                else if (inputDelta >= inputDeltaThreshold)
-                {
-                    shouldSendInput = true;  // 즉시 전송 (급격한 방향 전환)
-                }
-                // 조건 4: 일정 시간마다 전송 (조이스틱 유지 시 주기적 동기화)
-                else if (timeSinceLastSend >= inputSendInterval && inputDelta > 0.001f)
-                {
-                    shouldSendInput = true;  // 주기적 전송 (미세 변화 누적 반영)
-                }
-
-                if (shouldSendInput)
-                {
-                    MovePlayerServerRpc(currentInput);
-                    lastSentInput = currentInput;
-                    lastInputSendTime = Time.time;
-                }
-
-                // 점프 입력 (쿨다운 체크)
-                if (inputHandler.JumpInput)
-                {
-                    JumpPlayerServerRpc();
-                    inputHandler.ResetJumpInput();
-                }
-
-                // 잡기 입력 (쿨다운 체크)
-                if (inputHandler.GrabInput)
-                {
-                    GrabPlayerServerRpc();
-                    inputHandler.ResetGrabInput();
-                }
-            }
+        // 잡기 입력
+        if (inputHandler.GrabInput)
+        {
+            GrabPlayerServerRpc();
+            inputHandler.ResetGrabInput();
         }
         UpdateAnimation();
     }
@@ -267,10 +263,14 @@ public class PlayerController : NetworkBehaviour
         isGrabQueued = true;
     }
 
-    // 버그 수정: Owner만 호출하도록 제한 (시체 중복 생성 방지)
-    [ServerRpc]
+    // 애니메이션 이벤트에서 호출됨
+    // [ServerRpc] 어트리뷰트가 있어야 Netcode 코드 생성기가 에러를 내지 않음
+    [ServerRpc(RequireOwnership = false)]
     public void RespawnPlayerServerRpc()
     {
+        // 서버가 아니면 무시
+        if (!IsServer) return;
+
         DoRespawn();
     }
 
