@@ -3,10 +3,27 @@ using Aws.GameLift.Server;
 using Amazon.GameLift.Model;            // 필요 시 유지
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Netcode;
 
 public class GameLiftServerManager : MonoBehaviour
 {
+    public static GameLiftServerManager Instance { get; private set; }
+
     private int _gamePort = 7779; // 기본값
+    private bool _sdkInited = false;
+    private bool _sessionActive = false;
+    private readonly Dictionary<ulong, string> _clientToPlayerSessionId = new Dictionary<ulong, string>();
+
+    void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
 
     void Start()
     {
@@ -19,11 +36,22 @@ public class GameLiftServerManager : MonoBehaviour
             Debug.LogError($"InitSDK Fail: {init.Error}");
             return;
         }
+        _sdkInited = true;
+
+        // NetworkManager 이벤트 구독 (플레이어 퇴장 감지)
+        var nm = NetworkManager.Singleton;
+        if (nm != null)
+        {
+            nm.OnClientDisconnectCallback += OnClientDisconnected;
+        }
 
         // 2) GameLift에 프로세스 준비 알리기 + health/terminate 콜백
         var processParams = new ProcessParameters(
             onStartGameSession: (gameSession) =>
             {
+                _sessionActive = true;
+                _clientToPlayerSessionId.Clear();
+
                 // 세션 활성화 전에 NGO/UTP 리슨 포트를 동적으로 세팅
                 var transport = Object.FindFirstObjectByType<Unity.Netcode.Transports.UTP.UnityTransport>();
                 if (transport != null)
@@ -91,6 +119,67 @@ public class GameLiftServerManager : MonoBehaviour
         else
         {
             Debug.LogError($"ProcessReady Fail: {ready.Error}");
+        }
+    }
+
+    // ✅ 추가: 성능 영향 방지 — 이벤트 구독 해제(중복 콜백 방지) 및 인스턴스 정리
+    void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
+        var nm = NetworkManager.Singleton;
+        if (nm != null)
+        {
+            nm.OnClientDisconnectCallback -= OnClientDisconnected;
+        }
+    }
+
+    // 플레이어 세션 수락 (NetworkGameManager에서 호출)
+    public bool AcceptPlayerSession(ulong clientId, string playerSessionId)
+    {
+        if (!_sdkInited || !_sessionActive || string.IsNullOrEmpty(playerSessionId))
+        {
+            return false;
+        }
+
+        var result = GameLiftServerAPI.AcceptPlayerSession(playerSessionId);
+        if (result.Success)
+        {
+            _clientToPlayerSessionId[clientId] = playerSessionId;
+            Debug.Log($"[GameLift] Player session accepted: {playerSessionId}");
+            return true;
+        }
+        else
+        {
+            Debug.LogError($"[GameLift] AcceptPlayerSession failed: {result.Error}");
+            return false;
+        }
+    }
+
+    // 플레이어 퇴장 처리
+    private void OnClientDisconnected(ulong clientId)
+    {
+        if (!_sdkInited || !_clientToPlayerSessionId.TryGetValue(clientId, out string playerSessionId))
+        {
+            return;
+        }
+
+        var result = GameLiftServerAPI.RemovePlayerSession(playerSessionId);
+        if (result.Success)
+        {
+            Debug.Log($"[GameLift] Player session removed: {playerSessionId}");
+        }
+        else
+        {
+            Debug.LogError($"[GameLift] RemovePlayerSession failed: {result.Error}");
+        }
+
+        _clientToPlayerSessionId.Remove(clientId);
+
+        // ✅ 활성 플레이어가 0명이면 세션 종료 (_sessionActive일 때만)
+        if (_sessionActive && _clientToPlayerSessionId.Count == 0)
+        {
+            Debug.Log("[GameLift] No active players - terminating game session");
+            GameLiftServerAPI.ProcessEnding();
         }
     }
 
