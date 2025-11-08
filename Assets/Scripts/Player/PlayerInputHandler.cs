@@ -13,6 +13,10 @@ public class PlayerInputHandler : NetworkBehaviour
     public bool JumpInput { get; private set; }
     public bool GrabInput { get; private set; }
 
+    // GC 최적화: Vector2 재사용
+    private Vector2 camFwdCache;
+    private Vector2 camRightCache;
+
     private void Start()
     {
         if (!IsOwner) return;
@@ -82,17 +86,23 @@ public class PlayerInputHandler : NetworkBehaviour
             Vector2 dir;
             if (cam != null)
             {
-                // 카메라의 forward/right를 수평면(Y=0)에 투영해 기저벡터 생성
-                Vector2 camFwd = new Vector2(cam.forward.x, cam.forward.z).normalized;
-                Vector2 camRight = new Vector2(cam.right.x, cam.right.z).normalized;
+                // GC 최적화: Vector2 재사용 (매 프레임 할당 방지)
+                camFwdCache.x = cam.forward.x;
+                camFwdCache.y = cam.forward.z;
+                camFwdCache.Normalize();
+
+                camRightCache.x = cam.right.x;
+                camRightCache.y = cam.right.z;
+                camRightCache.Normalize();
 
                 // 입력(Vertical=앞/뒤, Horizontal=좌/우)을 카메라 기준으로 합성
-                dir = camFwd * vertical + camRight * horizontal;
+                dir = camFwdCache * vertical + camRightCache * horizontal;
             }
             else
             {
                 // 카메라가 없으면 기존 월드 기준으로 대체
-                dir = new Vector2(horizontal, vertical);
+                dir.x = horizontal;
+                dir.y = vertical;
             }
 
             // 대각선 과입력(√2) 보정
