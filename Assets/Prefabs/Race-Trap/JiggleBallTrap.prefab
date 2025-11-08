@@ -18,7 +18,7 @@ GameObject:
   - component: {fileID: 8483400690529011042}
   m_Layer: 0
   m_Name: JiggleBallTrap
-  m_TagString: Untagged
+  m_TagString: weakObstacles
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
