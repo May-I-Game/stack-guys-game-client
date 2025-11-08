@@ -9,7 +9,7 @@ using UnityEngine.UI;
 
 /// <summary>
 /// LoginUIManager
-///  - FastAPI를 통해 GameLift 매치메이킹 요청
+///  - FastAPI를 통해 GameLift 매치메이킹 요청 (티켓 기반)
 ///  - 서버 IP/Port/PlayerSessionId 수신 후 UnityTransport로 연결
 ///  - WebGL에서는 WebSocket 모드로 전환
 /// </summary>
@@ -19,7 +19,8 @@ public class LoginUIManager : MonoBehaviour
     [SerializeField] public string serverAddress = "127.0.0.1";
     [SerializeField] ushort serverPort = 7779;
 
-    [SerializeField] private string matchApiUrl = "http://54.180.24.20/api/find-game"; // FastAPI 주소
+    [SerializeField] private string matchApiUrl = "http://54.180.24.20/api/find-game";   // FastAPI 주소
+    [SerializeField] private string ticketStatusUrl = "http://54.180.24.20/api/ticket-status"; // 티켓 상태 확인
     [SerializeField] private TMP_InputField nameInput;
     [SerializeField] private Camera characterSelectCamera;
     [SerializeField] private GameObject characterSelectPopup;
@@ -142,41 +143,103 @@ public class LoginUIManager : MonoBehaviour
 #endif
     }
 
-    // ========================== FastAPI 매치 요청 ==========================
+    // ========================== FastAPI 매치 요청 (티켓 기반) ==========================
     private IEnumerator FindGameAndConnect()
     {
         isConnecting = true;
         Debug.Log("🎮 Finding game server via FastAPI…");
 
-        var req = new UnityWebRequest(matchApiUrl, "POST");
-        byte[] body = System.Text.Encoding.UTF8.GetBytes("{}");
-        req.uploadHandler = new UploadHandlerRaw(body);
-        req.downloadHandler = new DownloadHandlerBuffer();
-        req.SetRequestHeader("Content-Type", "application/json");
-        req.timeout = 20;
-
-        yield return req.SendWebRequest();
-
-        if (req.result != UnityWebRequest.Result.Success)
+        // 1단계: 티켓 생성
+        using (var req = new UnityWebRequest(matchApiUrl, "POST"))
         {
-            Debug.LogError($"find-game failed: {req.error}");
-            isConnecting = false;
-            yield break;
+            byte[] body = System.Text.Encoding.UTF8.GetBytes("{}");
+            req.uploadHandler = new UploadHandlerRaw(body);
+            req.downloadHandler = new DownloadHandlerBuffer();
+            req.SetRequestHeader("Content-Type", "application/json");
+            req.timeout = 20;
+
+            yield return req.SendWebRequest();
+
+            if (req.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError($"find-game failed: {req.error}");
+                isConnecting = false;
+                yield break;
+            }
+
+            TicketResponse ticket = null;
+            try { ticket = JsonUtility.FromJson<TicketResponse>(req.downloadHandler.text); }
+            catch { Debug.LogError("Invalid JSON response from FastAPI"); }
+
+            if (ticket == null || !ticket.success)
+            {
+                Debug.LogError($"find-game returned invalid: {req.downloadHandler.text}");
+                isConnecting = false;
+                yield break;
+            }
+
+            Debug.Log($"Got ticket: {ticket.ticket_id}");
+
+            // 2단계: 티켓 상태 폴링
+            yield return StartCoroutine(PollTicketStatus(ticket.ticket_id, ticket.player_id));
+        }
+    }
+
+    private IEnumerator PollTicketStatus(string ticketId, string playerId)
+    {
+        float startTime = Time.time;
+        const float maxWaitTime = 60f; // 최대 60초 대기
+
+        while (isConnecting && Time.time - startTime < maxWaitTime)
+        {
+            string url = $"{ticketStatusUrl}?ticket_id={ticketId}&player_id={playerId}";
+            using (var req = UnityWebRequest.Get(url))
+            {
+                req.timeout = 10;
+                yield return req.SendWebRequest();
+
+                if (req.result != UnityWebRequest.Result.Success)
+                {
+                    Debug.LogError($"ticket-status failed: {req.error}");
+                    yield return new WaitForSeconds(3f);
+                    continue;
+                }
+
+                TicketStatusResponse status = null;
+                try { status = JsonUtility.FromJson<TicketStatusResponse>(req.downloadHandler.text); }
+                catch { Debug.LogError("Invalid ticket status JSON"); }
+
+                if (status == null)
+                {
+                    yield return new WaitForSeconds(3f);
+                    continue;
+                }
+
+                Debug.Log($"Ticket status: {status.status}");
+
+                if (status.status == "COMPLETED" && status.success)
+                {
+                    Debug.Log($"Got server info → {status.server_ip}:{status.server_port}");
+                    ConnectToServer(status.server_ip, (ushort)status.server_port, status.player_session_id);
+                    yield break;
+                }
+                else if (status.status == "FAILED" || status.status == "CANCELLED" || status.status == "TIMED_OUT")
+                {
+                    Debug.LogError($"Matchmaking failed: {status.status} - {status.reason}");
+                    isConnecting = false;
+                    yield break;
+                }
+
+                // QUEUED, SEARCHING 등 - 계속 대기 (3초 대기 유지)
+                yield return new WaitForSeconds(3f);
+            }
         }
 
-        GameServerInfo info = null;
-        try { info = JsonUtility.FromJson<GameServerInfo>(req.downloadHandler.text); }
-        catch { Debug.LogError("Invalid JSON response from FastAPI"); }
-
-        if (info == null || !info.success)
+        if (isConnecting)
         {
-            Debug.LogError($"find-game returned invalid: {req.downloadHandler.text}");
+            Debug.LogError("Matchmaking timeout");
             isConnecting = false;
-            yield break;
         }
-
-        Debug.Log($"Got server info → {info.server_ip}:{info.server_port}");
-        ConnectToServer(info.server_ip, (ushort)info.server_port, info.player_session_id);
     }
 
     // ========================== 서버 연결 로직 ==========================
@@ -253,11 +316,23 @@ public class LoginUIManager : MonoBehaviour
 
 // ========================== JSON 구조체 ==========================
 [System.Serializable]
-public class GameServerInfo
+public class TicketResponse
 {
     public bool success;
+    public string ticket_id;
+    public string player_id;
+    public int poll_interval_sec;
+}
+
+[System.Serializable]
+public class TicketStatusResponse
+{
+    public string status;
+    public bool success;
+    public int retry_after_sec;
     public string server_ip;
     public int server_port;
     public string player_session_id;
     public string game_session_id;
+    public string reason;
 }
