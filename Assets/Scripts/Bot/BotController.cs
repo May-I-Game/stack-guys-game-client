@@ -23,10 +23,7 @@ public class BotController : PlayerController
     private float nextPathUpdateTime;                               // 다음 업데이트 시간
 
     protected override void Update()
-    {
-        // 봇은 서버에서만 업데이트
-        if (IsServer) return;
-
+    { 
         UpdateAnimation();
     }
 
