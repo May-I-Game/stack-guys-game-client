@@ -6,14 +6,14 @@ using UnityEngine.AI;
 public class BotController : PlayerController
 {
     [Header("Bot Settings")]
-    [SerializeField] private float updatePathInterval = 2;       // 경로 업데이트 주기
+    [SerializeField] private float updatePathInterval = 2;          // 경로 업데이트 주기
     [SerializeField] private float waypointSearchInterval = 2f;     // 웨이포인트 재탐색 주기
     [SerializeField] private float forwardThreshold = 1f;           // 전진 판정 거리
 
     [Header("Random Path Settings")]
     [SerializeField] private string waypointTag = "Waypoint";       // 웨이포인트 태그
     [SerializeField] private bool useRandomWaypoint = true;         // 랜덤 웨이포인트 사용
-    [SerializeField] private float waypointReachedDistance = 0.5f;  // 웨이포인트 도달 거리
+    [SerializeField] private float waypointReachedDistance = 3f;    // 웨이포인트 도달 거리
 
     private Transform[] waypoints;                                  // 자동으로 찾은 웨이포인트들
     private NavMeshAgent navAgent;
@@ -44,9 +44,11 @@ public class BotController : PlayerController
             navAgent.acceleration = 8f;                         // 가속도
             navAgent.stoppingDistance = 0.5f;                   // 목표 지점에 이 거리만큼 여유를 두고 감속/
 
+            navAgent.autoRepath = true;                         // NavMesh 환경이 변할 때 자동으로 경로를 재계산
+            
             // Rigidbody와 충돌하지 않도록 설정
             navAgent.updatePosition = false;
-            navAgent.updateRotation = false;
+            navAgent.updateRotation = false; 
         }
 
         FindGoal();

@@ -18,11 +18,19 @@ public class DoubleDoorTrigger : MonoBehaviour
     private Vector3 leftTargetRotation;
     private Vector3 rightTargetRotation;
 
+    [Header("NavMesh Controller")]
+    public DoorNavObstacle doorNavObstacle;
+
     void Start()
     {
         // 초기 회전값 저장 (Euler Angles)
         leftInitialRotation = leftDoor.localEulerAngles;
         rightInitialRotation = rightDoor.localEulerAngles;
+
+        if (doorNavObstacle == null)
+        {
+            doorNavObstacle = GetComponent<DoorNavObstacle>();
+        }
     }
 
     void OnTriggerEnter(Collider other)
@@ -44,6 +52,12 @@ public class DoubleDoorTrigger : MonoBehaviour
                 rightInitialRotation.y + rightOpenAngle,
                 rightInitialRotation.z
             );
+        }
+
+        // door의 Obstacle 제어 : 문 열기
+        if (doorNavObstacle != null)
+        {
+            doorNavObstacle.OpenDoor();
         }
     }
 
