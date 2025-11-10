@@ -236,6 +236,10 @@ public class NetworkGameManager : MonoBehaviour
         string playerName = null;
         string playerSessionId = null;
 
+        Debug.Log($"========== ApprovalCheck ==========");
+        Debug.Log($"ClientId: {request.ClientNetworkId}");
+        Debug.Log($"Payload Length: {request.Payload?.Length ?? 0}");
+
         if (isObserver)
         {
             Debug.Log($"[Server] Observer connection approved: {request.ClientNetworkId}");
