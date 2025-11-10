@@ -37,8 +37,16 @@ public class BotController : PlayerController
 
     // 문 열림 이벤트로 강제 이동할 웨이포인트
     private Transform overrideWaypoint;     // 강제 목표 웨이포인트
-    private bool overrideActive = false;   // 강제 모드 여부
+    private bool overrideActive = false;    // 강제 모드 여부
 
+    // 문이 열려 등록된 웨이포인트 메모리
+    private static readonly System.Collections.Generic.List<Transform> openedDoorWaypoints =
+        new System.Collections.Generic.List<Transform>();
+
+    // 각 봇이 방문 완료한 문 웨이포인트 (재방문 방지)
+    private readonly System.Collections.Generic.HashSet<Transform> visitedDoorWaypoints =
+        new System.Collections.Generic.HashSet<Transform>();
+    
     protected override void Update()
     {
         // 클라이언트: 애니메이션만 업데이트, AI는 서버에서만 동작
@@ -178,7 +186,7 @@ public class BotController : PlayerController
 
 
     // 플레이어 앞(z 기준 forwardThreshold 더한 값) + 가장 가까운 N개 중 랜덤 선택
-    // forwardThreshold 역할: 최소한의 범위를 넓힘
+    // forwardThreshold - 최소한의 범위를 넓힘
     private bool TrySelectForwardWaypoint()
     {
         if (waypoints == null || waypoints.Length == 0)
@@ -294,7 +302,58 @@ public class BotController : PlayerController
             return; // 강제 모드에서는 아래 일반 웨이포인트 건너뜀
         }
 
-        // 웨이포인트 시스템 사용
+        // 열린 문 웨이포인트 우선 처리
+        Transform doorTarget = GetUnvisitedWaypoint();
+        if (doorTarget != null)
+        {
+            // 현재 목표가 아니면 설정
+            if (currentWaypoint != doorTarget)
+            {
+                currentWaypoint = doorTarget;
+                isGoingToWaypoint = true;
+                currentWaypointIndex.Value = GetWaypointIndex(doorTarget);
+            }
+
+            float distToDoor = Vector3.Distance(transform.position, doorTarget.position);
+
+            // 방문 완료 기록 -> 동일 문 웨이포인트 재방문 방지
+            if (distToDoor < waypointReachedDistance)
+            {
+                visitedDoorWaypoints.Add(doorTarget);
+                isGoingToWaypoint = false;
+                currentWaypoint = null;
+                currentWaypointIndex.Value = -1;
+            }
+            else
+            {
+                SetDestinationIfDue(doorTarget.position);
+            }
+
+            // 이동 입력
+            if (navAgent.hasPath && !isHit && !netIsDiveGrounded.Value && !netIsGrabbed.Value)
+            {
+                Vector3 direction = navAgent.desiredVelocity.normalized;
+
+                // magnitude = 크기, 미세 떨림, 거의 정지 상태는 입력 무시
+                if (direction.magnitude > 0.1f)
+                {
+                    moveDir = new Vector2(direction.x, direction.z);
+                    navAgent.nextPosition = transform.position;
+                }
+                else
+                {
+                    moveDir = Vector2.zero;
+                }
+            }
+            else
+            {
+                moveDir = Vector2.zero;
+            }
+
+            return;
+        }
+
+        // 일반 웨이포인트 / Goal 경로 로직
         if (useRandomWaypoint && waypoints != null && waypoints.Length > 0)
         {
             // 웨이포인트로 가는 중
@@ -439,6 +498,41 @@ public class BotController : PlayerController
         return null;
     }
 
+    // 문 열림 시 호출되어 웨이포인트를 전역 우선순위 목록에 등록
+    public static void RegisterOpenedDoorWaypoint(Transform wp)
+    {
+        if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer) return;
+        if (wp == null) return;
+        if (!openedDoorWaypoints.Contains(wp))
+            openedDoorWaypoints.Add(wp);
+    }
+
+    // 방문하지 않은 문 웨이포인트 중 가장 먼저 등록된(선입선출) 하나 반환
+    private Transform GetUnvisitedWaypoint()
+    {
+        for (int i = 0; i < openedDoorWaypoints.Count; i++)
+        {
+            var wp = openedDoorWaypoints[i];
+            if (wp == null) continue;
+            if (!visitedDoorWaypoints.Contains(wp))
+                return wp;
+        }
+
+        return null;
+    }
+
+    // 웨이포인트 배열에서 인덱스 찾기 (기즈모 동기화용)
+    private int GetWaypointIndex(Transform wp)
+    {
+        if (wp == null || waypoints == null) return -1;
+
+        for (int i = 0; i < waypoints.Length; i++)
+        {
+            if (waypoints[i] == wp) return i;
+        }
+
+        return -1;
+    }
 
     // Gizmos를 이용한 에디터 경로 시각화 (웨이포인트 없으면 태그 재검색)
     protected override void OnDrawGizmos()
@@ -564,3 +658,4 @@ public class BotController : PlayerController
 // 앞쪽 웨이포인트 존재 -> 가장 가까운 3개 중 랜덤 → 웨이포인트 경유
 // 앞쪽 웨이포인트 없음 -> 최종 Goal로 직행
 // 각 웨이포인트 도착 시마다 다음 경로 재탐색
+// 문이 열려 등록된 웨이포인트는 우선적으로 한 번 방문
