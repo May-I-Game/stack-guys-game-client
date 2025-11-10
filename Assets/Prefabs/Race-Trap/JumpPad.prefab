@@ -149,5 +149,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   launchForce: 15
-  launchAngle: 0
   cooldownTime: 0.5

@@ -25,6 +25,10 @@ public class LoginUIManager : MonoBehaviour
     [SerializeField] private Camera characterSelectCamera;
     [SerializeField] private GameObject characterSelectPopup;
 
+    [Header("Loading UI")]
+    [Tooltip("로딩 중 표시할 UI 패널 (캔버스에 미리 배치되어 있어야 함)")]
+    public GameObject loadingPanel;
+
     private int clientCharIndex;
     private string clientName;
     private bool isConnecting = false;
@@ -36,6 +40,7 @@ public class LoginUIManager : MonoBehaviour
     {
         characterSelectPopup?.SetActive(false);
         audioSource = GetComponent<AudioSource>();
+        loadingPanel.SetActive(false);
 
         if (NetworkManager.Singleton != null)
         {
@@ -73,6 +78,7 @@ public class LoginUIManager : MonoBehaviour
             {
                 Debug.Log("❌ Connection failed");
                 isConnecting = false;
+                OnConnectionFailed("Client connection attempt failed.");
             }
         }
     }
@@ -113,6 +119,14 @@ public class LoginUIManager : MonoBehaviour
             return;
         }
 
+        // 1. 로딩 UI 활성화 (모달 창 띄우기)
+        if (loadingPanel != null)
+        {
+            loadingPanel.SetActive(true);
+            // (선택 사항) 로딩 애니메이션 시작
+            // loadingAnimation?.StartAnimation(); 
+        }
+
         clientName = (nameInput?.text ?? "").Trim();
         if (string.IsNullOrEmpty(clientName))
             clientName = "Player_" + Random.Range(1000, 9999);
@@ -129,8 +143,22 @@ public class LoginUIManager : MonoBehaviour
 #endif
     }
 
-    // ========================== FastAPI 매치 요청 (티켓 기반) ==========================
-    private IEnumerator FindGameAndConnect()
+// 연결 실패 시 호출될 함수
+public void OnConnectionFailed(string reason)
+{
+    Debug.LogError($"연결 실패: {reason}");
+
+    // 1. 로딩 UI 비활성화
+    if (loadingPanel != null)
+    {
+        loadingPanel.SetActive(false);
+    }
+    isConnecting = false;
+
+    // 2. 사용자에게 오류 메시지 표시 (UI)
+}
+// ========================== FastAPI 매치 요청 (티켓 기반) ==========================
+private IEnumerator FindGameAndConnect()
     {
         isConnecting = true;
         Debug.Log("🎮 Finding game server via FastAPI…");
@@ -149,6 +177,7 @@ public class LoginUIManager : MonoBehaviour
             if (req.result != UnityWebRequest.Result.Success)
             {
                 Debug.LogError($"find-game failed: {req.error}");
+                OnConnectionFailed(req.error);
                 isConnecting = false;
                 yield break;
             }
@@ -160,6 +189,7 @@ public class LoginUIManager : MonoBehaviour
             if (ticket == null || !ticket.success)
             {
                 Debug.LogError($"find-game returned invalid: {req.downloadHandler.text}");
+                OnConnectionFailed(req.error);
                 isConnecting = false;
                 yield break;
             }
@@ -170,6 +200,7 @@ public class LoginUIManager : MonoBehaviour
             yield return StartCoroutine(PollTicketStatus(ticket.ticket_id, ticket.player_id));
         }
     }
+
 
     private IEnumerator PollTicketStatus(string ticketId, string playerId)
     {
@@ -192,8 +223,12 @@ public class LoginUIManager : MonoBehaviour
                 }
 
                 TicketStatusResponse status = null;
-                try { status = JsonUtility.FromJson<TicketStatusResponse>(req.downloadHandler.text); }
-                catch { Debug.LogError("Invalid ticket status JSON"); }
+                try { 
+                    status = JsonUtility.FromJson<TicketStatusResponse>(req.downloadHandler.text); 
+                }
+                catch {
+                    Debug.LogError("Invalid ticket status JSON"); 
+                }
 
                 if (status == null)
                 {
@@ -212,6 +247,7 @@ public class LoginUIManager : MonoBehaviour
                 else if (status.status == "FAILED" || status.status == "CANCELLED" || status.status == "TIMED_OUT")
                 {
                     Debug.LogError($"Matchmaking failed: {status.status} - {status.reason}");
+                    OnConnectionFailed($"Matchmaking failed: {status.status}");
                     isConnecting = false;
                     yield break;
                 }
@@ -224,6 +260,7 @@ public class LoginUIManager : MonoBehaviour
         if (isConnecting)
         {
             Debug.LogError("Matchmaking timeout");
+            OnConnectionFailed($"Matchmaking timeout");
             isConnecting = false;
         }
     }
@@ -235,6 +272,7 @@ public class LoginUIManager : MonoBehaviour
         if (nm == null)
         {
             Debug.LogError("❌ NetworkManager not found!");
+            OnConnectionFailed($"NetworkManager not found!");
             isConnecting = false;
             return;
         }
@@ -243,15 +281,51 @@ public class LoginUIManager : MonoBehaviour
         if (transport == null)
         {
             Debug.LogError("❌ UnityTransport missing on NetworkManager");
+            OnConnectionFailed($"missing on NetworkManager");
             isConnecting = false;
             return;
         }
 
+        // ✅ 디버그 로그 추가
 #if UNITY_WEBGL && !UNITY_EDITOR
-        transport.UseWebSockets = true;  // WebGL 강제
+        transport.UseWebSockets = true;
+        Debug.Log($"[WebGL] WebSocket mode ENABLED");
+        Debug.Log($"[WebGL] Will connect to ws://{serverAddress}:{serverPort}");
+#else
+        Debug.Log($"[Client] Standard UDP mode");
+        Debug.Log($"[Client] Will connect to {serverAddress}:{serverPort}");
 #endif
+
         transport.SetConnectionData(serverAddress, serverPort);
         Debug.Log($"Connecting to {serverAddress}:{serverPort} ...");
+
+        // ✅ Transport 상태 확인
+        Debug.Log($"[Transport] Protocol: {transport.Protocol}");
+        Debug.Log($"[Transport] UseWebSockets: {transport.UseWebSockets}");
+
+//        var nm = NetworkManager.Singleton;
+//        if (nm == null)
+//        {
+//            Debug.LogError("❌ NetworkManager not found!");
+//            OnConnectionFailed($"NetworkManager not found!");
+//            isConnecting = false;
+//            return;
+//        }
+
+//        var transport = nm.GetComponent<UnityTransport>();
+//        if (transport == null)
+//        {
+//            Debug.LogError("❌ UnityTransport missing on NetworkManager");
+//            OnConnectionFailed($"missing on NetworkManager");
+//            isConnecting = false;
+//            return;
+//        }
+
+//#if UNITY_WEBGL && !UNITY_EDITOR
+//        transport.UseWebSockets = true;  // WebGL 강제
+//#endif
+//        transport.SetConnectionData(serverAddress, serverPort);
+//        Debug.Log($"Connecting to {serverAddress}:{serverPort} ...");
 
         // ConnectionData 구성: [1바이트 캐릭터][이름(UTF8 ≤16B)][0x00][playerSessionId UTF8]
         byte[] nameBytes = TruncateUtf8(clientName, MAX_NAME_BYTES);
@@ -269,6 +343,7 @@ public class LoginUIManager : MonoBehaviour
         if (!nm.StartClient())
         {
             Debug.LogError("❌ StartClient failed");
+            OnConnectionFailed($"StartClient failed");
             isConnecting = false;
             return;
         }
@@ -296,6 +371,8 @@ public class LoginUIManager : MonoBehaviour
             if (NetworkManager.Singleton.IsClient)
                 NetworkManager.Singleton.Shutdown();
             isConnecting = false;
+
+            OnConnectionFailed("Connection attempt timed out (10s).");
         }
     }
 }
