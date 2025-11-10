@@ -35,6 +35,10 @@ public class BotController : PlayerController
     private NetworkVariable<int> currentWaypointIndex = new(
         -1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
+    // 문 열림 이벤트로 강제 이동할 웨이포인트
+    private Transform overrideWaypoint;     // 강제 목표 웨이포인트
+    private bool overrideActive = false;   // 강제 모드 여부
+
     protected override void Update()
     {
         // 클라이언트: 애니메이션만 업데이트, AI는 서버에서만 동작
@@ -168,7 +172,7 @@ public class BotController : PlayerController
             waypoints = null;
             isGoingToWaypoint = false;
             currentWaypoint = null;
-            currentWaypointIndex.Value = -1; // 선택 인덱스 초기화 (없음)
+            currentWaypointIndex.Value = -1; // NetworkVariable 웨이포인트 인덱스 초기화 (없음)
         }
     }
 
@@ -244,6 +248,52 @@ public class BotController : PlayerController
 
     private void UpdateBotAI()
     {
+        // 강제 웨이포인트 모드 - 가장 먼저 처리하고 일반 로직은 중단
+        if (overrideActive && overrideWaypoint != null)
+        {
+            float dist = Vector3.Distance(transform.position, overrideWaypoint.position);
+
+            if (dist < waypointReachedDistance)
+            {
+                // 강제 목표에 도착 -> 강제 모드 해제, 일반 로직 시작
+                overrideActive = false;
+                overrideWaypoint = null;
+
+                // 다음 프레임에 일반 로직이 새 목표를 잡도록 초기화
+                isGoingToWaypoint = false;
+                currentWaypoint = null;
+                currentWaypointIndex.Value = -1;
+            }
+            else
+            {
+                // 아직 미도달 -> 강제 목표로 계속 진행
+                SetDestinationIfDue(overrideWaypoint.position);
+            }
+
+            // 이동 입력
+            if (navAgent.hasPath && !isHit && !netIsDiveGrounded.Value && !netIsGrabbed.Value)
+            {
+                Vector3 direction = navAgent.desiredVelocity.normalized;
+
+                // magnitude = 크기, 미세 떨림, 거의 정지 상태는 입력 무시
+                if (direction.magnitude > 0.1f)
+                {
+                    moveDir = new Vector2(direction.x, direction.z);
+                    navAgent.nextPosition = transform.position;
+                }
+                else
+                {
+                    moveDir = Vector2.zero;
+                }
+            }
+            else
+            {
+                moveDir = Vector2.zero;
+            }
+
+            return; // 강제 모드에서는 아래 일반 웨이포인트 건너뜀
+        }
+
         // 웨이포인트 시스템 사용
         if (useRandomWaypoint && waypoints != null && waypoints.Length > 0)
         {
@@ -311,6 +361,60 @@ public class BotController : PlayerController
         }
     }
 
+    // 봇의 웨이포인트를 강제로 전환
+    public void ForceWaypoint(Transform wp)
+    {
+        if (!IsServer || wp == null) return;
+
+        // 리스트가 비어있다면 최신화 (인데스 동기화용)
+        if (waypoints == null || waypoints.Length == 0)
+            RefreshWaypoints();
+
+        overrideWaypoint = wp;
+        overrideActive = true;
+
+        // 현재 목표/상태 갱신
+        currentWaypoint = wp;
+        isGoingToWaypoint = true;
+
+        // 기즈모 동기화를 위해 인덱스 설정 (안전 가드)
+        int forcedIndex = -1;
+        if (waypoints != null)
+        {
+            for (int i = 0; i < waypoints.Length; i++)
+            {
+                if (waypoints[i] == wp)
+                {
+                    forcedIndex = i;
+                    break;
+                }
+            }
+        }
+
+        currentWaypointIndex.Value = forcedIndex; // NetworkVariable 웨이포인트 인덱스
+
+        if (navAgent != null && navAgent.isOnNavMesh)
+        {
+            navAgent.ResetPath();
+            navAgent.SetDestination(wp.position);
+            nextPathUpdateTime = Time.time + updatePathInterval;
+        }
+    }
+
+    // 모든 봇을 특정 웨이포인트로 강제로 전환 (문 스크립트에서 호출용)
+    public static void ForceAllBotsToWaypoint(Transform wp)
+    {
+        if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer) return;
+        if (wp == null) return;
+
+        // FindObjectsInactive.Exclude - 비활성 오브젝트 제외, 배열 정렬 안함
+        var bots = Object.FindObjectsByType<BotController>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        foreach (var bot in bots)
+        {
+            bot.ForceWaypoint(wp);
+        }
+    }
+
     // 에디터에서 서버가 선택한 웨이포인트 트랜스폼 복원
     private Transform GetSyncedCurrentWaypoint()
     {
@@ -343,16 +447,24 @@ public class BotController : PlayerController
 
         if (!showPathInEditor) return;
 
-        // 서버 선택 인덱스 우선, 없으면 앞쪽 웨이포인트 Fallback
-        Transform forwardWp = GetSyncedCurrentWaypoint();
-        if (forwardWp == null)
-            forwardWp = FindForwardWaypointForGizmo();            // 선택 없으면 앞쪽 하나 선택
-
-        // 웨이포인트 선
-        if (forwardWp != null)
+        if (overrideActive && overrideWaypoint != null)
         {
             Gizmos.color = waypointLineColor;
-            Gizmos.DrawLine(transform.position, forwardWp.position);
+            Gizmos.DrawLine(transform.position, overrideWaypoint.position);
+        }
+        else
+        {
+            // 서버 선택 인덱스 우선, 없으면 앞쪽 웨이포인트 Fallback
+            Transform forwardWp = GetSyncedCurrentWaypoint();
+            if (forwardWp == null)
+                forwardWp = FindForwardWaypointForGizmo();            // 선택 없으면 앞쪽 하나 선택
+
+            // 웨이포인트 선
+            if (forwardWp != null)
+            {
+                Gizmos.color = waypointLineColor;
+                Gizmos.DrawLine(transform.position, forwardWp.position);
+            }
         }
 
         // Goal은 서버가 못 찾으면 클라이언트 태그 재검색
@@ -426,6 +538,14 @@ public class BotController : PlayerController
     private void OnDrawGizmosSelected()
     {
         if (!showPathInEditor) return;
+
+        // 강제 웨이포인트가 있으면 그것만 강조
+        if (overrideActive && overrideWaypoint != null)
+        {
+            Gizmos.color = selectedColor; // 선택 시 색상
+            Gizmos.DrawLine(transform.position, overrideWaypoint.position);
+            return;
+        }
 
         // 동기화된 인덱스를 이용하여 서버와 동일한 웨이포인트를 찾아 선을 그림
         Transform selectedWp = GetSyncedCurrentWaypoint();
