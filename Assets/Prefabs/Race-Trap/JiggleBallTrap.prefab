@@ -21,7 +21,7 @@ GameObject:
   m_TagString: weakObstacles
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 2147483647
+  m_StaticEditorFlags: 0
   m_IsActive: 1
 --- !u!4 &4958410921186163420
 Transform:
@@ -250,7 +250,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3366643693237289503, guid: cd56a991c03e66649ae2cd53b2b3f2e4, type: 3}
       propertyPath: m_StaticEditorFlags
-      value: 2147483647
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4621179162701244695, guid: cd56a991c03e66649ae2cd53b2b3f2e4, type: 3}
       propertyPath: m_LocalScale.x
@@ -314,7 +314,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5434271737767195565, guid: cd56a991c03e66649ae2cd53b2b3f2e4, type: 3}
       propertyPath: m_StaticEditorFlags
-      value: 2147483647
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9143177974351683943, guid: cd56a991c03e66649ae2cd53b2b3f2e4, type: 3}
       propertyPath: m_Convex
@@ -326,7 +326,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9174515724192091860, guid: cd56a991c03e66649ae2cd53b2b3f2e4, type: 3}
       propertyPath: m_StaticEditorFlags
-      value: 2147483647
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

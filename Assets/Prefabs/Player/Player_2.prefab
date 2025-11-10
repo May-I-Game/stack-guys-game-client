@@ -1787,7 +1787,7 @@ MonoBehaviour:
   groundCheckDist: 0.1
   groundLayerMask:
     serializedVersion: 2
-    m_Bits: 72
+    m_Bits: 1096
   bounceForce: 5
   animator: {fileID: 7755540166501527799}
   inputSendInterval: 0.05
