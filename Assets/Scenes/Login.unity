@@ -2352,6 +2352,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 928e983a870cca8458560bd3a78ae4f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _gamePort: 7779
+  _sdkInited: 0
+  _sessionActive: 0
 --- !u!1001 &800573953
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6174,7 +6177,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 18b8a20568e1f0b4fb3fb1cea7d973ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isServerMod: 1
+  isServerMod: 0
   gameSceneName: GameScene
   characterPrefabs:
   - {fileID: 5785324236016558479, guid: a43ef8e1e961de34fb719499a2851b9a, type: 3}
