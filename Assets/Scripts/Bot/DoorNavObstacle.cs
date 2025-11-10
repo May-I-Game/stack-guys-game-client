@@ -5,7 +5,6 @@ using Unity.Netcode;
 // 문의 NavMeshObstacle을 관리함, 문이 열릴 때 봇들이 자동으로 경로 변경
 public class DoorNavObstacle : MonoBehaviour
 {
-
     [Header("References")]
     [SerializeField] private NavMeshObstacle doorNavObstacle;
 
@@ -45,8 +44,8 @@ public class DoorNavObstacle : MonoBehaviour
 
         if (nearWaypoint == null) return; // 없으면 패스
 
-        // 가장 가까운 웨이포인트로 모든 봇 강제 전환
-        BotController.ForceAllBotsToWaypoint(nearWaypoint);
+        // 열린 문의 웨이포인트를 우선 방문 목록에 추가
+        BotController.RegisterOpenedDoorWaypoint(nearWaypoint);
     }
 
     // 문 위치 기준 가장 가까운 Waypoint 태그 오브젝트 찾기
