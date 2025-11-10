@@ -13,8 +13,8 @@ public class BotController : PlayerController
     [Header("Random Path Settings")]
     [SerializeField] private string waypointTag = "Waypoint";           // 웨이포인트 태그
     [SerializeField] private bool useRandomWaypoint = true;             // 랜덤 웨이포인트 사용
-    [SerializeField] private float waypointReachedDistance = 3f;        // 웨이포인트 도달 거리
-    private int topClosestCount = 3;                                    // 가장 가까운 N개 웨이포인트
+    [SerializeField] private float waypointReachedDistance = 1f;        // 웨이포인트 도달 거리
+    private int topClosestCount = 4;                                    // 가장 가까운 N개 웨이포인트
 
     [Header("Debug Visualization")]
     [SerializeField] private bool showPathInEditor = false;             // 에디터/클라이언트에서 기즈모 표시 여부
