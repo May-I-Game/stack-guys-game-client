@@ -14,9 +14,10 @@ public class BotController : PlayerController
     [SerializeField] private string waypointTag = "Waypoint";           // 웨이포인트 태그
     [SerializeField] private bool useRandomWaypoint = true;             // 랜덤 웨이포인트 사용
     [SerializeField] private float waypointReachedDistance = 3f;        // 웨이포인트 도달 거리
+    private int topClosestCount = 3;                                    // 가장 가까운 N개 웨이포인트
 
     [Header("Debug Visualization")]
-    [SerializeField] private bool showPathInEditor = false;              // 에디터/클라이언트에서 기즈모 표시 여부
+    [SerializeField] private bool showPathInEditor = false;             // 에디터/클라이언트에서 기즈모 표시 여부
     [SerializeField] private Color waypointLineColor = Color.blue;      // 웨이포인트 직선 색상
     [SerializeField] private Color goalLineColor = Color.yellow;        // 목표 직선 색상
     [SerializeField] private Color selectedColor = Color.red;           // 봇을 선택했을때 직선 색상
@@ -36,6 +37,7 @@ public class BotController : PlayerController
 
     protected override void Update()
     {
+        // 클라이언트: 애니메이션만 업데이트, AI는 서버에서만 동작
         if (!IsServer)
             UpdateAnimation();
     }
@@ -171,7 +173,7 @@ public class BotController : PlayerController
     }
 
 
-    // 플레이어 앞(z 기준 forwardThreshold 더한 값) + 그 중 랜덤 선택
+    // 플레이어 앞(z 기준 forwardThreshold 더한 값) + 가장 가까운 N개 중 랜덤 선택
     // forwardThreshold 역할: 최소한의 범위를 넓힘
     private bool TrySelectForwardWaypoint()
     {
@@ -206,7 +208,22 @@ public class BotController : PlayerController
             return false;
         }
 
-        int chosen = forwardIndices[Random.Range(0, forwardIndices.Count)];
+        // 항상 가장 가까운 N개 중 랜덤 선택
+        Vector3 origin = transform.position;
+
+        // forwardIndices를 거리 기준 오름차순 정렬 (가까운 순)
+        forwardIndices.Sort((a, b) =>
+        {
+            float distA = (waypoints[a].position - origin).sqrMagnitude;
+            float distB = (waypoints[b].position - origin).sqrMagnitude;
+            return distA.CompareTo(distB);
+        });
+
+        // 가장 가까운 topCloesestCount개 중에서 랜덤 선택
+        int topCount = Mathf.Min(topClosestCount, forwardIndices.Count);
+        int randomPick = Random.Range(0, topCount);
+        int chosen = forwardIndices[randomPick];
+
         currentWaypoint = waypoints[chosen];
         currentWaypointIndex.Value = chosen;    // 기즈모 동기화를 위한 인덱스 저장
         isGoingToWaypoint = true;
@@ -319,7 +336,7 @@ public class BotController : PlayerController
     }
 
 
-    // Gizmos를 이용한 에디터 경로 시각화, 캐시 기능 추가
+    // Gizmos를 이용한 에디터 경로 시각화 (웨이포인트 없으면 태그 재검색)
     protected override void OnDrawGizmos()
     {
         base.OnDrawGizmos();
@@ -424,6 +441,6 @@ public class BotController : PlayerController
     }
 }
 
-// 첫 랜덤 웨이포인터가 골이 되고 → 
-// 도달하면 나보다 앞에 있는 다음 랜덤 웨이포인터가 다시 골이 되고 →
-// 내 앞에 골이 있으면 계속 진행. 더 이상 앞에 없으면 최종 Goal로 진행
+// 앞쪽 웨이포인트 존재 -> 가장 가까운 3개 중 랜덤 → 웨이포인트 경유
+// 앞쪽 웨이포인트 없음 -> 최종 Goal로 직행
+// 각 웨이포인트 도착 시마다 다음 경로 재탐색
