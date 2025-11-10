@@ -846,7 +846,7 @@ public class PlayerController : NetworkBehaviour
         ServerPerformanceProfiler.End("PlayerController.GroundCheck");
     }
 
-    private void OnDrawGizmos()
+    protected virtual void OnDrawGizmos()
     {
         float offsetDist = col.height / 2f - col.radius;
         Vector3 bottomSphereCenter = col.center + (Vector3.down * offsetDist);

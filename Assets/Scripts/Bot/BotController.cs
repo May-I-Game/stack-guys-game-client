@@ -15,6 +15,12 @@ public class BotController : PlayerController
     [SerializeField] private bool useRandomWaypoint = true;         // 랜덤 웨이포인트 사용
     [SerializeField] private float waypointReachedDistance = 3f;    // 웨이포인트 도달 거리
 
+    [Header("Debug Visualization")]
+    [SerializeField] private bool showPathInEditor = true;
+    [SerializeField] private Color pathColor = Color.cyan;
+    [SerializeField] private Color waypointLineColor = Color.yellow;
+    [SerializeField] private Color goalLineColor = Color.green;
+
     private Transform[] waypoints;                                  // 자동으로 찾은 웨이포인트들
     private NavMeshAgent navAgent;
     private Transform goalTransform;
@@ -32,10 +38,20 @@ public class BotController : PlayerController
     {
         base.Start();
 
-        // 서버에서먄 AI 설정
-        if (!IsServer) return;
-
         navAgent = GetComponent<NavMeshAgent>();
+
+        // 서버에서먄 AI 설정
+        if (!IsServer)
+        {
+            // 클라이언트에서는 NavMeshAgent 비활성화 (AI 로직 실행 안 함)
+            if (navAgent != null)
+            {
+                navAgent.enabled = false;
+            }
+
+            return;
+        }
+
         if (navAgent != null)
         {
             navAgent.enabled = true;
@@ -93,6 +109,7 @@ public class BotController : PlayerController
                 ServerPerformanceProfiler.Start("BotController.BotUpdate");
                 UpdateBotAI();
             }
+
             ServerPerformanceProfiler.End("BotController.BotUpdate");
         }
 
@@ -323,6 +340,153 @@ public class BotController : PlayerController
         {
             // 경로가 없거나, 이동 금지 상태면 —> 제자리 유지
             moveDir = Vector2.zero;
+        }
+    }
+
+    // Gizmos를 이용한 에디터 경로 시각화
+
+    protected override void OnDrawGizmos()
+    {
+        base.OnDrawGizmos();
+
+        if (!showPathInEditor) return;
+
+        if (navAgent == null)
+        {
+            navAgent = GetComponent<NavMeshAgent>();
+        }
+
+        if (Application.isPlaying && IsServer)
+        {
+            if (navAgent != null)
+            {
+                DrawNavMeshPathLines();
+                DrawTargetLines();
+            }
+
+            return;
+        }
+
+        Transform target = null;
+
+        if (isGoingToWaypoint && currentWaypoint != null)
+        {
+            target = currentWaypoint;
+        }
+        else if (goalTransform != null)
+        {
+            target = goalTransform;
+        }
+        else
+        {
+            // 목표가 없다면 태그로 찾아보기 (에디터에서도 동작)
+            var goal = GameObject.FindGameObjectWithTag("Goal");
+            if (goal != null) target = goal.transform;
+        }
+
+        if (target == null) return;
+
+        DrawCalculatedPath(transform.position, target.position, pathColor);
+
+        // 목표 직선도 함께 표시
+        Gizmos.color = isGoingToWaypoint ? waypointLineColor : goalLineColor;
+        Gizmos.DrawLine(transform.position, target.position);
+
+    }
+
+    // 봇이 선택되었을 때만 표시되는 Gizmos (상세 정보)
+    private void OnDrawGizmosSelected()
+    {
+        if (navAgent == null) return;
+
+        // 반투명 선
+        DrawForwardWaypoints();
+    }
+
+    private void DrawCalculatedPath(Vector3 from, Vector3 to, Color color)
+    {
+        var calcPath = new NavMeshPath();
+        if (!NavMesh.CalculatePath(from, to, NavMesh.AllAreas, calcPath)) return;
+        if (calcPath.corners == null || calcPath.corners.Length < 2) return;
+
+        Gizmos.color = color;
+        Gizmos.DrawLine(from, calcPath.corners[0]);
+        for (int i = 0; i < calcPath.corners.Length - 1; i++)
+        {
+            Gizmos.DrawLine(calcPath.corners[i], calcPath.corners[i + 1]);
+        }
+    }
+
+    private void DrawNavMeshPathLines()
+    {
+        // NavMEshAgent가 없거나 경로 없으면 무시
+        if (navAgent == null || !navAgent.hasPath) return;
+
+        NavMeshPath path = navAgent.path;
+
+        // 경로 코너가 2개 미만이면 무시 (최소 시작점과 끝점 필요)
+        if (path.corners.Length < 2) return;
+
+        Color lineColor = pathColor;    // 기본: 청록색
+
+        // 경로 상태에 따라 색상 변경
+        if (path.status == NavMeshPathStatus.PathPartial)
+        {
+            lineColor = Color.yellow;   // 부분 경로: 노란색
+        }
+        else if (path.status == NavMeshPathStatus.PathInvalid)
+        {
+            lineColor = Color.red;      // 유효하지 않은 경로: 빨간색
+        }
+
+        Gizmos.color = lineColor;
+
+        // 현재 봇 위치에서 첫 번째 경로 코너까지 선 그리기
+        Gizmos.DrawLine(transform.position, path.corners[0]);
+        
+        // 경로의 각 코너를 순서대로 연결하는 선 그리기
+        for (int i = 0; i < path.corners.Length - 1; i++)
+        {
+            Gizmos.DrawLine(path.corners[i], path.corners[i + 1]);
+        }
+    }
+
+    // 현재 목표까지 직선 표시
+    private void DrawTargetLines()
+    {
+        // 웨이포인트로 가는 중이면 웨이포인트까지 직선 그리기
+        if (isGoingToWaypoint && currentWaypoint != null)
+        {
+            Gizmos.color = waypointLineColor;   // 노란색 직선
+            Gizmos.DrawLine(transform.position, currentWaypoint.position);
+        }
+        // 골로 가는 중이면 골까지 직선 그리기
+        else if (goalTransform != null)
+        {
+            Gizmos.color = goalLineColor;       // 초록색 직선
+            Gizmos.DrawLine(transform.position, goalTransform.position);
+        }
+    }
+
+    // 봇 선택 시 앞쪽에 있는 모든 웨이포인트까지 선 표시
+    private void DrawForwardWaypoints()
+    {
+        // 웨이포인트 배열이 없으면 무시
+        if (waypoints == null) return;
+
+        // 반투명 노란색
+        Gizmos.color = new Color(1f, 1f, 0f, 0.3f);
+
+        // 모든 웨이포인트 순회
+        foreach (Transform wp in waypoints)
+        {
+            if (wp == null) continue;
+
+            // 앞쪽에 있는 웨이포인트만 선으로 연결
+            if (wp.position.z > transform.position.z + forwardThreshold)
+            {
+                Gizmos.DrawLine(transform.position, wp.position);
+            }
         }
     }
 
