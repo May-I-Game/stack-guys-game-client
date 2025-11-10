@@ -1655,7 +1655,7 @@ MonoBehaviour:
   inputDeltaThreshold: 0.1
   speedThreshold: 0.5
   groundCheckInterval: 2
-  bodyPrefab: {fileID: 8774186256892484800, guid: 6060a470751968a408c2a555cca96a66, type: 3}
+  bodyPrefab: {fileID: 7974099299747734142, guid: 4fbac5d7377a8a24ebcf24912e805588, type: 3}
   RespawnId:
     m_InternalValue: 0
   respawnManager: {fileID: 0}
