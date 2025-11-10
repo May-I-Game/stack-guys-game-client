@@ -2352,9 +2352,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 928e983a870cca8458560bd3a78ae4f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _gamePort: 7779
-  _sdkInited: 0
-  _sessionActive: 0
 --- !u!1001 &800573953
 PrefabInstance:
   m_ObjectHideFlags: 0

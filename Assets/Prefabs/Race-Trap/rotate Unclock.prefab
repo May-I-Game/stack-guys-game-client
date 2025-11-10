@@ -492,7 +492,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   axis: 0
-  degreesPerSecond: 60
+  degreesPerSecond: 20
   spaceMode: 0
   clockWise: 1
   randomizeStartAngle: 0

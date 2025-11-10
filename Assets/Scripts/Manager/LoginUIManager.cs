@@ -286,48 +286,13 @@ private IEnumerator FindGameAndConnect()
             return;
         }
 
-        // ✅ 디버그 로그 추가
 #if UNITY_WEBGL && !UNITY_EDITOR
-        transport.UseWebSockets = true;
-        Debug.Log($"[WebGL] WebSocket mode ENABLED");
-        Debug.Log($"[WebGL] Will connect to ws://{serverAddress}:{serverPort}");
-#else
-        Debug.Log($"[Client] Standard UDP mode");
-        Debug.Log($"[Client] Will connect to {serverAddress}:{serverPort}");
+                transport.UseWebSockets = true;  // WebGL 강제
 #endif
-
         transport.SetConnectionData(serverAddress, serverPort);
         Debug.Log($"Connecting to {serverAddress}:{serverPort} ...");
 
-        // ✅ Transport 상태 확인
-        Debug.Log($"[Transport] Protocol: {transport.Protocol}");
-        Debug.Log($"[Transport] UseWebSockets: {transport.UseWebSockets}");
-
-//        var nm = NetworkManager.Singleton;
-//        if (nm == null)
-//        {
-//            Debug.LogError("❌ NetworkManager not found!");
-//            OnConnectionFailed($"NetworkManager not found!");
-//            isConnecting = false;
-//            return;
-//        }
-
-//        var transport = nm.GetComponent<UnityTransport>();
-//        if (transport == null)
-//        {
-//            Debug.LogError("❌ UnityTransport missing on NetworkManager");
-//            OnConnectionFailed($"missing on NetworkManager");
-//            isConnecting = false;
-//            return;
-//        }
-
-//#if UNITY_WEBGL && !UNITY_EDITOR
-//        transport.UseWebSockets = true;  // WebGL 강제
-//#endif
-//        transport.SetConnectionData(serverAddress, serverPort);
-//        Debug.Log($"Connecting to {serverAddress}:{serverPort} ...");
-
-        // ConnectionData 구성: [1바이트 캐릭터][이름(UTF8 ≤16B)][0x00][playerSessionId UTF8]
+        //ConnectionData 구성: [1바이트 캐릭터][이름(UTF8 ≤16B)][0x00][playerSessionId UTF8]
         byte[] nameBytes = TruncateUtf8(clientName, MAX_NAME_BYTES);
         byte[] sessionBytes = System.Text.Encoding.UTF8.GetBytes(playerSessionId ?? "");
         byte[] payload = new byte[1 + nameBytes.Length + 1 + sessionBytes.Length];
