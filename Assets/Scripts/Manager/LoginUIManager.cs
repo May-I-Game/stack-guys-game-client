@@ -136,11 +136,11 @@ public class LoginUIManager : MonoBehaviour
         Debug.Log("Entering fullscreen (WebGL)");
 #endif
 
-        // #if UNITY_EDITOR || UNITY_WEBGL
+#if UNITY_EDITOR || UNITY_WEBGL
         ConnectToServer(serverAddress, serverPort, null);
-        // #else
-        //         StartCoroutine(FindGameAndConnect());
-        // #endif
+#else
+        StartCoroutine(FindGameAndConnect());
+#endif
     }
 
     // 연결 실패 시 호출될 함수
