@@ -271,14 +271,23 @@ public class PlayerController : NetworkBehaviour
     }
 
     // 애니메이션 이벤트에서 호출됨
-    // [ServerRpc] 어트리뷰트가 있어야 Netcode 코드 생성기가 에러를 내지 않음
-    [ServerRpc(RequireOwnership = false)]
-    public void RespawnPlayerServerRpc()
+    public void RespawnPlayer()
     {
-        // 서버가 아니면 무시
-        if (!IsServer) return;
+        // Owner만 실행 (다른 클라이언트는 무시)
+        if (!IsOwner) return;
 
-        DoRespawn();
+        // 봇은 이미 BotRespawnDelay()로 리스폰하므로 무시
+        if (this is BotController) return;
+
+        // ServerRpc 호출 (시체 생성 + 텔레포트)
+        RespawnPlayerServerRpc();
+    }
+
+    // ServerRpc: 서버에서 시체 생성 + 텔레포트 실행
+    [ServerRpc(RequireOwnership = false)]
+    private void RespawnPlayerServerRpc()
+    {
+        DoRespawnTeleport();
     }
 
     // 애니메이션이 끝날때 호출되는 함수
@@ -476,6 +485,9 @@ public class PlayerController : NetworkBehaviour
         grabbable.netIsGrabbed.Value = true;
         grabbable.holder = this;
 
+        // NEW: GrabbableObject에 잡혔음을 알림 (NetworkTransform 최적화)
+        grabbable.OnGrabbed();
+
         // 오브젝트 물리 비활성화
         Rigidbody targetRb = grabbable.GetComponent<Rigidbody>();
         if (targetRb != null)
@@ -546,6 +558,9 @@ public class PlayerController : NetworkBehaviour
     {
         target.netIsGrabbed.Value = false;
         target.holder = null;
+
+        // NEW: GrabbableObject에 던져졌음을 알림 (NetworkTransform 최적화)
+        target.OnThrown();
 
         Rigidbody targetRb = target.GetComponent<Rigidbody>();
         if (targetRb != null)
@@ -686,6 +701,7 @@ public class PlayerController : NetworkBehaviour
         deathPosition = transform.position;
 
         netIsDeath.Value = true;
+
         // 인풋벡터 초기화
         moveDir = Vector2.zero;
         ReleaseGrab();
@@ -703,17 +719,17 @@ public class PlayerController : NetworkBehaviour
     private System.Collections.IEnumerator BotRespawnDelay()
     {
         yield return botRespawnWait;  // GC 최적화: 캐싱된 WaitForSeconds 사용
-        DoRespawn();
+        DoRespawnTeleport();
     }
 
-    // Death 애니메이션에서 호출됨
-    private void DoRespawn()
+    // 시체 생성 + 텔레포트
+    private void DoRespawnTeleport()
     {
         if (!IsServer) return;
 
+        // 시체 생성 (리스폰 시점에 생성하여 자연스러움)
         if (bodyPrefab != null)
         {
-            // 저장된 죽은 위치에 시체 생성
             GameObject bodyInstance = Instantiate(bodyPrefab, deathPosition, transform.rotation);
             NetworkObject networkBody = bodyInstance.GetComponent<NetworkObject>();
 

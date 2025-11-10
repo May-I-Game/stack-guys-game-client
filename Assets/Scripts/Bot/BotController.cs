@@ -23,6 +23,11 @@ public class BotController : PlayerController
     private float nextPathUpdateTime;                               // 다음 업데이트 시간
     private float nextWaypointSearchTime;                           // 다음 웨이포인트 재탐색 시간
 
+    // Static 캐시 (모든 봇이 공유) - GC 최적화
+    private static Transform _cachedGoal;
+    private static Transform[] _cachedWaypoints;
+    private static bool _cacheInitialized = false;
+
     protected override void Update()
     {
         UpdateAnimation();
@@ -68,12 +73,8 @@ public class BotController : PlayerController
         if (netIsDeath.Value) return;
 
         ServerPerformanceProfiler.Start("BotController.FixedUpdate");
-        // 웨이포인트 주기적으로 재탐색
-        if (Time.time > nextWaypointSearchTime)
-        {
-            RefreshWaypoints();
-            nextWaypointSearchTime = Time.time + waypointSearchInterval;
-        }
+        // 웨이포인트는 Static 캐시 사용 (Start에서 한 번만 초기화)
+        // 주기적 재탐색 제거 - GC 최적화
 
         // 이동이 활성화 되어 있고 navAgent가 활성화가 되어 있을때 AI 작동
         if (inputEnabled && navAgent != null && navAgent.enabled)
@@ -125,12 +126,19 @@ public class BotController : PlayerController
     {
         if (!IsServer) return;
 
-        // Goal 태그를 가진 오브젝트 찾기
-        GameObject goal = GameObject.FindGameObjectWithTag("Goal");
-        if (goal != null)
+        // Static 캐시 초기화 (첫 번째 봇만 실행)
+        if (_cachedGoal == null)
         {
-            goalTransform = goal.transform;
+            GameObject goal = GameObject.FindGameObjectWithTag("Goal");
+            if (goal != null)
+            {
+                _cachedGoal = goal.transform;
+                Debug.Log("[BotController] Goal cached from scene");
+            }
         }
+
+        // 캐시된 값 사용
+        goalTransform = _cachedGoal;
     }
 
     // 웨이포인트 재탐색, 전진 방향 웨이포인트 선택
@@ -138,25 +146,35 @@ public class BotController : PlayerController
     {
         if (!IsServer) return;
 
-        GameObject[] waypointObjects = GameObject.FindGameObjectsWithTag(waypointTag);
-
-        // 웨이포인터들이 있을때
-        if (waypointObjects.Length > 0)
+        // Static 캐시 초기화 (첫 번째 봇만 실행)
+        if (_cachedWaypoints == null)
         {
-            waypoints = new Transform[waypointObjects.Length];
-            for (int i = 0; i < waypointObjects.Length; i++)
+            GameObject[] waypointObjects = GameObject.FindGameObjectsWithTag(waypointTag);
+
+            // 웨이포인터들이 있을때
+            if (waypointObjects.Length > 0)
             {
-                waypoints[i] = waypointObjects[i].transform;
+                _cachedWaypoints = new Transform[waypointObjects.Length];
+                for (int i = 0; i < waypointObjects.Length; i++)
+                {
+                    _cachedWaypoints[i] = waypointObjects[i].transform;
+                }
+                Debug.Log($"[BotController] {_cachedWaypoints.Length} waypoints cached from scene");
+            }
+            else
+            {
+                _cachedWaypoints = System.Array.Empty<Transform>();
             }
 
-            if (useRandomWaypoint && waypoints.Length > 0)
-            {
-                SelectForwardWaypoint();                     // 앞쪽 웨이포인트만 선택
-            }
+            _cacheInitialized = true;
         }
-        else
+
+        // 캐시된 값 사용
+        waypoints = _cachedWaypoints;
+
+        if (useRandomWaypoint && waypoints != null && waypoints.Length > 0)
         {
-            waypoints = null;
+            SelectForwardWaypoint();                     // 앞쪽 웨이포인트만 선택
         }
     }
 

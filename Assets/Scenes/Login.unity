@@ -2349,7 +2349,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b522d4141e049314d95fde2aaf4eddc3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isLocalMod: 0
+  isLocalMod: 1
   matchApiUrl: http://54.180.24.20/api/find-game
   ticketStatusUrl: http://54.180.24.20/api/ticket-status
 --- !u!4 &1233099839
@@ -3106,7 +3106,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01e3e5f34683dc34b925cffa242a807d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serverAddress: 127.0.0.1
+  serverAddress: 172.21.101.82
   serverPort: 7779
   matchApiUrl: http://54.180.24.20/api/find-game
   ticketStatusUrl: http://54.180.24.20/api/ticket-status

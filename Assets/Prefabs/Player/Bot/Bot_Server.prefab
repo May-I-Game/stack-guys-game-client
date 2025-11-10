@@ -1493,6 +1493,8 @@ MonoBehaviour:
   respawnManager: {fileID: 0}
   inputEnabled: 1
   updatePathInterval: 0.5
+  waypointSearchInterval: 2
+  forwardThreshold: 1
   waypointTag: Waypoint
   useRandomWaypoint: 1
   waypointReachedDistance: 2
