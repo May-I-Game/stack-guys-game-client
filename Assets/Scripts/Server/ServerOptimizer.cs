@@ -10,15 +10,9 @@ public static class ServerOptimizer
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void Initialize()
     {
-        // 추가 안전장치: 에디터에서는 실행하지 않음
-        if (Application.isEditor)
-        {
-            Debug.Log("[ServerOptimizer] Skipped in Editor");
-            return;
-        }
-
         OptimizeFrameRate();
         OptimizeRendering();
+
         Debug.Log("[ServerOptimizer] Server optimizations applied");
     }
 
@@ -41,11 +35,6 @@ public static class ServerOptimizer
     /// </summary>
     private static void OptimizeRendering()
     {
-        if (Application.isEditor)
-        {
-            Debug.Log("[ServerOptimizer] Skipped in Editor");
-            return;
-        }
         // 카메라 비활성화 (Headless 서버에서 불필요)
         DisableCameras();
 
