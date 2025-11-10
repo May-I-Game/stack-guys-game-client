@@ -848,6 +848,17 @@ public class PlayerController : NetworkBehaviour
 
     protected virtual void OnDrawGizmos()
     {
+        // 에디터/프리팹 모드에서도 안전하게 동작하도록 보완
+        if (col == null)
+        {
+            col = GetComponent<CapsuleCollider>();
+            if (col == null)
+            {
+                // 콜라이더가 없으면 기즈모를 그리지 않음
+                return;
+            }
+        }
+
         float offsetDist = col.height / 2f - col.radius;
         Vector3 bottomSphereCenter = col.center + (Vector3.down * offsetDist);
         Vector3 castOrigin = transform.TransformPoint(bottomSphereCenter);
