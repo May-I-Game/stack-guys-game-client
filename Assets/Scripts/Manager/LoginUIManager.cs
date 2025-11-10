@@ -136,7 +136,7 @@ public class LoginUIManager : MonoBehaviour
         Debug.Log("Entering fullscreen (WebGL)");
 #endif
 
-#if UNITY_EDITOR
+#if UNITY_EDITOR || UNITY_WEBGL
         ConnectToServer(serverAddress, serverPort, null);
 #else
         StartCoroutine(FindGameAndConnect());

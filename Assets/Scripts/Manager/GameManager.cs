@@ -249,30 +249,32 @@ public class GameManager : NetworkBehaviour
             gameEndcountdown.gameObject.SetActive(newValue);
         }
     }
-
-    [ServerRpc(RequireOwnership = false)]
-    public void PlayerReachedGoalServerRpc(string playerName, ulong clientId)
+    public void PlayerReachedGoal(string playerName, ulong clientId)
     {
+        if (!IsServer) return;                 // 안전 가드
         if (currentGameState.Value != GameState.Playing) return;
 
-        NetworkObject playerObject = NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject;
-        if (playerObject == null) return;
+        var playerObj = NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject;
+        if (playerObj == null) return;
 
-        PlayerController player = playerObject.GetComponent<PlayerController>();
+        var player = playerObj.GetComponent<PlayerController>();
         if (player != null)
-        {
             player.inputEnabled = false;
-        }
 
-        // 순위에 추가
-        rankings.Add(playerName);
+        rankings.Add(playerName);              // NetworkList는 서버에서만 쓰기
 
-        // 첫 번째 플레이어가 골인하면 카운트다운 시작
         if (rankings.Count == 1 && !isCountingDown)
         {
             isEndCountdownActive.Value = true;
             StartCoroutine(EndGameCountdown());
         }
+    }
+
+    // ✅ 클라이언트가 보낼 때만 쓰는 래퍼 RPC (선택)
+    [ServerRpc(RequireOwnership = false)]
+    public void PlayerReachedGoalServerRpc(string playerName, ulong clientId)
+    {
+        PlayerReachedGoal(playerName, clientId);
     }
 
     private IEnumerator StartGameCountdown()

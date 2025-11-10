@@ -44,9 +44,16 @@ public class RandomDoorTrigger : NetworkBehaviour
     {
         if (!IsServer) return;
 
+        if (doorObjects == null || doorObjects.Length == 0)
+        {
+            Debug.LogError("[RandomDoorTrigger] doorObjects 배열이 비어있습니다!");
+            return;
+        }
+
         // 서버에서 랜덤 결정
         int randomIndex = Random.Range(0, doorObjects.Length);
         selectedDoorIndex.Value = randomIndex;
+        Debug.Log($"[RandomDoorTrigger] 서버가 문 선택: {randomIndex} / {doorObjects.Length}개 중");
     }
 
     private void OnSelectedDoorChanged(int previousValue, int newValue)
@@ -56,27 +63,39 @@ public class RandomDoorTrigger : NetworkBehaviour
 
     private void ApplyTriggerToDoor(int doorIndex)
     {
-        // 먼저 모든 문의 Collider를 isTrigger = false로 초기화
+        Debug.Log($"[RandomDoorTrigger] ApplyTriggerToDoor 호출: doorIndex={doorIndex}, 총 문 개수={doorObjects.Length}");
+
+        // 모든 문의 DoubleDoorTrigger 컴포넌트 비활성화
         foreach (GameObject door in doorObjects)
         {
-            if (door != null)
+            if (door != null && door.TryGetComponent<DoubleDoorTrigger>(out var doorTrigger))
             {
-                Collider[] allColliders = door.GetComponentsInChildren<Collider>(true);
-                foreach (Collider col in allColliders)
-                {
-                    col.isTrigger = false;
-                }
+                doorTrigger.enabled = false;
+                Debug.Log($"[RandomDoorTrigger] {door.name} DoubleDoorTrigger 비활성화");
+            }
+            else
+            {
+                Debug.LogWarning($"[RandomDoorTrigger] {door?.name ?? "null"} - DoubleDoorTrigger 컴포넌트 없음");
             }
         }
 
-        // 선택된 문만 isTrigger = true로 설정
-        GameObject selectedDoor = doorObjects[doorIndex];
-
-        Collider[] selectedColliders = selectedDoor.GetComponentsInChildren<Collider>(true);
-
-        foreach (Collider col in selectedColliders)
+        // 선택된 문만 DoubleDoorTrigger 컴포넌트 활성화
+        if (doorIndex >= 0 && doorIndex < doorObjects.Length)
         {
-            col.enabled = true;
+            GameObject selectedDoor = doorObjects[doorIndex];
+            if (selectedDoor != null && selectedDoor.TryGetComponent<DoubleDoorTrigger>(out var selectedTrigger))
+            {
+                selectedTrigger.enabled = true;
+                Debug.Log($"[RandomDoorTrigger] ✓ {selectedDoor.name} DoubleDoorTrigger 활성화 완료!");
+            }
+            else
+            {
+                Debug.LogError($"[RandomDoorTrigger] ✗ 선택된 문 {selectedDoor?.name ?? "null"}에 DoubleDoorTrigger 없음!");
+            }
+        }
+        else
+        {
+            Debug.LogError($"[RandomDoorTrigger] ✗ 잘못된 doorIndex: {doorIndex} (범위: 0-{doorObjects.Length - 1})");
         }
     }
 }

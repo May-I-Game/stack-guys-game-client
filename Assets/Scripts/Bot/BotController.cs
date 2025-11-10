@@ -21,7 +21,7 @@ public class BotController : PlayerController
     [SerializeField] private Color waypointLineColor = Color.blue;      // 웨이포인트 직선 색상
     [SerializeField] private Color goalLineColor = Color.yellow;        // 목표 직선 색상
     [SerializeField] private Color selectedColor = Color.red;           // 봇을 선택했을때 직선 색상
-    
+
     private NavMeshAgent navAgent;
 
     private Transform[] waypoints;                                      // 자동으로 찾은 웨이포인트들
@@ -425,7 +425,7 @@ public class BotController : PlayerController
         if (!IsServer && (waypoints == null || waypoints.Length == 0))
         {
             var objs = GameObject.FindGameObjectsWithTag(waypointTag);
-            
+
             if (objs == null || objs.Length == 0) return null;
 
             waypoints = new Transform[objs.Length];
@@ -557,7 +557,17 @@ public class BotController : PlayerController
 
     public override void OnNetworkSpawn()
     {
-        // 봇은 카메라 설정 안함
+        // 서버만 물리 활성화 (PlayerController와 동일)
+        if (IsServer)
+        {
+            EnablePhysics(true);
+        }
+        else
+        {
+            EnablePhysics(false);
+        }
+
+        // 봇은 카메라 설정 안함 (플레이어와 다른 점)
     }
 }
 

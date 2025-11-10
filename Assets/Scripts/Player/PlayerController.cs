@@ -93,16 +93,43 @@ public class PlayerController : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
+        // 서버만 물리 활성화 (서버 권위 방식)
+        // 클라이언트는 NetworkTransform으로 위치만 동기화
+        if (IsServer)
+        {
+            EnablePhysics(true);
+        }
+        else
+        {
+            EnablePhysics(false);
+        }
+
         if (IsOwner)
         {
             Camera.main.GetComponent<CameraFollow>().target = this.transform;
         }
     }
-
-    protected virtual void Start()
+    public void EnablePhysics(bool on)
+    {
+        if (rb)
+        {
+            rb.isKinematic = !on;
+            rb.detectCollisions = on;
+        }
+        // Collider는 항상 켜두되, 클라이언트는 Trigger 전용 (물리 충돌 없음)
+        if (col)
+        {
+            col.enabled = true;  // 항상 활성화
+            col.isTrigger = !on; // 서버: Collision, 클라이언트: Trigger
+        }
+    }
+    private void Awake()
     {
         rb = GetComponent<Rigidbody>();
         col = GetComponent<CapsuleCollider>();
+    }
+    protected virtual void Start()
+    {
         inputHandler = GetComponent<PlayerInputHandler>();
         nt = GetComponent<NetworkTransform>();
         respawnManager = FindFirstObjectByType<RespawnManager>();

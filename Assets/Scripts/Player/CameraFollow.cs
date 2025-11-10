@@ -42,6 +42,8 @@ public class CameraFollow : MonoBehaviour
     private Vector2 prevTouchPos;
     private int cameraTouchId = -1;                             // 카메라 드래그 전용 터치 ID
 
+    [SerializeField] private float cullingDistance = 30f;
+
     void Start()
     {
         if (Application.isBatchMode)
@@ -66,7 +68,7 @@ public class CameraFollow : MonoBehaviour
         if (cam == null) return;
 
         float[] distances = new float[32];
-        distances[10] = 20f;  // Layer 10 (DeadBody)는 20m까지만 렌더링
+        distances[10] = cullingDistance;  // Layer 10 (DeadBody)는 20m까지만 렌더링
         cam.layerCullDistances = distances;
     }
 
@@ -77,12 +79,7 @@ public class CameraFollow : MonoBehaviour
 
         // 25m 반경을 노란색 원으로 표시
         Gizmos.color = Color.yellow;
-        DrawCircle(target.position, 25f, 50);
-
-        // 15m, 10m 참고선도 표시
-        Gizmos.color = new Color(1f, 1f, 0f, 0.3f);
-        DrawCircle(target.position, 15f, 30);
-        DrawCircle(target.position, 10f, 30);
+        DrawCircle(target.position, cullingDistance, 50);
     }
 
     // 원 그리기 헬퍼 함수
