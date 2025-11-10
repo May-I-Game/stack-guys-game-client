@@ -16,22 +16,28 @@ public class BotController : PlayerController
     [SerializeField] private float waypointReachedDistance = 3f;        // 웨이포인트 도달 거리
 
     [Header("Debug Visualization")]
-    [SerializeField] private bool showPathInEditor = true;              // 에디터/클라이언트에서 기즈모 표시 여부
-    [SerializeField] private Color pathColor = Color.cyan;              // 경로 선 색상
-    [SerializeField] private Color waypointLineColor = Color.yellow;    // 웨이포인트 직선 생상
-    [SerializeField] private Color goalLineColor = Color.green;         // 목표 직선 색상
+    [SerializeField] private bool showPathInEditor = false;              // 에디터/클라이언트에서 기즈모 표시 여부
+    [SerializeField] private Color waypointLineColor = Color.blue;      // 웨이포인트 직선 색상
+    [SerializeField] private Color goalLineColor = Color.yellow;        // 목표 직선 색상
+    [SerializeField] private Color selectedColor = Color.red;           // 봇을 선택했을때 직선 색상
+    
+    private NavMeshAgent navAgent;
 
     private Transform[] waypoints;                                      // 자동으로 찾은 웨이포인트들
-    private NavMeshAgent navAgent;
     private Transform goalTransform;
     private Transform currentWaypoint;                                  // 현재 목표 웨이포인트
     private bool isGoingToWaypoint = false;                             // 웨이포인트로 가는 중인가?
     private float nextPathUpdateTime;                                   // 다음 업데이트 시간
     private float nextWaypointSearchTime;                               // 다음 웨이포인트 재탐색 시간
 
+    // 서버에서 선택한 웨이포인트 인덱스, 에디터 기즈모는 이 값을 통해 동일한 웨이포인트를 보여줌
+    private NetworkVariable<int> currentWaypointIndex = new(
+        -1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
     protected override void Update()
     {
-        UpdateAnimation();
+        if (!IsServer)
+            UpdateAnimation();
     }
 
     protected override void Start()
@@ -45,9 +51,7 @@ public class BotController : PlayerController
         {
             // 클라이언트에서는 NavMeshAgent 비활성화 (AI 로직 실행 안 함)
             if (navAgent != null)
-            {
                 navAgent.enabled = false;
-            }
 
             return;
         }
@@ -59,12 +63,10 @@ public class BotController : PlayerController
             navAgent.angularSpeed = rotationSpeed * 50f;        // 최대 회전 속도, updateRotation=true일 때만 트랜스폼 회전에 직접 반영
             navAgent.acceleration = 8f;                         // 가속도
             navAgent.stoppingDistance = 0.5f;                   // 목표 지점에 이 거리만큼 여유를 두고 감속/
-
             navAgent.autoRepath = true;                         // NavMesh 환경이 변할 때 자동으로 경로를 재계산
-            
-            // Rigidbody와 충돌하지 않도록 설정
-            navAgent.updatePosition = false;
-            navAgent.updateRotation = false; 
+
+            navAgent.updatePosition = false;                    // Rigidbody와 충돌하지 않도록 설정
+            navAgent.updateRotation = false;
         }
 
         FindGoal();
@@ -77,6 +79,7 @@ public class BotController : PlayerController
         if (netIsDeath.Value) return;
 
         ServerPerformanceProfiler.Start("BotController.FixedUpdate");
+
         // 웨이포인트 주기적으로 재탐색
         if (Time.time > nextWaypointSearchTime)
         {
@@ -87,7 +90,7 @@ public class BotController : PlayerController
         // 이동이 활성화 되어 있고 navAgent가 활성화가 되어 있을때 AI 작동
         if (inputEnabled && navAgent != null && navAgent.enabled)
         {
-            // 목표 지점이 없으면 목표 찾기
+            // 목표 지점이 없으면 일정 주기로 찾기
             if (goalTransform == null && Time.time > nextPathUpdateTime)
             {
                 FindGoal();
@@ -99,9 +102,8 @@ public class BotController : PlayerController
             {
                 ServerPerformanceProfiler.Start("BotController.BotUpdate");
                 UpdateBotAI();
+                ServerPerformanceProfiler.End("BotController.BotUpdate");
             }
-
-            ServerPerformanceProfiler.End("BotController.BotUpdate");
         }
 
         // 땅 체크
@@ -143,59 +145,84 @@ public class BotController : PlayerController
         }
     }
 
-    // 웨이포인트 재탐색, 전진 방향 웨이포인트 선택
+    // 웨이포인트 재탐색 후 서버가 배열을 관리하고 랜덤 선택
     private void RefreshWaypoints()
     {
         if (!IsServer) return;
 
         GameObject[] waypointObjects = GameObject.FindGameObjectsWithTag(waypointTag);
 
-        // 웨이포인터들이 있을때
         if (waypointObjects.Length > 0)
         {
             waypoints = new Transform[waypointObjects.Length];
             for (int i = 0; i < waypointObjects.Length; i++)
-            {
                 waypoints[i] = waypointObjects[i].transform;
-            }
 
-            if (useRandomWaypoint && waypoints.Length > 0)
-            {
-                SelectForwardWaypoint();                     // 앞쪽 웨이포인트만 선택
-            }
+            // 처음 진입 시 앞쪽 웨이포인터를 하나 잡아서 시작
+            TrySelectForwardWaypoint();
         }
         else
         {
             waypoints = null;
+            isGoingToWaypoint = false;
+            currentWaypoint = null;
+            currentWaypointIndex.Value = -1; // 선택 인덱스 초기화 (없음)
         }
     }
 
-    // 전진 방향 웨이포인트만 선택 (일직선 맵 최적화)
-    private void SelectForwardWaypoint()
+
+    // 플레이어 앞(z 기준 forwardThreshold 더한 값) + 그 중 랜덤 선택
+    // forwardThreshold 역할: 최소한의 범위를 넓힘
+    private bool TrySelectForwardWaypoint()
     {
-        if (waypoints == null || waypoints.Length == 0) return;
-
-        System.Collections.Generic.List<Transform> forwardWaypoints = new System.Collections.Generic.List<Transform>();
-
-        foreach (Transform wp in waypoints)
+        if (waypoints == null || waypoints.Length == 0)
         {
-            // Z 축 기준으로 앞에 있는 웨이포인트만 선택
-            if (wp.position.z > transform.position.z + forwardThreshold)
+            isGoingToWaypoint = false;
+            currentWaypoint = null;
+            currentWaypointIndex.Value = -1;
+            return false;
+        }
+
+        System.Collections.Generic.List<int> forwardIndices = new System.Collections.Generic.List<int>();
+        float zRef = transform.position.z + forwardThreshold;
+
+        for (int i = 0; i < waypoints.Length; i++)
+        {
+            var wp = waypoints[i];
+            if (wp == null) continue;
+
+            // z축 기준으로 앞에 있는 웨이포인트만 선택
+            if (wp.position.z > zRef)
             {
-                forwardWaypoints.Add(wp);
+                forwardIndices.Add(i);
             }
         }
 
-        // 앞에 웨이포인트가 없으면 골로 직행
-        if (forwardWaypoints.Count == 0)
+        if (forwardIndices.Count == 0)
         {
             isGoingToWaypoint = false;
-            return;
+            currentWaypoint = null;
+            currentWaypointIndex.Value = -1;
+            return false;
         }
 
-        int randomIndex = Random.Range(0, forwardWaypoints.Count);
-        currentWaypoint = forwardWaypoints[randomIndex];
+        int chosen = forwardIndices[Random.Range(0, forwardIndices.Count)];
+        currentWaypoint = waypoints[chosen];
+        currentWaypointIndex.Value = chosen;    // 기즈모 동기화를 위한 인덱스 저장
         isGoingToWaypoint = true;
+        return true;
+    }
+
+    // SetDestination을 너무 자주 갱신하지 않도록 간격 제어
+    private void SetDestinationIfDue(Vector3 targetPos)
+    {
+        if (Time.time > nextPathUpdateTime)
+        {
+            if (navAgent.isActiveAndEnabled && navAgent.isOnNavMesh)
+                navAgent.SetDestination(targetPos);
+
+            nextPathUpdateTime = Time.time + updatePathInterval;
+        }
     }
 
     private void UpdateBotAI()
@@ -209,52 +236,33 @@ public class BotController : PlayerController
                 // 웨이포인트에 도착했는지 체크
                 float distanceToWaypoint = Vector3.Distance(transform.position, currentWaypoint.position);
 
-                // 정해둔 도달 거리보다 짧으면 도착
+                // 도달 -> 다음 앞쪽 웨이포인트 시도, 실패하면 Goal로 폴백
                 if (distanceToWaypoint < waypointReachedDistance)
                 {
-                    // 즉시 다음 목표 선택
-                    SelectForwardWaypoint();
+                    // 다음 앞쪽 웨이포인트 선택 실패 시 Goal 진행
+                    if (!TrySelectForwardWaypoint() && goalTransform != null)
+                        SetDestinationIfDue(goalTransform.position);
                 }
                 else
                 {
-                    // 웨이포인트로 경로 설정
-                    if (Time.time > nextPathUpdateTime)
-                    {
-                        // NavMeshAgent가 활성이고 실제 NavMesh 위에 있을때
-                        if (navAgent.isActiveAndEnabled && navAgent.isOnNavMesh)
-                        {
-                            navAgent.SetDestination(currentWaypoint.position);
-                        }
-
-                        // 다음 갱신 시간 업데이트
-                        nextPathUpdateTime = Time.time + updatePathInterval;
-                    }
+                    // 아직 도달 전이면 현재 웨이포인트로 진행
+                    SetDestinationIfDue(currentWaypoint.position);
                 }
             }
-            // 웨이포인트가 없으면 다시 선택
-            else if (!isGoingToWaypoint)
+            else
             {
-                SelectForwardWaypoint();
+                // 현재 웨이포인트가 없으면 다시 시도, 실패하면 Goal로  폴백
+                if (!TrySelectForwardWaypoint() && goalTransform != null)
+                    SetDestinationIfDue(goalTransform.position);
             }
         }
-        // 웨이포인트 통과 후 골로 직진
         else
         {
-            // 일정 간격으로 경로 업데이트
-            if (Time.time > nextPathUpdateTime)
-            {
-                // NavMeshAgent가 활성이고 실제 NavMesh 위에 있을때
-                if (navAgent.isActiveAndEnabled && navAgent.isOnNavMesh)
-                {
-                    navAgent.SetDestination(goalTransform.position);
-                }
-
-                // 다음 갱신 시간 업데이트
-                nextPathUpdateTime = Time.time + updatePathInterval;
-            }
+            if (goalTransform != null)
+                SetDestinationIfDue(goalTransform.position);
         }
 
-        // NavMesh 경로를 따라 이동 입력 생성
+        // NavMesh 경로를 moveDir으로 변환하여 PlayerMove()가 실제 이동 처리
         // 유효한 경로가 있고 피격에 따른 이동 잠금 상태, 다이브 착지후 이동 불가 상태, 잡힌 상태가 아닐때
         if (navAgent.hasPath && !isHit && !netIsDiveGrounded.Value && !netIsGrabbed.Value)
         {
@@ -286,92 +294,136 @@ public class BotController : PlayerController
         }
     }
 
-    // Gizmos를 이용한 에디터 경로 시각화
+    // 에디터에서 서버가 선택한 웨이포인트 트랜스폼 복원
+    private Transform GetSyncedCurrentWaypoint()
+    {
+        int idx = currentWaypointIndex.Value;
+        if (idx < 0) return null;
 
+        // 클라이언트는 서버처럼 배열을 유지하지 않으므로 필요 시 태그 재검색
+        if (!IsServer && (waypoints == null || waypoints.Length == 0))
+        {
+            var objs = GameObject.FindGameObjectsWithTag(waypointTag);
+            
+            if (objs == null || objs.Length == 0) return null;
+
+            waypoints = new Transform[objs.Length];
+            for (int i = 0; i < objs.Length; i++)
+                waypoints[i] = objs[i].transform;
+        }
+
+        if (waypoints != null && idx < waypoints.Length)
+            return waypoints[idx];
+
+        return null;
+    }
+
+
+    // Gizmos를 이용한 에디터 경로 시각화, 캐시 기능 추가
     protected override void OnDrawGizmos()
     {
         base.OnDrawGizmos();
 
         if (!showPathInEditor) return;
 
-        Transform target = null;
+        // 서버 선택 인덱스 우선, 없으면 앞쪽 웨이포인트 Fallback
+        Transform forwardWp = GetSyncedCurrentWaypoint();
+        if (forwardWp == null)
+            forwardWp = FindForwardWaypointForGizmo();            // 선택 없으면 앞쪽 하나 선택
 
-        if (isGoingToWaypoint && currentWaypoint != null)
+        // 웨이포인트 선
+        if (forwardWp != null)
         {
-            target = currentWaypoint;
-        }
-        else if (goalTransform != null)
-        {
-            target = goalTransform;
-        }
-        else
-        {
-            // 목표가 없다면 태그로 찾아보기 (에디터에서도 동작)
-            var goal = GameObject.FindGameObjectWithTag("Goal");
-            if (goal != null) target = goal.transform;
+            Gizmos.color = waypointLineColor;
+            Gizmos.DrawLine(transform.position, forwardWp.position);
         }
 
-        if (target == null) return;
+        // Goal은 서버가 못 찾으면 클라이언트 태그 재검색
+        Transform goal = goalTransform != null ? goalTransform : FindGoalForGizmo();
+        if (goal != null)
+        {
+            Gizmos.color = goalLineColor;
+            Gizmos.DrawLine(transform.position, goal.position);
+        }
+    }
 
-        DrawCalculatedPath(transform.position, target.position, pathColor);
+    // 에디터용 Fallback: 가장 가까운 앞쪽 웨이포인트 찾기
+    // 두 값 A, B 에 대해 A < B 와 sqrt(A) < sqrt(B) 는 결과가 동일
+    private Transform FindForwardWaypointForGizmo()
+    {
+        // 웨이포인트 사용 체크
+        if (!useRandomWaypoint) return null;
 
-        // 목표 직선도 함께 표시
-        Gizmos.color = isGoingToWaypoint ? waypointLineColor : goalLineColor;
-        Gizmos.DrawLine(transform.position, target.position);
+        // 서버에서 관리하는 배열 사용
+        Transform[] source = waypoints;
 
+        // 배열이 없으면 태그로 재검색
+        if (source == null || source.Length == 0)
+        {
+            var objs = GameObject.FindGameObjectsWithTag(waypointTag);
+            if (objs == null || objs.Length == 0) return null;
+
+            source = new Transform[objs.Length];
+            for (int i = 0; i < objs.Length; i++)
+                source[i] = objs[i].transform;
+        }
+
+        // z 앞쪽 기준이 되는 값
+        float zRef = transform.position.z + forwardThreshold;
+
+        // 최종 선택될 웨이포인트
+        Transform best = null;
+
+        // 현재까지의 최소 제곱거리(루트 연산 생략하기 위해서 사용)
+        float bestSqr = float.MaxValue;
+
+        // 모든 후보 순위
+        for (int i = 0; i < source.Length; i++)
+        {
+            var t = source[i];
+            if (!t) continue;   // Null 가드
+
+            // 앞쪽이 아니거나 threshould 이내면 제외
+            if (t.position.z <= zRef) continue; // 뒤/가까운 웨이포인트 제외
+
+            // 거리 제곱로 최소 거리 후보 갱신
+            float sqr = (t.position - transform.position).sqrMagnitude;
+            if (sqr < bestSqr)
+            {
+                bestSqr = sqr;
+                best = t;
+            }
+        }
+
+        return best;
+    }
+
+    //Goal 태그 재검색 (서버 참조 없을 때)
+    private Transform FindGoalForGizmo()
+    {
+        var goalObj = GameObject.FindGameObjectWithTag("Goal");
+        return goalObj ? goalObj.transform : null;
     }
 
     // 봇이 선택되었을 때만 표시되는 Gizmos (상세 정보)
     private void OnDrawGizmosSelected()
     {
-        // 반투명 선
-        DrawForwardWaypoints();
-    }
+        if (!showPathInEditor) return;
 
-    // NavMesh.CalculatePath를 사용하여 경로를 즉석 계산해 Gizmos로 표시
-    private void DrawCalculatedPath(Vector3 from, Vector3 to, Color color)
-    {
-        var calcPath = new NavMeshPath();
-        if (!NavMesh.CalculatePath(from, to, NavMesh.AllAreas, calcPath)) return;
-        if (calcPath.corners == null || calcPath.corners.Length < 2) return;
+        // 동기화된 인덱스를 이용하여 서버와 동일한 웨이포인트를 찾아 선을 그림
+        Transform selectedWp = GetSyncedCurrentWaypoint();
+        if (selectedWp == null) return;
 
-        Gizmos.color = color;
-        Gizmos.DrawLine(from, calcPath.corners[0]);
-        for (int i = 0; i < calcPath.corners.Length - 1; i++)
-        {
-            Gizmos.DrawLine(calcPath.corners[i], calcPath.corners[i + 1]);
-        }
-    }
-
-    // 봇 선택 시 앞쪽에 있는 모든 웨이포인트까지 선 표시
-    private void DrawForwardWaypoints()
-    {
-        // 웨이포인트 배열이 없으면 무시
-        if (waypoints == null) return;
-
-        // 반투명 노란색
-        Gizmos.color = new Color(1f, 1f, 0f, 0.3f);
-
-        // 모든 웨이포인트 순회
-        foreach (Transform wp in waypoints)
-        {
-            if (wp == null) continue;
-
-            // 앞쪽에 있는 웨이포인트만 선으로 연결
-            if (wp.position.z > transform.position.z + forwardThreshold)
-            {
-                Gizmos.DrawLine(transform.position, wp.position);
-            }
-        }
+        Gizmos.color = selectedColor; // 선택 시 색상
+        Gizmos.DrawLine(transform.position, selectedWp.position);
     }
 
     public override void OnNetworkSpawn()
     {
         // 봇은 카메라 설정 안함
-        // 부모 클래스의 카메라 설정을 무시
     }
 }
 
-// 1. 웨이포인트 시스템 활성 → 전진 방향 랜덤 선택
-// 2. 앞쪽 웨이포인트 없음 → Goal로 직진
-// 3. 웨이포인트 미사용 → Goal로 직진
+// 첫 랜덤 웨이포인터가 골이 되고 → 
+// 도달하면 나보다 앞에 있는 다음 랜덤 웨이포인터가 다시 골이 되고 →
+// 내 앞에 골이 있으면 계속 진행. 더 이상 앞에 없으면 최종 Goal로 진행
