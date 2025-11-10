@@ -28,6 +28,9 @@ public class GameManager : NetworkBehaviour
     [SerializeField] private TMP_Text thirdPlaceText;
     [SerializeField] private Button mainButton;
     [SerializeField] private TMP_Text QualifiedText;
+    [SerializeField] private GameObject FPSCount;
+    [SerializeField] private GameObject PingCount;
+    [SerializeField] private GameObject LobbyUI;
     [SerializeField] private GameObject gameUI;
 
     [Header("Settings")]
@@ -386,6 +389,24 @@ public class GameManager : NetworkBehaviour
         //카운트 다운 내리기
         gameEndcountdown.gameObject.SetActive(false);
         // 결과 화면 표시
+
+        if (FPSCount != null)
+        {
+            FPSCount.gameObject.SetActive(false);
+        }
+        if (PingCount != null)
+        {
+            PingCount.gameObject.SetActive(false);
+        }
+        if (LobbyUI != null)
+        {
+            LobbyUI.gameObject.SetActive(false);
+        }
+        if (gameUI != null)
+        {
+            gameUI.gameObject.SetActive(false);
+        }
+
         if (resultPanel != null)
         {
             resultPanel.SetActive(true);
@@ -409,10 +430,23 @@ public class GameManager : NetworkBehaviour
         {
             NowPlayerCount.gameObject.SetActive(false);
         }
+        if (FPSCount != null)
+        {
+            FPSCount.gameObject.SetActive(true);
+        }
+        if (PingCount != null)
+        {
+            PingCount.gameObject.SetActive(true);
+        }
+        if (LobbyUI != null)
+        {
+            LobbyUI.gameObject.SetActive(true);
+        }
         if (gameUI != null)
         {
             gameUI.gameObject.SetActive(true);
         }
+
     }
     private void UpdateCountDownUI(float prviousValue, float newValue)
     {
