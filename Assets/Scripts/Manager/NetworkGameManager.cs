@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
+using Unity.Netcode.Transports.UTP;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -107,6 +108,20 @@ public class NetworkGameManager : MonoBehaviour
         NetworkManager.Singleton.StartServer();
 
         // 현재 씬이 이미 GameScene이 아닐 때만 로드
+        //if (SceneManager.GetActiveScene().name != gameSceneName)
+        //{
+        //    NetworkManager.Singleton.SceneManager.LoadScene(gameSceneName, LoadSceneMode.Single);
+        //}
+
+        var transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
+        if (transport != null)
+        {
+            transport.UseWebSockets = true;
+            Debug.Log("[Server] WebSocket mode enabled for WebGL clients");
+        }
+
+        NetworkManager.Singleton.StartServer();
+
         if (SceneManager.GetActiveScene().name != gameSceneName)
         {
             NetworkManager.Singleton.SceneManager.LoadScene(gameSceneName, LoadSceneMode.Single);

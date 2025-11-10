@@ -201,6 +201,7 @@ private IEnumerator FindGameAndConnect()
         }
     }
 
+
     private IEnumerator PollTicketStatus(string ticketId, string playerId)
     {
         float startTime = Time.time;
@@ -217,14 +218,17 @@ private IEnumerator FindGameAndConnect()
                 if (req.result != UnityWebRequest.Result.Success)
                 {
                     Debug.LogError($"ticket-status failed: {req.error}");
-                    OnConnectionFailed($"Matchmaking failed: {req.error}");
                     yield return new WaitForSeconds(3f);
                     continue;
                 }
 
                 TicketStatusResponse status = null;
-                try { status = JsonUtility.FromJson<TicketStatusResponse>(req.downloadHandler.text); }
-                catch { Debug.LogError("Invalid ticket status JSON"); }
+                try { 
+                    status = JsonUtility.FromJson<TicketStatusResponse>(req.downloadHandler.text); 
+                }
+                catch {
+                    Debug.LogError("Invalid ticket status JSON"); 
+                }
 
                 if (status == null)
                 {
@@ -233,7 +237,6 @@ private IEnumerator FindGameAndConnect()
                 }
 
                 Debug.Log($"Ticket status: {status.status}");
-                OnConnectionFailed($"Matchmaking failed: {status.status}");
 
                 if (status.status == "COMPLETED" && status.success)
                 {
@@ -283,11 +286,46 @@ private IEnumerator FindGameAndConnect()
             return;
         }
 
+        // ✅ 디버그 로그 추가
 #if UNITY_WEBGL && !UNITY_EDITOR
-        transport.UseWebSockets = true;  // WebGL 강제
+        transport.UseWebSockets = true;
+        Debug.Log($"[WebGL] WebSocket mode ENABLED");
+        Debug.Log($"[WebGL] Will connect to ws://{serverAddress}:{serverPort}");
+#else
+        Debug.Log($"[Client] Standard UDP mode");
+        Debug.Log($"[Client] Will connect to {serverAddress}:{serverPort}");
 #endif
+
         transport.SetConnectionData(serverAddress, serverPort);
         Debug.Log($"Connecting to {serverAddress}:{serverPort} ...");
+
+        // ✅ Transport 상태 확인
+        Debug.Log($"[Transport] Protocol: {transport.Protocol}");
+        Debug.Log($"[Transport] UseWebSockets: {transport.UseWebSockets}");
+
+//        var nm = NetworkManager.Singleton;
+//        if (nm == null)
+//        {
+//            Debug.LogError("❌ NetworkManager not found!");
+//            OnConnectionFailed($"NetworkManager not found!");
+//            isConnecting = false;
+//            return;
+//        }
+
+//        var transport = nm.GetComponent<UnityTransport>();
+//        if (transport == null)
+//        {
+//            Debug.LogError("❌ UnityTransport missing on NetworkManager");
+//            OnConnectionFailed($"missing on NetworkManager");
+//            isConnecting = false;
+//            return;
+//        }
+
+//#if UNITY_WEBGL && !UNITY_EDITOR
+//        transport.UseWebSockets = true;  // WebGL 강제
+//#endif
+//        transport.SetConnectionData(serverAddress, serverPort);
+//        Debug.Log($"Connecting to {serverAddress}:{serverPort} ...");
 
         // ConnectionData 구성: [1바이트 캐릭터][이름(UTF8 ≤16B)][0x00][playerSessionId UTF8]
         byte[] nameBytes = TruncateUtf8(clientName, MAX_NAME_BYTES);
