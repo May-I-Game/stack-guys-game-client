@@ -53,6 +53,54 @@ public class CameraFollow : MonoBehaviour
         {
             // 초기 카메라 설정 (타겟/오프셋/초기 yaw 등 계산)
             InitializeCamera();
+
+            // Layer Cull Distances 설정 (시체 렌더링 최적화)
+            SetupLayerCulling();
+        }
+    }
+
+    // Layer Cull Distances 설정: DeadBody 레이어는 25m까지만 렌더링
+    void SetupLayerCulling()
+    {
+        Camera cam = GetComponent<Camera>();
+        if (cam == null) return;
+
+        float[] distances = new float[32];
+        distances[10] = 20f;  // Layer 10 (DeadBody)는 20m까지만 렌더링
+        cam.layerCullDistances = distances;
+    }
+
+    // Scene 뷰에서 25m 반경을 시각화 (디버깅용)
+    private void OnDrawGizmos()
+    {
+        if (target == null) return;
+
+        // 25m 반경을 노란색 원으로 표시
+        Gizmos.color = Color.yellow;
+        DrawCircle(target.position, 25f, 50);
+
+        // 15m, 10m 참고선도 표시
+        Gizmos.color = new Color(1f, 1f, 0f, 0.3f);
+        DrawCircle(target.position, 15f, 30);
+        DrawCircle(target.position, 10f, 30);
+    }
+
+    // 원 그리기 헬퍼 함수
+    private void DrawCircle(Vector3 center, float radius, int segments)
+    {
+        float angleStep = 360f / segments;
+        Vector3 prevPoint = center + new Vector3(radius, 0, 0);
+
+        for (int i = 1; i <= segments; i++)
+        {
+            float angle = angleStep * i * Mathf.Deg2Rad;
+            Vector3 newPoint = center + new Vector3(
+                Mathf.Cos(angle) * radius,
+                0,
+                Mathf.Sin(angle) * radius
+            );
+            Gizmos.DrawLine(prevPoint, newPoint);
+            prevPoint = newPoint;
         }
     }
 

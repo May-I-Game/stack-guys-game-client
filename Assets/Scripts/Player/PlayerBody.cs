@@ -36,6 +36,8 @@ public class PlayerBody : NetworkBehaviour
             netWorkObject.enabled = false;
         }
 
+        //TODO rigidbody 제거
+
         // 마지막으로 자기 자신 비활성화
         this.enabled = false;
 

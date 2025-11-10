@@ -731,6 +731,10 @@ public class PlayerController : NetworkBehaviour
         if (bodyPrefab != null)
         {
             GameObject bodyInstance = Instantiate(bodyPrefab, deathPosition, transform.rotation);
+
+            // Layer 설정: DeadBody (Layer 10) - 거리 기반 컬링 적용
+            SetLayerRecursively(bodyInstance, 10);
+
             NetworkObject networkBody = bodyInstance.GetComponent<NetworkObject>();
 
             if (networkBody != null)
@@ -798,6 +802,16 @@ public class PlayerController : NetworkBehaviour
 
         // 애니메이터도 각 클라에서 리셋
         ResetAnimClientRpc();
+    }
+
+    // 오브젝트와 자식들의 레이어를 재귀적으로 설정
+    private void SetLayerRecursively(GameObject obj, int layer)
+    {
+        obj.layer = layer;
+        foreach (Transform child in obj.transform)
+        {
+            SetLayerRecursively(child.gameObject, layer);
+        }
     }
     #endregion
 
