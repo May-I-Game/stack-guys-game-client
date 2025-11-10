@@ -14,6 +14,9 @@ public class DoorNavObstacle : MonoBehaviour
     [Header("NavMesh Settings")]
     public float sizePadding = 1.0f;
 
+    [Header("Near Waypoint")]
+    public Transform nearWaypoint;
+
     [SerializeField] private bool isOpen = false;
 
     private NavMeshObstacle doorNavObstacle;
@@ -21,6 +24,9 @@ public class DoorNavObstacle : MonoBehaviour
     private void Start()
     { 
         SetupNavMeshObstacles();
+
+        // 웨이포인트 자동 탐색
+        nearWaypoint = FindNearestWaypointTo(transform.position);
     }
 
     // 부모 오브젝트에 하나의 Obstacle 생성
@@ -73,7 +79,7 @@ public class DoorNavObstacle : MonoBehaviour
         obstacle.carveOnlyStationary = false;           // 움직이는 문도 지원
         obstacle.shape = NavMeshObstacleShape.Box;      // 박스 형태
         obstacle.center = Vector3.zero;                 // 중심점
-        obstacle.size = size;                   // 크기
+        obstacle.size = size;                           // 크기
         obstacle.enabled = true;                        // 초기 상태: 닫힘
     }
 
@@ -88,6 +94,42 @@ public class DoorNavObstacle : MonoBehaviour
         {
             doorNavObstacle.enabled = false;
         }
+
+        // 서버에서만 처리
+        if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer)
+            return;
+
+        if (nearWaypoint == null) return; // 없으면 패스
+
+        // 가장 가까운 웨이포인트로 모든 봇 강제 전환
+        BotController.ForceAllBotsToWaypoint(nearWaypoint);
+    }
+
+    // 문 위치 기준 가장 가까운 Waypoint 태그 오브젝트 찾기
+    private Transform FindNearestWaypointTo(Vector3 origin)
+    {
+        GameObject[] objs = GameObject.FindGameObjectsWithTag("Waypoint");
+        if (objs == null || objs.Length == 0) return null;
+
+        Transform best = null;
+        float bestSqr = float.MaxValue;
+
+        for (int i = 0; i < objs.Length; i++)
+        {
+            Transform t = objs[i].transform;
+
+            if (t == null) continue;
+
+            float sqr = (t.position - origin).sqrMagnitude;
+            if (sqr < bestSqr)
+            {
+                bestSqr = sqr;
+                best = t;
+            }
+        }
+
+        return best;
+
     }
 
     //// 문 열기 ServerRpc
