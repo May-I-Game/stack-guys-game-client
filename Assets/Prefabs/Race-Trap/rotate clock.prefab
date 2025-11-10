@@ -486,7 +486,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   axis: 0
-  degreesPerSecond: 60
+  degreesPerSecond: 20
   spaceMode: 0
   clockWise: 1
   randomizeStartAngle: 0
@@ -502,7 +502,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 3654208807
+  GlobalObjectIdHash: 1791014783
   InScenePlacedSourceGlobalObjectIdHash: 1791014783
   DeferredDespawnTick: 0
   Ownership: 1
