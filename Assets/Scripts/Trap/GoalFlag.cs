@@ -1,20 +1,27 @@
 using UnityEngine;
+using Unity.Netcode;
 
-public class GoalFlag : MonoBehaviour
+public class GoalFlag : NetworkBehaviour
 {
     private bool hasFinished = false;
 
     private void OnTriggerEnter(Collider other)
     {
+        // 서버만 도착 체크 (클라이언트는 Trigger는 감지하지만 처리는 서버가 함)
+        if (!IsServer) return;
+
         // 태그 및 게임상태 확인
         if (hasFinished || !GameManager.instance.IsGame || !other.CompareTag("Player")) return;
 
-        // 플레이어 여부 및 내거인지 확인
-        var player = other.GetComponent<PlayerController>();
-        if (player == null || !player.IsOwner) return;
+        // 플레이어 여부 확인
+        if (!other.TryGetComponent<PlayerController>(out var player)) return;
 
-        string playerName = PlayerPrefs.GetString("player_name", "Player");
-        GameManager.instance.PlayerReachedGoalServerRpc(playerName, player.OwnerClientId);
+        // 서버에서 직접 처리 (Owner 체크 불필요, 서버가 모든 플레이어를 감지)
+        // PlayerPrefs는 각 클라이언트 로컬이므로, 여기서는 ClientId만 전달
+        // GameManager에서 플레이어 이름을 관리해야 함
+        Debug.Log("통과 완료!!");
+        GameManager.instance.PlayerReachedGoal("Player", player.OwnerClientId);
+
 
         hasFinished = true;
     }

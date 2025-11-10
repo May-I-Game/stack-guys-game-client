@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7234826879529448369}
-  m_Layer: 3
+  m_Layer: 10
   m_Name: Bip001 Pelvis
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -41,7 +41,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4624103323770765238}
-  m_Layer: 3
+  m_Layer: 10
   m_Name: Bip001 Spine
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -74,7 +74,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1715739084983235368}
-  m_Layer: 3
+  m_Layer: 10
   m_Name: Bip001 Head
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -106,7 +106,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4366469167117516954}
-  m_Layer: 3
+  m_Layer: 10
   m_Name: Ears_teddy
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -140,7 +140,7 @@ GameObject:
   - component: {fileID: 726157000890397803}
   - component: {fileID: 31674029496658657}
   - component: {fileID: 4060039953744121055}
-  m_Layer: 3
+  m_Layer: 10
   m_Name: Mouth_Baked
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -224,7 +224,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3461332604528872502}
-  m_Layer: 3
+  m_Layer: 10
   m_Name: Bip001 Neck
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -258,7 +258,7 @@ GameObject:
   - component: {fileID: 7411299885527181514}
   - component: {fileID: 1385028683585381586}
   - component: {fileID: 6302652279976201479}
-  m_Layer: 3
+  m_Layer: 10
   m_Name: Tail_01_Baked
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -342,7 +342,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 238880926118560188}
-  m_Layer: 3
+  m_Layer: 10
   m_Name: Bip001 Spine1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -380,7 +380,7 @@ GameObject:
   - component: {fileID: -4944586610383525059}
   - component: {fileID: 4578756459054328514}
   - component: {fileID: -6039892782064497072}
-  m_Layer: 3
+  m_Layer: 10
   m_Name: Player_1_body_mesh
   m_TagString: Ground
   m_Icon: {fileID: 0}
@@ -564,7 +564,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2739249505392208251}
-  m_Layer: 3
+  m_Layer: 10
   m_Name: Bip001
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -598,7 +598,7 @@ GameObject:
   - component: {fileID: 7930458141814722658}
   - component: {fileID: 2917542844973008992}
   - component: {fileID: 6926968710846377649}
-  m_Layer: 3
+  m_Layer: 10
   m_Name: Ears_01_Baked
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -682,7 +682,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1756529984699944173}
-  m_Layer: 3
+  m_Layer: 10
   m_Name: Tail_01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -716,7 +716,7 @@ GameObject:
   - component: {fileID: 4457126279469253150}
   - component: {fileID: 8409457483556513181}
   - component: {fileID: 5131582952028631883}
-  m_Layer: 3
+  m_Layer: 10
   m_Name: DollBody_Baked
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -802,7 +802,7 @@ GameObject:
   - component: {fileID: 1864650888527879791}
   - component: {fileID: 7981613450593080479}
   - component: {fileID: 358500050547569267}
-  m_Layer: 3
+  m_Layer: 10
   m_Name: Tail_01_Baked
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -888,7 +888,7 @@ GameObject:
   - component: {fileID: 4464848164636158177}
   - component: {fileID: 3805868566087695643}
   - component: {fileID: 7502893490320157282}
-  m_Layer: 3
+  m_Layer: 10
   m_Name: Eyes_Baked
   m_TagString: Untagged
   m_Icon: {fileID: 0}
