@@ -1493,9 +1493,15 @@ MonoBehaviour:
   respawnManager: {fileID: 0}
   inputEnabled: 1
   updatePathInterval: 0.5
+  waypointSearchInterval: 2
+  forwardThreshold: 1
   waypointTag: Waypoint
   useRandomWaypoint: 1
   waypointReachedDistance: 2
+  showPathInEditor: 1
+  waypointLineColor: {r: 0, g: 0, b: 1, a: 1}
+  goalLineColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  selectedColor: {r: 1, g: 0, b: 0, a: 1}
 --- !u!1 &5935630077146863053
 GameObject:
   m_ObjectHideFlags: 0
