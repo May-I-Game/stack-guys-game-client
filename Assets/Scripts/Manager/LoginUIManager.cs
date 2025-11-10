@@ -136,29 +136,29 @@ public class LoginUIManager : MonoBehaviour
         Debug.Log("Entering fullscreen (WebGL)");
 #endif
 
-#if UNITY_EDITOR
+        // #if UNITY_EDITOR || UNITY_WEBGL
         ConnectToServer(serverAddress, serverPort, null);
-#else
-        StartCoroutine(FindGameAndConnect());
-#endif
+        // #else
+        //         StartCoroutine(FindGameAndConnect());
+        // #endif
     }
 
-// 연결 실패 시 호출될 함수
-public void OnConnectionFailed(string reason)
-{
-    Debug.LogError($"연결 실패: {reason}");
-
-    // 1. 로딩 UI 비활성화
-    if (loadingPanel != null)
+    // 연결 실패 시 호출될 함수
+    public void OnConnectionFailed(string reason)
     {
-        loadingPanel.SetActive(false);
-    }
-    isConnecting = false;
+        Debug.LogError($"연결 실패: {reason}");
 
-    // 2. 사용자에게 오류 메시지 표시 (UI)
-}
-// ========================== FastAPI 매치 요청 (티켓 기반) ==========================
-private IEnumerator FindGameAndConnect()
+        // 1. 로딩 UI 비활성화
+        if (loadingPanel != null)
+        {
+            loadingPanel.SetActive(false);
+        }
+        isConnecting = false;
+
+        // 2. 사용자에게 오류 메시지 표시 (UI)
+    }
+    // ========================== FastAPI 매치 요청 (티켓 기반) ==========================
+    private IEnumerator FindGameAndConnect()
     {
         isConnecting = true;
         Debug.Log("🎮 Finding game server via FastAPI…");
@@ -223,11 +223,13 @@ private IEnumerator FindGameAndConnect()
                 }
 
                 TicketStatusResponse status = null;
-                try { 
-                    status = JsonUtility.FromJson<TicketStatusResponse>(req.downloadHandler.text); 
+                try
+                {
+                    status = JsonUtility.FromJson<TicketStatusResponse>(req.downloadHandler.text);
                 }
-                catch {
-                    Debug.LogError("Invalid ticket status JSON"); 
+                catch
+                {
+                    Debug.LogError("Invalid ticket status JSON");
                 }
 
                 if (status == null)
@@ -292,7 +294,35 @@ private IEnumerator FindGameAndConnect()
         transport.SetConnectionData(serverAddress, serverPort);
         Debug.Log($"Connecting to {serverAddress}:{serverPort} ...");
 
-        //ConnectionData 구성: [1바이트 캐릭터][이름(UTF8 ≤16B)][0x00][playerSessionId UTF8]
+        // ✅ Transport 상태 확인
+        Debug.Log($"[Transport] Protocol: {transport.Protocol}");
+        Debug.Log($"[Transport] UseWebSockets: {transport.UseWebSockets}");
+
+        //        var nm = NetworkManager.Singleton;
+        //        if (nm == null)
+        //        {
+        //            Debug.LogError("❌ NetworkManager not found!");
+        //            OnConnectionFailed($"NetworkManager not found!");
+        //            isConnecting = false;
+        //            return;
+        //        }
+
+        //        var transport = nm.GetComponent<UnityTransport>();
+        //        if (transport == null)
+        //        {
+        //            Debug.LogError("❌ UnityTransport missing on NetworkManager");
+        //            OnConnectionFailed($"missing on NetworkManager");
+        //            isConnecting = false;
+        //            return;
+        //        }
+
+        //#if UNITY_WEBGL && !UNITY_EDITOR
+        //        transport.UseWebSockets = true;  // WebGL 강제
+        //#endif
+        //        transport.SetConnectionData(serverAddress, serverPort);
+        //        Debug.Log($"Connecting to {serverAddress}:{serverPort} ...");
+
+        // ConnectionData 구성: [1바이트 캐릭터][이름(UTF8 ≤16B)][0x00][playerSessionId UTF8]
         byte[] nameBytes = TruncateUtf8(clientName, MAX_NAME_BYTES);
         byte[] sessionBytes = System.Text.Encoding.UTF8.GetBytes(playerSessionId ?? "");
         byte[] payload = new byte[1 + nameBytes.Length + 1 + sessionBytes.Length];
