@@ -19,8 +19,8 @@ public class LoginUIManager : MonoBehaviour
     [SerializeField] public string serverAddress = "127.0.0.1";
     [SerializeField] ushort serverPort = 7779;
 
-    [SerializeField] private string matchApiUrl = "http://54.180.24.20/api/find-game";   // FastAPI 주소
-    [SerializeField] private string ticketStatusUrl = "http://54.180.24.20/api/ticket-status"; // 티켓 상태 확인
+    [SerializeField] private string matchApiUrl = "https://dyoew1dfdmn0g.cloudfront.net/api/find-game";   // FastAPI 주소
+    [SerializeField] private string ticketStatusUrl = "https://dyoew1dfdmn0g.cloudfront.net/api/ticket-status"; // 티켓 상태 확인
     [SerializeField] private TMP_InputField nameInput;
     [SerializeField] private Camera characterSelectCamera;
     [SerializeField] private GameObject characterSelectPopup;

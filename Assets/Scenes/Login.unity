@@ -3293,8 +3293,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isLocalMod: 1
-  matchApiUrl: http://54.180.24.20/api/find-game
-  ticketStatusUrl: http://54.180.24.20/api/ticket-status
+  matchApiUrl: https://dyoew1dfdmn0g.cloudfront.net/api/find-game
+  ticketStatusUrl: https://dyoew1dfdmn0g.cloudfront.net/api/ticket-status
 --- !u!4 &1233099839
 Transform:
   m_ObjectHideFlags: 0
@@ -4424,8 +4424,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   serverAddress: 172.21.101.82
   serverPort: 7779
-  matchApiUrl: http://54.180.24.20/api/find-game
-  ticketStatusUrl: http://54.180.24.20/api/ticket-status
+  matchApiUrl: https://dyoew1dfdmn0g.cloudfront.net/api/find-game
+  ticketStatusUrl: https://dyoew1dfdmn0g.cloudfront.net/api/ticket-status
   nameInput: {fileID: 912574218}
   characterSelectCamera: {fileID: 142083412}
   characterSelectPopup: {fileID: 1064280942}
@@ -6139,7 +6139,7 @@ MonoBehaviour:
   m_MaxConnectAttempts: 60
   m_DisconnectTimeoutMS: 30000
   ConnectionData:
-    Address: 127.0.0.1
+    Address: 0.0.0.0
     Port: 7779
     ServerListenAddress: 0.0.0.0
   DebugSimulator:
