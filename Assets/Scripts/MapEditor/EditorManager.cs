@@ -11,9 +11,7 @@ public class EditorManager : MonoBehaviour
     public float rotationStep = 45.0f;
 
     [Header("현재 상태")]
-    [Tooltip("UI에서 선택되어 현재 배치할 프리팹")]
     public GameObject currentSelectedPrefab;
-    [Tooltip("미리보기를 위한 반투명 머티리얼")]
     public Material previewMaterial;
 
     private GameObject previewInstance; // 미리보기 오브젝트 인스턴스
@@ -32,11 +30,10 @@ public class EditorManager : MonoBehaviour
             DeleteObject();
         }
 
-        // 2. 배치 로직 (선택된 프리팹이 있을 때만)
+        // 배치 로직
         if (currentSelectedPrefab == null)
         {
-            // 선택된 프리팹이 없으면 미리보기도 끈다
-            if (previewInstance != null)
+            if (previewInstance != null && previewInstance.activeSelf)
                 previewInstance.SetActive(false);
             return;
         }
@@ -192,14 +189,28 @@ public class EditorManager : MonoBehaviour
             c.enabled = false;
         }
 
-        // 반투명 미리보기 머티리얼 적용 (선택 사항)
+        // 반투명 미리보기 머티리얼 적용
         if (previewMaterial != null)
         {
-            Renderer r = previewInstance.GetComponent<Renderer>();
-            if (r != null) r.material = previewMaterial;
+            // GetComponentsInChildren로 모든 자식의 Renderer를 가져옵니다.
+            Renderer[] allRenderers = previewInstance.GetComponentsInChildren<Renderer>();
+
+            // 모든 Renderer를 순회하며 머티리얼을 적용합니다.
+            foreach (Renderer r in allRenderers)
+            {
+                // .material 대신 .sharedMaterial을 사용하면 임시 인스턴스에서 더 효율적입니다.
+                r.sharedMaterial = previewMaterial;
+            }
         }
 
-        previewInstance.SetActive(false); // 일단 숨김
+        // 일단 숨김
+        previewInstance.SetActive(false);
+
+        // 회전 값 초기화
+        currentRotation = Quaternion.identity;
+
+        isFirstHitAfterSelect = true;
+        canPlace = false;
     }
 
     // 오브젝트 상태 갱신
