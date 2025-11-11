@@ -18,23 +18,21 @@ public class SpinY : MonoBehaviour
 
     private void Start()
     {
-        if (NetworkManager.Singleton.IsServer)
-        {
-            Init();
-        }
+        if ((NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer)
+            && EditorManager.Instance == null) return;
+
+        Init();
     }
 
     private void Update()
     {
-        if (NetworkManager.Singleton == null) return;
+        if ((NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer)
+            && EditorManager.Instance == null) return;
 
-        if (NetworkManager.Singleton.IsServer)
-        {
-            if (GameManager.instance.IsGame)
-            {
-                Spin();
-            }
-        }
+        if (!(GameManager.instance && GameManager.instance.IsGame)
+            && !(EditorManager.Instance && EditorManager.Instance.IsGame)) return;
+
+        Spin();
     }
 
     private void Init()

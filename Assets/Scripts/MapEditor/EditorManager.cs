@@ -4,6 +4,12 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
+public enum EditorState
+{
+    Editor,
+    Playing,
+}
+
 public class EditorManager : MonoBehaviour
 {
     [Header("에디터 설정")]
@@ -27,19 +33,44 @@ public class EditorManager : MonoBehaviour
     [Header("팔레트 데이터")]
     public List<PaletteCategory> allCategories = new List<PaletteCategory>();
 
+    [Header("카메라 설정")]
+    public GameObject editorCam;
+    public GameObject playerCam;
+
+    [Header("플레이 모드 설정")]
+    public GameObject playerPref;
+    private Transform spawnPoint;
+    private EditorPlayerController currentPlayer;
+
     private GameObject previewInstance; // 미리보기 오브젝트 인스턴스
     private Vector3 currentGridPosition; // X, Z는 마우스, Y는 Q/E로 조절될 위치
     private Quaternion currentRotation = Quaternion.identity; // 현재 회전 값
     private bool canPlace = false; // 배치 가능한 위치인지 여부
-    private bool isFirstHitAfterSelect = true; // 새 오브젝트 선택 후 첫 레이캐스트인지 확인
 
     private Stack<IEditorAction> undoStack = new Stack<IEditorAction>();
     private Stack<IEditorAction> redoStack = new Stack<IEditorAction>();
 
     private Dictionary<string, GameObject> prefabDatabase = new Dictionary<string, GameObject>();
 
+    private EditorState currentEditorState;
+
+    public static EditorManager Instance;
+
+    public bool IsEdit => currentEditorState == EditorState.Editor;
+    public bool IsGame => currentEditorState == EditorState.Playing;
+
     private void Awake()
     {
+        // 싱글톤 패턴
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+
         // 프리팹 데이터베이스 구축
         foreach (PaletteCategory category in allCategories)
         {
@@ -149,24 +180,17 @@ public class EditorManager : MonoBehaviour
     private void HandlePlacementRaycast()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
+        Plane placementPlane = new Plane(Vector3.up, new Vector3(0, currentGridPosition.y, 0));
 
         // [변경] LayerMask 없이 모든 레이어와 충돌을 감지합니다.
-        if (Physics.Raycast(ray, out hit, 1000f))
+        if (placementPlane.Raycast(ray, out float distance))
         {
             canPlace = true;
-            Vector3 hitPoint = hit.point;
+            Vector3 hitPoint = ray.GetPoint(distance);
 
             // 그리드 스냅 적용 (X, Z만)
             float snappedX = (gridSize > 0) ? Mathf.Round(hitPoint.x / gridSize) * gridSize : hitPoint.x;
             float snappedZ = (gridSize > 0) ? Mathf.Round(hitPoint.z / gridSize) * gridSize : hitPoint.z;
-
-            // 새 오브젝트 선택 후 첫 히트일 경우, Y 높이 초기화
-            if (isFirstHitAfterSelect)
-            {
-                currentGridPosition.y = 0;
-                isFirstHitAfterSelect = false; // 플래그 해제
-            }
 
             // X, Z 값만 갱신 (Y는 Q/E로 설정된 값 유지)
             currentGridPosition.x = snappedX;
@@ -281,14 +305,11 @@ public class EditorManager : MonoBehaviour
 
             // 모든 상태 초기화
             canPlace = false;
-            isFirstHitAfterSelect = true;
-
             return;
         }
 
         // 새 프리팹 선택
         currentSelectedPrefab = prefab;
-
         // 이전 미리보기가 있다면 파괴
         if (previewInstance != null)
         {
@@ -324,8 +345,8 @@ public class EditorManager : MonoBehaviour
 
         // 회전 값 초기화
         currentRotation = Quaternion.identity;
+        currentGridPosition.y = 0;
 
-        isFirstHitAfterSelect = true;
         canPlace = false;
     }
 
@@ -610,5 +631,50 @@ public class EditorManager : MonoBehaviour
         {
             mapNameInput.text = mapName;
         }
+    }
+
+    public void OnPlayButtonPressed()
+    {
+        if (IsEdit)
+        {
+            StartGame();
+        }
+
+        else if (IsGame)
+        {
+            EndGame();
+        }
+    }
+
+    private void StartGame()
+    {
+        CloseSaveLoadPanel();
+        currentEditorState = EditorState.Playing;
+
+        GameObject spawnPointObj = GameObject.FindGameObjectWithTag("SpawnPoint");
+        if (spawnPointObj == null)
+        {
+            Debug.LogError("맵에 'SpawnPoint'가 없습니다! 플레이 테스트를 시작할 수 없습니다.");
+            return;
+        }
+
+        spawnPoint = spawnPointObj.transform;
+        currentPlayer = Instantiate(playerPref, spawnPoint.position, spawnPoint.rotation).GetComponent<EditorPlayerController>();
+        currentPlayer.respawnAreas.Add(spawnPoint);
+
+        editorCam.SetActive(false);
+        playerCam.SetActive(true);
+
+        playerCam.GetComponent<CameraFollow>().target = currentPlayer.transform;
+    }
+
+    private void EndGame()
+    {
+        currentEditorState = EditorState.Editor;
+
+        editorCam.SetActive(true);
+        playerCam.SetActive(false);
+
+        Destroy(currentPlayer.gameObject);
     }
 }
