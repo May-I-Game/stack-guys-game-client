@@ -90,6 +90,9 @@ public class BotController : PlayerController
 
         FindGoal();                                             // Goal 태그 오브젝트 찾기
         RefreshWaypoints();                                     // 초기 웨이포인트 탐색
+
+        // 이벤트 구독 (리스폰 감지용)
+        netIsDeath.OnValueChanged += OnDeathStateChanged;
     }
 
     protected override void FixedUpdate()
@@ -151,6 +154,46 @@ public class BotController : PlayerController
         }
 
         ServerPerformanceProfiler.End("BotController.FixedUpdate");
+    }
+
+    // 리스폰 시 NavMeshAgent 재초기화
+    private void OnDeathStateChanged(bool previousValue, bool newValue)
+    {
+        if (!IsServer) return;
+
+        if (previousValue == true && newValue == false)
+        {
+            // NavMeshAgent 재초기화
+            if (navAgent != null)
+            {
+                // NavMeshAget 완전 리셋 (false, true 해야 리셋됨)
+                navAgent.enabled = false;
+                navAgent.enabled = true;
+
+                // NavMesh에 강제 배치
+                if (!navAgent.isOnNavMesh)
+                {
+                    navAgent.Warp(transform.position);
+                }
+
+                navAgent.ResetPath();
+                navAgent.velocity = Vector3.zero;
+            }
+        }
+
+        // AI 상태 초기화
+        isGoingToWaypoint = false;
+        currentWaypoint = null;
+        currentWaypointIndex.Value = -1;
+        overrideActive = false;
+        overrideWaypoint = null;
+
+        nextPathUpdateTime = 0f;
+        nextWaypointSearchTime = 0f;
+
+        // 목표 재탐색
+        FindGoal();
+        RefreshWaypoints();
     }
 
     // Goal 태그를 가진 오브젝트 찾기 (서버 전용)
@@ -719,6 +762,14 @@ public class BotController : PlayerController
         }
 
         // 봇은 카메라 설정 안함 (플레이어와 다른 점)
+    }
+
+    private void OnDestroy()
+    {
+        if (netIsDeath != null)
+        {
+            netIsDeath.OnValueChanged -= OnDeathStateChanged;
+        }
     }
 }
 
