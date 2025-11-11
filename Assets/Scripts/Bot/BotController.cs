@@ -539,20 +539,6 @@ public class BotController : PlayerController
         }
     }
 
-    // 모든 봇을 특정 웨이포인트로 강제로 전환 (문 스크립트에서 호출용)
-    public static void ForceAllBotsToWaypoint(Transform wp)
-    {
-        if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer) return;
-        if (wp == null) return;
-
-        // FindObjectsInactive.Exclude - 비활성 오브젝트 제외, 배열 정렬 안함
-        var bots = Object.FindObjectsByType<BotController>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-        foreach (var bot in bots)
-        {
-            bot.ForceWaypoint(wp);
-        }
-    }
-
     // 문 열림 시 호출되어 웨이포인트를 전역 우선순위 목록에 추가
     public static void RegisterOpenedDoorWaypoint(Transform wp)
     {
@@ -566,12 +552,7 @@ public class BotController : PlayerController
     // Gizmos 관련
     /////////////////////////////////////////
 
-    //Goal 태그 재검색 (서버 참조 없을 때)
-    private Transform FindGoalForGizmo()
-    {
-        var goalObj = GameObject.FindGameObjectWithTag("Goal");
-        return goalObj ? goalObj.transform : null;
-    }
+    // Goal 태그 재검색 (서버 참조 없을 때)
 
     // 웨이포인트 배열에서 인덱스 찾기 (기즈모 동기화용)
     private int GetWaypointIndex(Transform wp)
@@ -696,6 +677,12 @@ public class BotController : PlayerController
         }
 
         return best;
+    }
+
+    private Transform FindGoalForGizmo()
+    {
+        var goalObj = GameObject.FindGameObjectWithTag("Goal");
+        return goalObj ? goalObj.transform : null;
     }
 
     // 봇이 선택되었을 때만 표시되는 Gizmos (상세 정보)
