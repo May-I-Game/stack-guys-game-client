@@ -22,8 +22,7 @@ public class BotController : PlayerController
     [SerializeField] private Color goalLineColor = Color.yellow;        // 목표 직선 색상
     [SerializeField] private Color selectedColor = Color.red;           // 봇을 선택했을때 직선 색상
 
-    // 도달 가능한 웨이포인트만 사용하도록 강제
-    [SerializeField] private bool requireReachableWaypoint = true;
+    [SerializeField] private bool requireReachableWaypoint = true;      // 도달 가능한 웨이포인트만 사용하도록 강제
 
     private NavMeshAgent navAgent;
     private NavMeshPath pathBuffer;                                     // 경로 검사용 버퍼
@@ -46,7 +45,7 @@ public class BotController : PlayerController
     // 전역 우선순위 - 문이 열릴 때 등록되는 웨이포인트들
     private static readonly System.Collections.Generic.List<Transform> openedDoorWaypoints =
         new System.Collections.Generic.List<Transform>();
-    
+
     // 통과한 문 기록
     private System.Collections.Generic.List<Transform> passedDoorWaypoints = new();
 
@@ -61,6 +60,7 @@ public class BotController : PlayerController
     {
         base.Start();
 
+        // 경로 검증용 버퍼 사전 할당
         navAgent = GetComponent<NavMeshAgent>();
         pathBuffer = new NavMeshPath();
 
@@ -74,6 +74,7 @@ public class BotController : PlayerController
             return;
         }
 
+        // 서버 전용 NavMeshAgent 설정
         if (navAgent != null)
         {
             navAgent.enabled = true;
@@ -87,12 +88,13 @@ public class BotController : PlayerController
             navAgent.updateRotation = false;
         }
 
-        FindGoal();
+        FindGoal();                                             // Goal 태그 오브젝트 찾기
         RefreshWaypoints();                                     // 초기 웨이포인트 탐색
     }
 
     protected override void FixedUpdate()
     {
+        // 클라이언트는 물리 체크 안함 & 죽은 상태
         if (!IsServer) return;
         if (netIsDeath.Value) return;
 
@@ -151,6 +153,7 @@ public class BotController : PlayerController
         ServerPerformanceProfiler.End("BotController.FixedUpdate");
     }
 
+    // Goal 태그를 가진 오브젝트 찾기 (서버 전용)
     private void FindGoal()
     {
         if (!IsServer) return;
@@ -163,7 +166,7 @@ public class BotController : PlayerController
         }
     }
 
-    // 웨이포인트 재탐색 후 서버가 배열을 관리하고 랜덤 선택
+    // 웨이포인트 재탐색 및 배열 갱신 (서버 전용)
     private void RefreshWaypoints()
     {
         if (!IsServer) return;
@@ -176,7 +179,7 @@ public class BotController : PlayerController
             for (int i = 0; i < waypointObjects.Length; i++)
                 waypoints[i] = waypointObjects[i].transform;
 
-            // 처음 진입 시 앞쪽 웨이포인터를 하나 잡아서 시작
+            // 첫 웨이포인트 선택 (앞쪽 방향 우선)
             TrySelectForwardWaypoint();
         }
         else
@@ -302,6 +305,7 @@ public class BotController : PlayerController
         return true;
     }
 
+    // AI 로직 - 우선순위 : 강제 웨이포인트 > 열린 문 > 랜덤 웨이포인트 > Goal
     private void UpdateBotAI()
     {
         // 강제 웨이포인트 모드 - 가장 먼저 처리하고 일반 로직은 중단
@@ -731,8 +735,7 @@ public class BotController : PlayerController
     }
 }
 
-// 우선순위 요약:
-// - 열린 문 우선: 등록된 순서(FIFO)대로 "내 앞 + 도달 가능"한 문을 우선 방문
-// - 리스폰 후에도 동일한 순서로 다시 방문
-// - 열린 문이 없을 때만 랜덤 앞쪽 웨이포인트 진행
-// - 이동은 PathComplete일 때만 수행
+// 열린 문 우선 = 등록된 순서대로 내 앞 + 도달 가능한 문을 우선 방문
+// 리스폰 후에도 동일한 순서로 다시 방문
+// 열린 문이 없을 때만 랜덤 앞쪽 웨이포인트 진행
+// 이동은 PathComplete일 때만 수행 (골 제외)
