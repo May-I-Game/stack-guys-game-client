@@ -28,6 +28,7 @@ public class GameManager : NetworkBehaviour
     [SerializeField] private TMP_Text thirdPlaceText;
     [SerializeField] private Button mainButton;
     [SerializeField] private TMP_Text QualifiedText;
+    [SerializeField] private GameObject Mobile;
     [SerializeField] private GameObject FPSCount;
     [SerializeField] private GameObject PingCount;
     [SerializeField] private GameObject LobbyUI;
@@ -390,25 +391,28 @@ public class GameManager : NetworkBehaviour
     {
         //카운트 다운 내리기
         gameEndcountdown.gameObject.SetActive(false);
-        // 결과 화면 표시
 
+        if (Mobile != null)
+        {
+            Mobile.SetActive(false);
+        }
         if (FPSCount != null)
         {
-            FPSCount.gameObject.SetActive(false);
+            FPSCount.SetActive(false);
         }
         if (PingCount != null)
         {
-            PingCount.gameObject.SetActive(false);
+            PingCount.SetActive(false);
         }
         if (LobbyUI != null)
         {
-            LobbyUI.gameObject.SetActive(false);
+            LobbyUI.SetActive(false);
         }
         if (gameUI != null)
         {
-            gameUI.gameObject.SetActive(false);
+            gameUI.SetActive(false);
         }
-
+        // 결과 화면 표시
         if (resultPanel != null)
         {
             resultPanel.SetActive(true);
@@ -468,27 +472,27 @@ public class GameManager : NetworkBehaviour
         // 1등
         if (rankings.Count > 0 && firstPlaceText != null)
         {
-            firstPlaceText.text = $"1.: {rankings[0]}";
+            firstPlaceText.text = $"{rankings[0]}";
         }
 
         // 2등
         if (rankings.Count > 1 && secondPlaceText != null)
         {
-            secondPlaceText.text = $"2.: {rankings[1]}";
+            secondPlaceText.text = $"{rankings[1]}";
         }
         else if (secondPlaceText != null)
         {
-            secondPlaceText.text = "2.: -";
+            secondPlaceText.text = "-";
         }
 
         // 3등
         if (rankings.Count > 2 && thirdPlaceText != null)
         {
-            thirdPlaceText.text = $"3.: {rankings[2]}";
+            thirdPlaceText.text = $"{rankings[2]}";
         }
         else if (thirdPlaceText != null)
         {
-            thirdPlaceText.text = "3.: -";
+            thirdPlaceText.text = "-";
         }
     }
 
@@ -518,6 +522,27 @@ public class GameManager : NetworkBehaviour
             yield return null;
         }
 
+
+        if (Mobile != null)
+        {
+            Mobile.SetActive(false);
+        }
+        if (FPSCount != null)
+        {
+            FPSCount.SetActive(false);
+        }
+        if (PingCount != null)
+        {
+            PingCount.SetActive(false);
+        }
+        if (LobbyUI != null)
+        {
+            LobbyUI.SetActive(false);
+        }
+        if (gameUI != null)
+        {
+            gameUI.SetActive(false);
+        }
         //timeline재생
         timeline.Play();
         //트랙 bgm on
@@ -554,6 +579,26 @@ public class GameManager : NetworkBehaviour
             localPlayer.SetInputEnabled(true);
         }
 
+        if (Mobile != null)
+        {
+            Mobile.SetActive(true);
+        }
+        if (FPSCount != null)
+        {
+            FPSCount.SetActive(true);
+        }
+        if (PingCount != null)
+        {
+            PingCount.SetActive(true);
+        }
+        if (LobbyUI != null)
+        {
+            LobbyUI.SetActive(true);
+        }
+        if (gameUI != null)
+        {
+            gameUI.SetActive(true);
+        }
         // 시네마틱 끝나고 봇 입력 활성화
         if (IsServer && BotManager.Singleton != null)
         {

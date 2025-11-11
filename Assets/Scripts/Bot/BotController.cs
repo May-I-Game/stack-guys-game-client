@@ -90,6 +90,9 @@ public class BotController : PlayerController
 
         FindGoal();                                             // Goal 태그 오브젝트 찾기
         RefreshWaypoints();                                     // 초기 웨이포인트 탐색
+
+        // 이벤트 구독 (리스폰 감지용)
+        netIsDeath.OnValueChanged += OnDeathStateChanged;
     }
 
     protected override void FixedUpdate()
@@ -151,6 +154,46 @@ public class BotController : PlayerController
         }
 
         ServerPerformanceProfiler.End("BotController.FixedUpdate");
+    }
+
+    // 리스폰 시 NavMeshAgent 재초기화
+    private void OnDeathStateChanged(bool previousValue, bool newValue)
+    {
+        if (!IsServer) return;
+
+        if (previousValue == true && newValue == false)
+        {
+            // NavMeshAgent 재초기화
+            if (navAgent != null)
+            {
+                // NavMeshAget 완전 리셋 (false, true 해야 리셋됨)
+                navAgent.enabled = false;
+                navAgent.enabled = true;
+
+                // NavMesh에 강제 배치
+                if (!navAgent.isOnNavMesh)
+                {
+                    navAgent.Warp(transform.position);
+                }
+
+                navAgent.ResetPath();
+                navAgent.velocity = Vector3.zero;
+            }
+        }
+
+        // AI 상태 초기화
+        isGoingToWaypoint = false;
+        currentWaypoint = null;
+        currentWaypointIndex.Value = -1;
+        overrideActive = false;
+        overrideWaypoint = null;
+
+        nextPathUpdateTime = 0f;
+        nextWaypointSearchTime = 0f;
+
+        // 목표 재탐색
+        FindGoal();
+        RefreshWaypoints();
     }
 
     // Goal 태그를 가진 오브젝트 찾기 (서버 전용)
@@ -539,20 +582,6 @@ public class BotController : PlayerController
         }
     }
 
-    // 모든 봇을 특정 웨이포인트로 강제로 전환 (문 스크립트에서 호출용)
-    public static void ForceAllBotsToWaypoint(Transform wp)
-    {
-        if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer) return;
-        if (wp == null) return;
-
-        // FindObjectsInactive.Exclude - 비활성 오브젝트 제외, 배열 정렬 안함
-        var bots = Object.FindObjectsByType<BotController>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-        foreach (var bot in bots)
-        {
-            bot.ForceWaypoint(wp);
-        }
-    }
-
     // 문 열림 시 호출되어 웨이포인트를 전역 우선순위 목록에 추가
     public static void RegisterOpenedDoorWaypoint(Transform wp)
     {
@@ -566,12 +595,7 @@ public class BotController : PlayerController
     // Gizmos 관련
     /////////////////////////////////////////
 
-    //Goal 태그 재검색 (서버 참조 없을 때)
-    private Transform FindGoalForGizmo()
-    {
-        var goalObj = GameObject.FindGameObjectWithTag("Goal");
-        return goalObj ? goalObj.transform : null;
-    }
+    // Goal 태그 재검색 (서버 참조 없을 때)
 
     // 웨이포인트 배열에서 인덱스 찾기 (기즈모 동기화용)
     private int GetWaypointIndex(Transform wp)
@@ -698,6 +722,12 @@ public class BotController : PlayerController
         return best;
     }
 
+    private Transform FindGoalForGizmo()
+    {
+        var goalObj = GameObject.FindGameObjectWithTag("Goal");
+        return goalObj ? goalObj.transform : null;
+    }
+
     // 봇이 선택되었을 때만 표시되는 Gizmos (상세 정보)
     private void OnDrawGizmosSelected()
     {
@@ -732,6 +762,14 @@ public class BotController : PlayerController
         }
 
         // 봇은 카메라 설정 안함 (플레이어와 다른 점)
+    }
+
+    private void OnDestroy()
+    {
+        if (netIsDeath != null)
+        {
+            netIsDeath.OnValueChanged -= OnDeathStateChanged;
+        }
     }
 }
 

@@ -1,5 +1,6 @@
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class PlayerInputHandler : NetworkBehaviour
 {
@@ -24,17 +25,27 @@ public class PlayerInputHandler : NetworkBehaviour
         {
             joystick = MobileInputManager.Instance.joystick;
 
-            //버튼 이벤트 연결
-            if (MobileInputManager.Instance.jumpButton != null)
-            {
-                MobileInputManager.Instance.jumpButton.onClick.AddListener(OnJumpButtonPressed);
-            }
-            if (MobileInputManager.Instance.grabButton != null)
-            {
-                MobileInputManager.Instance.grabButton.onClick.AddListener(OnGrabButtonPressed);
-            }
-
+            //버튼 이벤트 연결 - PointerDown으로 즉시 반응
+            SetupButtonPointerDown(MobileInputManager.Instance.jumpButton, OnJumpButtonPressed);
+            SetupButtonPointerDown(MobileInputManager.Instance.grabButton, OnGrabButtonPressed);
         }
+    }
+
+    // PointerDown 이벤트 설정 (버튼을 누르는 순간 즉시 반응)
+    private void SetupButtonPointerDown(UnityEngine.UI.Button button, UnityEngine.Events.UnityAction callback)
+    {
+        if (button == null) return;
+
+        EventTrigger trigger = button.gameObject.GetComponent<EventTrigger>();
+        if (trigger == null)
+        {
+            trigger = button.gameObject.AddComponent<EventTrigger>();
+        }
+
+        EventTrigger.Entry entry = new EventTrigger.Entry();
+        entry.eventID = EventTriggerType.PointerDown;
+        entry.callback.AddListener((data) => { callback(); });
+        trigger.triggers.Add(entry);
     }
 
     public override void OnDestroy()
@@ -43,19 +54,8 @@ public class PlayerInputHandler : NetworkBehaviour
 
         if (!IsOwner) return;
 
-        // 파괴될 때 이벤트 해제 (메모리 누수 방지)
-        if (MobileInputManager.Instance != null)
-        {
-            if (MobileInputManager.Instance.jumpButton != null)
-            {
-                MobileInputManager.Instance.jumpButton.onClick.RemoveListener(OnJumpButtonPressed);
-            }
-
-            if (MobileInputManager.Instance.grabButton != null)
-            {
-                MobileInputManager.Instance.grabButton.onClick.RemoveListener(OnGrabButtonPressed);
-            }
-        }
+        // EventTrigger는 GameObject에 붙어있으므로 버튼이 파괴될 때 자동으로 정리됨
+        // 별도의 수동 해제 불필요
     }
 
     private void Update()
