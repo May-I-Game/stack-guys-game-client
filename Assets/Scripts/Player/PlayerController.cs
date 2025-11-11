@@ -48,6 +48,8 @@ public class PlayerController : NetworkBehaviour
     private Vector2 lastSentInput = Vector2.zero;  // 실제로 서버에 전송한 마지막 입력
     private float lastInputSendTime = 0f;  // 마지막 입력 전송 시간
 
+    // GC 최적화: WaitForSeconds 캐싱
+    private WaitForSeconds botRespawnWait;
     private Vector3 lastHeldObjectPosition = Vector3.zero;  // 마지막 잡은 오브젝트 위치
     protected bool isJumpQueued;
     protected bool isGrabQueued;
@@ -107,6 +109,7 @@ public class PlayerController : NetworkBehaviour
             Camera.main.GetComponent<CameraFollow>().target = this.transform;
         }
     }
+
     public void EnablePhysics(bool on)
     {
         if (rb)
@@ -131,6 +134,9 @@ public class PlayerController : NetworkBehaviour
         inputHandler = GetComponent<PlayerInputHandler>();
         nt = GetComponent<NetworkTransform>();
         respawnManager = FindFirstObjectByType<RespawnManager>();
+
+        // GC 최적화: WaitForSeconds 사전 생성
+        botRespawnWait = new WaitForSeconds(2.267f);
 
         // Animator가 설정되지 않았다면 자동으로 찾기
         animator = animator != null ? animator : GetComponent<Animator>();
@@ -297,6 +303,9 @@ public class PlayerController : NetworkBehaviour
     {
         // Owner만 실행 (다른 클라이언트는 무시)
         if (!IsOwner) return;
+
+        // 봇은 이미 BotRespawnDelay()로 리스폰하므로 무시
+        if (this is BotController) return;
 
         // ServerRpc 호출 (시체 생성 + 텔레포트)
         RespawnPlayerServerRpc();
@@ -655,6 +664,9 @@ public class PlayerController : NetworkBehaviour
 
     public void ReleaseGrab()
     {
+        // 서버에서만 실행
+        if (!IsServer) return;
+
         // 내가 무언가를 들고 있었다면
         if (isHolding && holdingObject != null)
         {
@@ -667,6 +679,8 @@ public class PlayerController : NetworkBehaviour
                 {
                     heldPlayer.rb.isKinematic = false;
                 }
+                // 레이어 복구
+                heldPlayer.gameObject.layer = heldObjectOriginLayer;
             }
 
             else
@@ -682,22 +696,31 @@ public class PlayerController : NetworkBehaviour
                     {
                         targetRb.isKinematic = false;
                     }
+                    // 레이어 복구
+                    grabbable.gameObject.layer = heldObjectOriginLayer;
                 }
             }
 
             holdingObject = null;
         }
 
-        // 내가 잡혀있었다면
+        // 내가 잡혀있었다면 - 나 자신의 물리 복구
         if (netIsGrabbed.Value)
         {
-            if (!NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(grabberId, out NetworkObject grabberObject))
+            // 물리 재활성화
+            if (rb != null)
+            {
+                rb.isKinematic = false;
+            }
+
+            // 잡고 있던 사람의 상태 업데이트
+            if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(grabberId, out NetworkObject grabberObject))
             {
                 PlayerController grabbedBy = grabberObject.GetComponent<PlayerController>();
                 if (grabbedBy != null)
                 {
                     grabbedBy.holdingObject = null;
-                    grabbedBy.heldPlayerCache = null;  // 캐시 클리어
+                    grabbedBy.heldPlayerCache = null;
                     grabbedBy.isHolding = false;
                     grabbedBy.holdingTargetId = 0;
                 }
@@ -708,7 +731,7 @@ public class PlayerController : NetworkBehaviour
         holdingTargetId = 0;
         netIsGrabbed.Value = false;
         grabberId = 0;
-        heldPlayerCache = null;  // 캐시 클리어
+        heldPlayerCache = null;
         escapeJumpCount = 0;
     }
 
@@ -727,7 +750,18 @@ public class PlayerController : NetworkBehaviour
 
         SetTriggerClientRpc("Death");
 
-        // 애니메이션 이벤트에서 RespawnPlayer()가 호출됨
+        // 봇은 서버가 Owner이므로 직접 리스폰 타이머 시작
+        if (IsServer && this is BotController)
+        {
+            StartCoroutine(BotRespawnDelay());
+        }
+    }
+
+    // 봇 전용 리스폰 타이머 (애니메이션 길이 2.3초)
+    private System.Collections.IEnumerator BotRespawnDelay()
+    {
+        yield return botRespawnWait;  // GC 최적화: 캐싱된 WaitForSeconds 사용
+        DoRespawnTeleport();
     }
 
     // 시체 생성 + 텔레포트
