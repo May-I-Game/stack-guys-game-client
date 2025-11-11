@@ -13,13 +13,14 @@ public class EditorManager : MonoBehaviour
     [Header("현재 상태")]
     [Tooltip("UI에서 선택되어 현재 배치할 프리팹")]
     public GameObject currentSelectedPrefab;
-
     [Tooltip("미리보기를 위한 반투명 머티리얼")]
     public Material previewMaterial;
 
     private GameObject previewInstance; // 미리보기 오브젝트 인스턴스
-    private Vector3 currentGridPosition; // 현재 계산된 그리드 위치
+    private Vector3 currentGridPosition; // X, Z는 마우스, Y는 Q/E로 조절될 위치
+    private Quaternion currentRotation = Quaternion.identity; // 현재 회전 값
     private bool canPlace = false; // 배치 가능한 위치인지 여부
+    private bool isFirstHitAfterSelect = true; // 새 오브젝트 선택 후 첫 레이캐스트인지 확인
 
     // --- 핵심 로직 ---
 
@@ -69,7 +70,6 @@ public class EditorManager : MonoBehaviour
             PlaceObject();
         }
     }
-
 
     // 레이캐스트로 위치조정
     private void HandlePlacementRaycast()
@@ -125,14 +125,8 @@ public class EditorManager : MonoBehaviour
     {
         if (!canPlace) return;
 
-        // 실제 프리팹을 인스턴스화합니다.
-        GameObject newObj = Instantiate(currentSelectedPrefab, currentGridPosition, Quaternion.identity);
 
-        // [중요] 나중에 저장/로드를 위해 이 오브젝트를 식별할 태그를 지정합니다.
-        newObj.tag = "EditableObject";
-
-        // objectId를 저장하기 위해 간단한 컴포넌트를 붙여둘 수 있습니다.
-        // 예: newObj.AddComponent<ObjectIdentifier>().id = currentSelectedPrefab.name;
+        isFirstHitAfterSelect = true;
     }
 
     // 삭제
@@ -141,23 +135,45 @@ public class EditorManager : MonoBehaviour
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
 
-        // 삭제는 모든 레이어를 대상으로 하되, 태그로 필터링합니다.
         if (Physics.Raycast(ray, out hit, 1000f))
         {
-            // "EditableObject" 태그가 있는 오브젝트만 삭제
-            if (hit.collider.CompareTag("EditableObject"))
+            // "MapObjectInfo" 컴포넌트가 있고, 현재 활성화된(삭제되지 않은) 오브젝트만 삭제
+            MapObjectInfo info = hit.collider.GetComponent<MapObjectInfo>();
+
+            if (info != null && hit.collider.gameObject.activeSelf)
             {
                 Destroy(hit.collider.gameObject);
             }
         }
     }
 
+    // --- [수정] 액션 등록 및 실행 ---
 
     // --- 유틸리티 및 UI 연동 ---
 
     // 프리팹 선택
     public void SelectObjectToPlace(GameObject prefab)
     {
+        // 토글 기능
+        if (currentSelectedPrefab == prefab)
+        {
+            // 이미 선택된 프리팹이므로, 선택 해제
+            currentSelectedPrefab = null;
+
+            // 미리보기가 남아있으면 파괴
+            if (previewInstance != null)
+            {
+                Destroy(previewInstance);
+            }
+
+            // 모든 상태 초기화
+            canPlace = false;
+            isFirstHitAfterSelect = true;
+
+            return;
+        }
+
+        // 새 프리팹 선택
         currentSelectedPrefab = prefab;
 
         // 이전 미리보기가 있다면 파괴
@@ -186,7 +202,8 @@ public class EditorManager : MonoBehaviour
         previewInstance.SetActive(false); // 일단 숨김
     }
 
-    void UpdatePreviewPosition()
+    // 오브젝트 상태 갱신
+    private void UpdatePreviewPosition()
     {
         if (previewInstance == null) return;
 
@@ -194,7 +211,7 @@ public class EditorManager : MonoBehaviour
         {
             previewInstance.SetActive(true);
             previewInstance.transform.position = currentGridPosition;
-            // TODO: Q, E 키 등으로 회전 로직
+            previewInstance.transform.rotation = currentRotation;
         }
         else
         {
@@ -202,8 +219,6 @@ public class EditorManager : MonoBehaviour
         }
     }
 
-    // 그리드 보정
-    Vector3 SnapToGrid(Vector3 position)
     {
         if (gridSize <= 0) return position; // 그리드 0이면 스냅 안함
 
