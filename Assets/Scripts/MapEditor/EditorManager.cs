@@ -24,7 +24,28 @@ public class EditorManager : MonoBehaviour
 
     private void Update()
     {
-        // 1. 삭제 로직 (마우스 우클릭)
+        if (EventSystem.current.IsPointerOverGameObject())
+        {
+            // UI 위에 마우스가 있으니, 미리보기를 숨깁니다.
+            if (previewInstance != null && previewInstance.activeSelf)
+            {
+                previewInstance.SetActive(false);
+            }
+            return;
+        }
+
+        // Undo/Redo (T, Y 키)
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            PerformUndo();
+        }
+        if (Input.GetKeyDown(KeyCode.Y))
+        {
+            PerformRedo();
+        }
+
+        // 우클릭 삭제
+        // 프리팹이 선택되지 않아도 삭제는 가능해야 하므로, 삭제 로직은 위에 있음
         if (Input.GetMouseButtonDown(1))
         {
             DeleteObject();
@@ -122,6 +143,9 @@ public class EditorManager : MonoBehaviour
     {
         if (!canPlace) return;
 
+        // 직접 Instantiate 하는 대신, PlaceObjectAction을 생성하고 등록
+        IEditorAction action = new PlaceObjectAction(currentSelectedPrefab, currentGridPosition, currentRotation);
+        RegisterAction(action);
 
         isFirstHitAfterSelect = true;
     }
@@ -139,14 +163,53 @@ public class EditorManager : MonoBehaviour
 
             if (info != null && hit.collider.gameObject.activeSelf)
             {
-                Destroy(hit.collider.gameObject);
+                // 직접 Destroy 하는 대신, DeleteObjectAction을 생성하고 등록
+                IEditorAction action = new DeleteObjectAction(hit.collider.gameObject);
+                RegisterAction(action);
             }
         }
     }
 
     // --- [수정] 액션 등록 및 실행 ---
 
-    // --- 유틸리티 및 UI 연동 ---
+    // 새로운 행동을 등록하고 실행합니다.
+    private void RegisterAction(IEditorAction action)
+    {
+        // 1. 행동을 즉시 실행
+        action.Execute();
+        // 2. Undo 스택에 추가
+        undoStack.Push(action);
+        // 3. 새 행동을 했으므로 Redo 스택은 비워야 함
+        foreach (IEditorAction oldAction in redoStack)
+        {
+            oldAction.Cleanup();
+        }
+        redoStack.Clear();
+    }
+
+    // 마지막 행동을 취소 (Undo)
+    private void PerformUndo()
+    {
+        if (undoStack.Count > 0)
+        {
+            IEditorAction action = undoStack.Pop();
+            action.Undo();
+            redoStack.Push(action);
+            Debug.Log("Action Undone.");
+        }
+    }
+
+    // 취소했던 행동을 다시 실행 (Redo)
+    private void PerformRedo()
+    {
+        if (redoStack.Count > 0)
+        {
+            IEditorAction action = redoStack.Pop();
+            action.Execute(); // 행동을 다시 실행
+            undoStack.Push(action);
+            Debug.Log("Action Redone.");
+        }
+    }
 
     // 프리팹 선택
     public void SelectObjectToPlace(GameObject prefab)
