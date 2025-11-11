@@ -25,7 +25,7 @@ TagManager:
   - Player
   - HeldObject
   - Wall
-  - 
+  - EditorOnly
   - DeadBody
   - 
   - 
