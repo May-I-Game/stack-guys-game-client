@@ -14,13 +14,30 @@ public class EditorManager : MonoBehaviour
     public GameObject currentSelectedPrefab;
     public Material previewMaterial;
 
+    [Header("팔레트 UI 설정")]
+    public Transform paletteContentArea;
+    public GameObject paletteButtonPrefab;
+
+    [Header("팔레트 데이터")]
+    public List<PaletteCategory> allCategories = new List<PaletteCategory>();
+
     private GameObject previewInstance; // 미리보기 오브젝트 인스턴스
     private Vector3 currentGridPosition; // X, Z는 마우스, Y는 Q/E로 조절될 위치
     private Quaternion currentRotation = Quaternion.identity; // 현재 회전 값
     private bool canPlace = false; // 배치 가능한 위치인지 여부
     private bool isFirstHitAfterSelect = true; // 새 오브젝트 선택 후 첫 레이캐스트인지 확인
 
-    // --- 핵심 로직 ---
+    private Stack<IEditorAction> undoStack = new Stack<IEditorAction>();
+    private Stack<IEditorAction> redoStack = new Stack<IEditorAction>();
+
+    private void Start()
+    {
+        // 씬이 시작되면 기본으로 0번째 카테고리를 보여줍니다.
+        if (allCategories.Count > 0)
+        {
+            ShowCategory(0);
+        }
+    }
 
     private void Update()
     {
@@ -293,10 +310,52 @@ public class EditorManager : MonoBehaviour
         }
     }
 
+    // 지정된 인덱스의 카테고리를 상단 팔레트에 표시
+    public void ShowCategory(int categoryIndex)
     {
-        if (gridSize <= 0) return position; // 그리드 0이면 스냅 안함
+        if (categoryIndex < 0 || categoryIndex >= allCategories.Count)
+        {
+            Debug.LogError("유효하지 않은 카테고리 인덱스입니다: " + categoryIndex);
+            return;
+        }
 
+        // 기존 팔레트 버튼들을 모두 삭제합니다.
+        foreach (Transform child in paletteContentArea)
+        {
+            Destroy(child.gameObject);
+        }
 
-        return new Vector3(x, y, z);
+        // 선택된 카테고리의 아이템 리스트를 가져옵니다.
+        PaletteCategory selectedCategory = allCategories[categoryIndex];
+
+        // 리스트를 순회하며 새 버튼을 생성합니다.
+        foreach (PaletteItem item in selectedCategory.items)
+        {
+            // paletteButtonPrefab을 Content 영역 자식으로 Instantiate
+            GameObject newButtonGO = Instantiate(paletteButtonPrefab, paletteContentArea);
+
+            // 버튼 아이콘 설정
+            Image buttonIcon = newButtonGO.transform.Find("Icon").GetComponent<Image>(); // 프리팹 구조에 맞게 "Icon" 이름 수정
+            if (buttonIcon != null)
+            {
+                buttonIcon.sprite = item.icon;
+            }
+
+            // 생성된 버튼에 OnClick 이벤트 추가
+            Button buttonComponent = newButtonGO.GetComponent<Button>();
+
+            // 루프 안에서 람다(Lambda)를 사용할 때 변수 문제를 피하기 위해
+            // 프리팹을 로컬 변수로 복사합니다.
+            GameObject prefabToPlace = item.prefab;
+
+            buttonComponent.onClick.AddListener(() =>
+            {
+                // 이 버튼이 눌리면 EditorManager의 SelectObjectToPlace를 호출
+                SelectObjectToPlace(prefabToPlace);
+            });
+        }
+
+        // (선택 사항) 팔레트가 바뀌었으니, 현재 선택된 프리팹을 초기화합니다.
+        SelectObjectToPlace(null); // 토글 기능이 null을 처리해 줌
     }
 }
