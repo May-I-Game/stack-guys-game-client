@@ -1,10 +1,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// 웨이포인트 및 골 지점을 관리하는 싱글톤 매니저
+// 웨이포인트 및 골 지점을 관리하는 싱글톤 매니저, 게임 시작 시 FindGameObjectsWithTag() 1회 사용
 public class WaypointManager : MonoBehaviour
 {
+    // 싱글톤 인스턴스
     private static WaypointManager _instance;
+
+    // 싱글톤 인스턴스 접근자, 인스턴스가 없으면 씬에서 찾거나 생성
     public static WaypointManager Instance
     {
         get
@@ -13,6 +16,7 @@ public class WaypointManager : MonoBehaviour
             {
                 _instance = FindFirstObjectByType<WaypointManager>();
 
+                // 씬에도 없으면 자동 생성
                 if (_instance == null)
                 {
                     GameObject go = new GameObject("WaypointManager");
@@ -43,7 +47,7 @@ public class WaypointManager : MonoBehaviour
         _instance = this;
 
         // 게임 씬에서만 초기화
-        string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().ToString();
+        string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
         if (sceneName == "GameScene")
         {
             InitializeCache();
@@ -72,15 +76,6 @@ public class WaypointManager : MonoBehaviour
         isInitialized = true;
     }
 
-    // 캐싱된 웨이포인트 배열 반환
-    public Transform[] GetWaypoints()
-    {
-        if (!isInitialized)
-            InitializeCache();
-
-        return waypointList.ToArray();
-    }
-
     // 캐싱된 Goal Transform 반환
     public Transform GetGoal()
     {
@@ -90,12 +85,22 @@ public class WaypointManager : MonoBehaviour
         return goalTransform;
     }
 
-    public List<Transform> GetWaypointList()
+    // 캐싱된 웨이포인트 배열 반환
+    public Transform[] GetWaypointArray()
     {
         if (!isInitialized)
             InitializeCache();
 
-        return waypointList;
+        return waypointList.ToArray();
+    }
+
+    // 웨이포인트 개수 반환
+    public int GetWaypointCount()
+    {
+        if (!isInitialized)
+            InitializeCache();
+
+        return waypointList.Count;
     }
 
     // 캐시 강제 갱신
