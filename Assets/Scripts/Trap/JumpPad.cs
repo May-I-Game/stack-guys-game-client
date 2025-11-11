@@ -23,6 +23,10 @@ public class JumpPad : NetworkBehaviour
     // 플레이어 충돌 감지 및 점프 실행
     private void OnTriggerEnter(Collider other)
     {
+        // 서버만 물리 처리 (클라이언트는 Trigger 감지만, 물리는 서버 권위)
+        if (!IsServer)
+            return;
+
         if (Time.time - lastLaunchTime < cooldownTime)
             return;
 
@@ -33,35 +37,9 @@ public class JumpPad : NetworkBehaviour
         if (rb == null)
             return;
 
-        NetworkObject networkObject = other.GetComponent<NetworkObject>();
-        if (networkObject != null)
-        {
-            if (!networkObject.IsOwner)
-                return;
-
-            if (IsClient)
-            {
-                RequestLaunchServerRpc(networkObject.NetworkObjectId);
-            }
-
-            LaunchPlayer(rb);
-
-            lastLaunchTime = Time.time;
-        }
-    }
-
-    // 서버에 점프 요청 전송
-    [ServerRpc(RequireOwnership = false)]
-    private void RequestLaunchServerRpc(ulong networkObjectId)
-    {
-        if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(networkObjectId, out NetworkObject networkObject))
-        {
-            Rigidbody rb = networkObject.GetComponent<Rigidbody>();
-            if (rb != null)
-            {
-                LaunchPlayer(rb);
-            }
-        }
+        // 서버에서만 물리 적용
+        LaunchPlayer(rb);
+        lastLaunchTime = Time.time;
     }
 
     // 플레이어에게 발사 힘 적용

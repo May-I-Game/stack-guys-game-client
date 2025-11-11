@@ -9,12 +9,12 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7412646392294722038}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: SpikeTilePrefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 2147483647
+  m_StaticEditorFlags: 0
   m_IsActive: 1
 --- !u!4 &7412646392294722038
 Transform:
@@ -48,12 +48,16 @@ PrefabInstance:
       value: Props_2 (28)
       objectReference: {fileID: 0}
     - target: {fileID: 1342774651384427630, guid: bd95c52d6828fdf42b8081bed36bc037, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1342774651384427630, guid: bd95c52d6828fdf42b8081bed36bc037, type: 3}
       propertyPath: m_TagString
       value: Death
       objectReference: {fileID: 0}
     - target: {fileID: 1342774651384427630, guid: bd95c52d6828fdf42b8081bed36bc037, type: 3}
       propertyPath: m_StaticEditorFlags
-      value: 2147483647
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6162736052093975989, guid: bd95c52d6828fdf42b8081bed36bc037, type: 3}
       propertyPath: m_LocalScale.x
@@ -112,12 +116,16 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8288380280959352226, guid: bd95c52d6828fdf42b8081bed36bc037, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8288380280959352226, guid: bd95c52d6828fdf42b8081bed36bc037, type: 3}
       propertyPath: m_TagString
       value: Death
       objectReference: {fileID: 0}
     - target: {fileID: 8288380280959352226, guid: bd95c52d6828fdf42b8081bed36bc037, type: 3}
       propertyPath: m_StaticEditorFlags
-      value: 2147483647
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -171,12 +179,16 @@ PrefabInstance:
       value: Props_2 (30)
       objectReference: {fileID: 0}
     - target: {fileID: 1342774651384427630, guid: bd95c52d6828fdf42b8081bed36bc037, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1342774651384427630, guid: bd95c52d6828fdf42b8081bed36bc037, type: 3}
       propertyPath: m_TagString
       value: Death
       objectReference: {fileID: 0}
     - target: {fileID: 1342774651384427630, guid: bd95c52d6828fdf42b8081bed36bc037, type: 3}
       propertyPath: m_StaticEditorFlags
-      value: 2147483647
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6162736052093975989, guid: bd95c52d6828fdf42b8081bed36bc037, type: 3}
       propertyPath: m_LocalScale.x
@@ -235,12 +247,16 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8288380280959352226, guid: bd95c52d6828fdf42b8081bed36bc037, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8288380280959352226, guid: bd95c52d6828fdf42b8081bed36bc037, type: 3}
       propertyPath: m_TagString
       value: Death
       objectReference: {fileID: 0}
     - target: {fileID: 8288380280959352226, guid: bd95c52d6828fdf42b8081bed36bc037, type: 3}
       propertyPath: m_StaticEditorFlags
-      value: 2147483647
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -294,12 +310,16 @@ PrefabInstance:
       value: Props_2 (27)
       objectReference: {fileID: 0}
     - target: {fileID: 1342774651384427630, guid: bd95c52d6828fdf42b8081bed36bc037, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1342774651384427630, guid: bd95c52d6828fdf42b8081bed36bc037, type: 3}
       propertyPath: m_TagString
       value: Death
       objectReference: {fileID: 0}
     - target: {fileID: 1342774651384427630, guid: bd95c52d6828fdf42b8081bed36bc037, type: 3}
       propertyPath: m_StaticEditorFlags
-      value: 2147483647
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6162736052093975989, guid: bd95c52d6828fdf42b8081bed36bc037, type: 3}
       propertyPath: m_LocalScale.x
@@ -358,12 +378,16 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8288380280959352226, guid: bd95c52d6828fdf42b8081bed36bc037, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8288380280959352226, guid: bd95c52d6828fdf42b8081bed36bc037, type: 3}
       propertyPath: m_TagString
       value: Death
       objectReference: {fileID: 0}
     - target: {fileID: 8288380280959352226, guid: bd95c52d6828fdf42b8081bed36bc037, type: 3}
       propertyPath: m_StaticEditorFlags
-      value: 2147483647
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -417,12 +441,16 @@ PrefabInstance:
       value: Props_2 (29)
       objectReference: {fileID: 0}
     - target: {fileID: 1342774651384427630, guid: bd95c52d6828fdf42b8081bed36bc037, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1342774651384427630, guid: bd95c52d6828fdf42b8081bed36bc037, type: 3}
       propertyPath: m_TagString
       value: Death
       objectReference: {fileID: 0}
     - target: {fileID: 1342774651384427630, guid: bd95c52d6828fdf42b8081bed36bc037, type: 3}
       propertyPath: m_StaticEditorFlags
-      value: 2147483647
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6162736052093975989, guid: bd95c52d6828fdf42b8081bed36bc037, type: 3}
       propertyPath: m_LocalScale.x
@@ -481,12 +509,16 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8288380280959352226, guid: bd95c52d6828fdf42b8081bed36bc037, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8288380280959352226, guid: bd95c52d6828fdf42b8081bed36bc037, type: 3}
       propertyPath: m_TagString
       value: Death
       objectReference: {fileID: 0}
     - target: {fileID: 8288380280959352226, guid: bd95c52d6828fdf42b8081bed36bc037, type: 3}
       propertyPath: m_StaticEditorFlags
-      value: 2147483647
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

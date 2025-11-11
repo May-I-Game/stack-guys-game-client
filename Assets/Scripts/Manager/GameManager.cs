@@ -28,6 +28,9 @@ public class GameManager : NetworkBehaviour
     [SerializeField] private TMP_Text thirdPlaceText;
     [SerializeField] private Button mainButton;
     [SerializeField] private TMP_Text QualifiedText;
+    [SerializeField] private GameObject FPSCount;
+    [SerializeField] private GameObject PingCount;
+    [SerializeField] private GameObject LobbyUI;
     [SerializeField] private GameObject gameUI;
 
     [Header("Settings")]
@@ -246,30 +249,32 @@ public class GameManager : NetworkBehaviour
             gameEndcountdown.gameObject.SetActive(newValue);
         }
     }
-
-    [ServerRpc(RequireOwnership = false)]
-    public void PlayerReachedGoalServerRpc(string playerName, ulong clientId)
+    public void PlayerReachedGoal(string playerName, ulong clientId)
     {
+        if (!IsServer) return;                 // 안전 가드
         if (currentGameState.Value != GameState.Playing) return;
 
-        NetworkObject playerObject = NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject;
-        if (playerObject == null) return;
+        var playerObj = NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject;
+        if (playerObj == null) return;
 
-        PlayerController player = playerObject.GetComponent<PlayerController>();
+        var player = playerObj.GetComponent<PlayerController>();
         if (player != null)
-        {
             player.inputEnabled = false;
-        }
 
-        // 순위에 추가
-        rankings.Add(playerName);
+        rankings.Add(playerName);              // NetworkList는 서버에서만 쓰기
 
-        // 첫 번째 플레이어가 골인하면 카운트다운 시작
         if (rankings.Count == 1 && !isCountingDown)
         {
             isEndCountdownActive.Value = true;
             StartCoroutine(EndGameCountdown());
         }
+    }
+
+    // ✅ 클라이언트가 보낼 때만 쓰는 래퍼 RPC (선택)
+    [ServerRpc(RequireOwnership = false)]
+    public void PlayerReachedGoalServerRpc(string playerName, ulong clientId)
+    {
+        PlayerReachedGoal(playerName, clientId);
     }
 
     private IEnumerator StartGameCountdown()
@@ -386,6 +391,24 @@ public class GameManager : NetworkBehaviour
         //카운트 다운 내리기
         gameEndcountdown.gameObject.SetActive(false);
         // 결과 화면 표시
+
+        if (FPSCount != null)
+        {
+            FPSCount.gameObject.SetActive(false);
+        }
+        if (PingCount != null)
+        {
+            PingCount.gameObject.SetActive(false);
+        }
+        if (LobbyUI != null)
+        {
+            LobbyUI.gameObject.SetActive(false);
+        }
+        if (gameUI != null)
+        {
+            gameUI.gameObject.SetActive(false);
+        }
+
         if (resultPanel != null)
         {
             resultPanel.SetActive(true);
@@ -409,10 +432,23 @@ public class GameManager : NetworkBehaviour
         {
             NowPlayerCount.gameObject.SetActive(false);
         }
+        if (FPSCount != null)
+        {
+            FPSCount.gameObject.SetActive(true);
+        }
+        if (PingCount != null)
+        {
+            PingCount.gameObject.SetActive(true);
+        }
+        if (LobbyUI != null)
+        {
+            LobbyUI.gameObject.SetActive(true);
+        }
         if (gameUI != null)
         {
             gameUI.gameObject.SetActive(true);
         }
+
     }
     private void UpdateCountDownUI(float prviousValue, float newValue)
     {

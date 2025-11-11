@@ -1,4 +1,5 @@
 // CameraFollow.cs
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -42,6 +43,9 @@ public class CameraFollow : MonoBehaviour
     private Vector2 prevTouchPos;
     private int cameraTouchId = -1;                             // 카메라 드래그 전용 터치 ID
 
+    private float bodyCullingDistance = 20f;
+    private float playerCullingDistance = 30f;
+
     void Start()
     {
         if (Application.isBatchMode)
@@ -53,7 +57,22 @@ public class CameraFollow : MonoBehaviour
         {
             // 초기 카메라 설정 (타겟/오프셋/초기 yaw 등 계산)
             InitializeCamera();
+
+            // Layer Cull Distances 설정 (시체 렌더링 최적화)
+            SetupLayerCulling();
         }
+    }
+
+    // Layer Cull Distances 설정: DeadBody 레이어는 25m까지만 렌더링
+    void SetupLayerCulling()
+    {
+        Camera cam = GetComponent<Camera>();
+        if (cam == null) return;
+
+        float[] distances = new float[32];
+        distances[6] = playerCullingDistance; //Layer6 (Player)는 20까지만 렌더링
+        distances[10] = bodyCullingDistance;  // Layer 10 (DeadBody)는 15m까지만 렌더링
+        cam.layerCullDistances = distances;
     }
 
     // LateUpdate는 플레이어 이동/애니메이션이 끝난 뒤 카메라가 따라붙도록 해줌

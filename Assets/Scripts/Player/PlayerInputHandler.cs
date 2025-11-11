@@ -5,8 +5,6 @@ public class PlayerInputHandler : NetworkBehaviour
 {
     // 모바일 UI 세팅
     private FixedJoystick joystick;
-    private bool jumpButtonPressed = false;
-    private bool grabButtonPressed = false;
 
     // PlayerController가 읽어갈 값
     public Vector2 MoveInput { get; private set; }
@@ -109,18 +107,16 @@ public class PlayerInputHandler : NetworkBehaviour
             if (dir.sqrMagnitude > 1f) dir.Normalize();
             MoveInput = dir;
 
-            // Space 키로 점프 또는 다이브
-            if (Input.GetKeyDown(KeyCode.Space) || jumpButtonPressed)
+            // Space 키로 점프 또는 다이브 (PC만)
+            if (Input.GetKeyDown(KeyCode.Space))
             {
                 JumpInput = true;
-                jumpButtonPressed = false;
             }
 
-            // E 키로 잡기 또는 던지기
-            if (Input.GetKeyDown(KeyCode.E) || grabButtonPressed)
+            // E 키로 잡기 또는 던지기 (PC만)
+            if (Input.GetKeyDown(KeyCode.E))
             {
                 GrabInput = true;
-                grabButtonPressed = false;
             }
 
             //m 키로 모바일 UI 숨기기/표시하기
@@ -146,11 +142,21 @@ public class PlayerInputHandler : NetworkBehaviour
 
     public void OnJumpButtonPressed()
     {
-        jumpButtonPressed = true;
+        // 로비/게임 중일 때만 즉시 입력 처리
+        if (GameManager.instance != null &&
+            (GameManager.instance.IsLobby || GameManager.instance.IsGame))
+        {
+            JumpInput = true;
+        }
     }
 
     public void OnGrabButtonPressed()
     {
-        grabButtonPressed = true;
+        // 로비/게임 중일 때만 즉시 입력 처리
+        if (GameManager.instance != null &&
+            (GameManager.instance.IsLobby || GameManager.instance.IsGame))
+        {
+            GrabInput = true;
+        }
     }
 }

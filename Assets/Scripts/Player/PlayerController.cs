@@ -93,22 +93,50 @@ public class PlayerController : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
+        // 서버만 물리 활성화 (서버 권위 방식)
+        // 클라이언트는 NetworkTransform으로 위치만 동기화
+        if (IsServer)
+        {
+            EnablePhysics(true);
+        }
+        else
+        {
+            EnablePhysics(false);
+        }
+
         if (IsOwner)
         {
             Camera.main.GetComponent<CameraFollow>().target = this.transform;
         }
     }
 
-    protected virtual void Start()
+    public void EnablePhysics(bool on)
+    {
+        if (rb)
+        {
+            rb.isKinematic = !on;
+            rb.detectCollisions = on;
+        }
+        // Collider는 항상 켜두되, 클라이언트는 Trigger 전용 (물리 충돌 없음)
+        if (col)
+        {
+            col.enabled = true;  // 항상 활성화
+            col.isTrigger = !on; // 서버: Collision, 클라이언트: Trigger
+        }
+    }
+    private void Awake()
     {
         rb = GetComponent<Rigidbody>();
         col = GetComponent<CapsuleCollider>();
+    }
+    protected virtual void Start()
+    {
         inputHandler = GetComponent<PlayerInputHandler>();
         nt = GetComponent<NetworkTransform>();
         respawnManager = FindFirstObjectByType<RespawnManager>();
 
         // GC 최적화: WaitForSeconds 사전 생성
-        botRespawnWait = new WaitForSeconds(2.3f);
+        botRespawnWait = new WaitForSeconds(2.267f);
 
         // Animator가 설정되지 않았다면 자동으로 찾기
         animator = animator != null ? animator : GetComponent<Animator>();
@@ -636,6 +664,9 @@ public class PlayerController : NetworkBehaviour
 
     public void ReleaseGrab()
     {
+        // 서버에서만 실행
+        if (!IsServer) return;
+
         // 내가 무언가를 들고 있었다면
         if (isHolding && holdingObject != null)
         {
@@ -648,6 +679,8 @@ public class PlayerController : NetworkBehaviour
                 {
                     heldPlayer.rb.isKinematic = false;
                 }
+                // 레이어 복구
+                heldPlayer.gameObject.layer = heldObjectOriginLayer;
             }
 
             else
@@ -663,22 +696,31 @@ public class PlayerController : NetworkBehaviour
                     {
                         targetRb.isKinematic = false;
                     }
+                    // 레이어 복구
+                    grabbable.gameObject.layer = heldObjectOriginLayer;
                 }
             }
 
             holdingObject = null;
         }
 
-        // 내가 잡혀있었다면
+        // 내가 잡혀있었다면 - 나 자신의 물리 복구
         if (netIsGrabbed.Value)
         {
-            if (!NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(grabberId, out NetworkObject grabberObject))
+            // 물리 재활성화
+            if (rb != null)
+            {
+                rb.isKinematic = false;
+            }
+
+            // 잡고 있던 사람의 상태 업데이트
+            if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(grabberId, out NetworkObject grabberObject))
             {
                 PlayerController grabbedBy = grabberObject.GetComponent<PlayerController>();
                 if (grabbedBy != null)
                 {
                     grabbedBy.holdingObject = null;
-                    grabbedBy.heldPlayerCache = null;  // 캐시 클리어
+                    grabbedBy.heldPlayerCache = null;
                     grabbedBy.isHolding = false;
                     grabbedBy.holdingTargetId = 0;
                 }
@@ -689,7 +731,7 @@ public class PlayerController : NetworkBehaviour
         holdingTargetId = 0;
         netIsGrabbed.Value = false;
         grabberId = 0;
-        heldPlayerCache = null;  // 캐시 클리어
+        heldPlayerCache = null;
         escapeJumpCount = 0;
     }
 
@@ -731,6 +773,10 @@ public class PlayerController : NetworkBehaviour
         if (bodyPrefab != null)
         {
             GameObject bodyInstance = Instantiate(bodyPrefab, deathPosition, transform.rotation);
+
+            // Layer 설정: DeadBody (Layer 10) - 거리 기반 컬링 적용
+            SetLayerRecursively(bodyInstance, 10);
+
             NetworkObject networkBody = bodyInstance.GetComponent<NetworkObject>();
 
             if (networkBody != null)
@@ -798,6 +844,16 @@ public class PlayerController : NetworkBehaviour
 
         // 애니메이터도 각 클라에서 리셋
         ResetAnimClientRpc();
+    }
+
+    // 오브젝트와 자식들의 레이어를 재귀적으로 설정
+    private void SetLayerRecursively(GameObject obj, int layer)
+    {
+        obj.layer = layer;
+        foreach (Transform child in obj.transform)
+        {
+            SetLayerRecursively(child.gameObject, layer);
+        }
     }
     #endregion
 
