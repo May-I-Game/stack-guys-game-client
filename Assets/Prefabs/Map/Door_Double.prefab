@@ -98,6 +98,9 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 84c64ec856cfaa047b8648234ed59c21, type: 3}
       insertIndex: -1
+      addedObject: {fileID: 3446865908409343805}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 84c64ec856cfaa047b8648234ed59c21, type: 3}
+      insertIndex: -1
       addedObject: {fileID: -4272583228384817209}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 84c64ec856cfaa047b8648234ed59c21, type: 3}
       insertIndex: -1
@@ -151,6 +154,31 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 84c64ec856cfaa047b8648234ed59c21, type: 3}
   m_PrefabInstance: {fileID: 3943264802694218708}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &3446865908409343805
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4213156638685593221}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 2332336405
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
 --- !u!114 &-4272583228384817209
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -163,6 +191,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2d3abd5783140fb4aa1b1a58eb481334, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
   leftDoor: {fileID: 4614214129801446875}
   rightDoor: {fileID: 165399681472097109}
   openSpeed: 3
@@ -188,7 +217,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 0
   serializedVersion: 3
-  m_Size: {x: 3.4621322, y: 4.7307534, z: 0.5352883}
+  m_Size: {x: 3.4621322, y: 4.7307534, z: 2.5}
   m_Center: {x: 0.0017613174, y: 1.8653816, z: 0.005399226}
 --- !u!114 &2281472550556256862
 MonoBehaviour:
