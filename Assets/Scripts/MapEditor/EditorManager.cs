@@ -18,6 +18,12 @@ public class EditorManager : MonoBehaviour
     public Transform paletteContentArea;
     public GameObject paletteButtonPrefab;
 
+    [Header("Save/Load UI")]
+    public GameObject saveLoadPanel;
+    public InputField mapNameInput;
+    public Transform fileListContentArea;
+    public GameObject fileButtonPrefab;
+
     [Header("팔레트 데이터")]
     public List<PaletteCategory> allCategories = new List<PaletteCategory>();
 
@@ -392,9 +398,8 @@ public class EditorManager : MonoBehaviour
     // --- [추가] 저장 / 불러오기 로직 ---
 
     // 현재 맵을 JSON 파일로 저장
-    public void SaveMap(Text inputField)
+    public void SaveMap(string mapName)
     {
-        string mapName = inputField.text;
         if (string.IsNullOrEmpty(mapName))
         {
             Debug.LogError("맵 이름이 비어있습니다!");
@@ -443,9 +448,8 @@ public class EditorManager : MonoBehaviour
     }
 
     // (UI 버튼용) JSON 파일에서 맵을 불러옵니다.
-    public void LoadMap(Text inputField)
+    public void LoadMap(string mapName)
     {
-        string mapName = inputField.text;
         string path = Path.Combine(Application.persistentDataPath, mapName + ".json");
 
         if (!File.Exists(path))
@@ -515,5 +519,96 @@ public class EditorManager : MonoBehaviour
 
         // 현재 선택된 프리팹/미리보기 초기화
         SelectObjectToPlace(null);
+    }
+
+    public void OpenSaveLoadPanel()
+    {
+        if (saveLoadPanel == null) return;
+
+        saveLoadPanel.SetActive(true);
+        RefreshFileList();
+    }
+
+    public void CloseSaveLoadPanel()
+    {
+        if (saveLoadPanel == null) return;
+        saveLoadPanel.SetActive(false);
+    }
+
+    public void OnSaveButtonPressed()
+    {
+        string mapName = mapNameInput.text;
+        if (string.IsNullOrWhiteSpace(mapName))
+        {
+            Debug.LogError("맵 이름이 비어있습니다. InputField를 확인하세요.");
+            return;
+        }
+
+        SaveMap(mapName);
+        RefreshFileList(); // 저장 후 목록 새로고침
+    }
+
+    // (UI 버튼용) '불러오기' 버튼을 눌렀을 때 호출됩니다.
+    public void OnLoadButtonPressed()
+    {
+        string mapName = mapNameInput.text;
+        if (string.IsNullOrWhiteSpace(mapName))
+        {
+            Debug.LogError("맵 이름이 비어있습니다. 불러올 맵을 선택하거나 입력하세요.");
+            return;
+        }
+
+        LoadMap(mapName);
+        CloseSaveLoadPanel(); // 불러오기 후 패널 닫기
+    }
+
+    private void RefreshFileList()
+    {
+        if (fileListContentArea == null) return;
+
+        // 1. 기존 목록 버튼 모두 삭제
+        foreach (Transform child in fileListContentArea)
+        {
+            Destroy(child.gameObject);
+        }
+
+        // 2. persistentDataPath에서 .json 파일 모두 찾기
+        string[] allFiles = Directory.GetFiles(Application.persistentDataPath, "*.json");
+
+        // 3. 각 파일을 버튼으로 생성
+        foreach (string filePath in allFiles)
+        {
+            // "C:/.../MyMap.json" -> "MyMap"
+            string mapName = Path.GetFileNameWithoutExtension(filePath);
+
+            GameObject newButtonGO = Instantiate(fileButtonPrefab, fileListContentArea);
+
+            // 버튼 텍스트 설정
+            Text buttonText = newButtonGO.GetComponentInChildren<Text>();
+            if (buttonText != null)
+            {
+                buttonText.text = mapName;
+            }
+
+            // 버튼 클릭 이벤트 연결
+            Button buttonComponent = newButtonGO.GetComponent<Button>();
+            if (buttonComponent != null)
+            {
+                // 람다(Lambda)를 사용해 클릭 시 OnFileSelected 함수에 mapName 전달
+                buttonComponent.onClick.AddListener(() =>
+                {
+                    OnFileSelected(mapName);
+                });
+            }
+        }
+    }
+
+    private void OnFileSelected(string mapName)
+    {
+        // InputField에 맵 이름을 채워넣어 사용자가 Load/Save(덮어쓰기) 할 수 있게 함
+        if (mapNameInput != null)
+        {
+            mapNameInput.text = mapName;
+        }
     }
 }
