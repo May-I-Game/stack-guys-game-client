@@ -11,7 +11,6 @@ public class BotController : PlayerController
     [SerializeField] private float forwardThreshold = 1f;               // 전진 판정 거리
 
     [Header("Random Path Settings")]
-    [SerializeField] private string waypointTag = "Waypoint";           // 웨이포인트 태그
     [SerializeField] private bool useRandomWaypoint = true;             // 랜덤 웨이포인트 사용
     [SerializeField] private float waypointReachedDistance = 2f;        // 웨이포인트 도달 거리
     private int topClosestCount = 4;                                    // 가장 가까운 N개 웨이포인트
@@ -205,11 +204,8 @@ public class BotController : PlayerController
         if (!IsServer) return;
 
         // Goal 태그를 가진 오브젝트 찾기
-        GameObject goal = GameObject.FindGameObjectWithTag("Goal");
-        if (goal != null)
-        {
-            goalTransform = goal.transform;
-        }
+        goalTransform = WaypointManager.Instance.GetGoal();
+        
     }
 
     // 웨이포인트 재탐색 및 배열 갱신 (서버 전용)
@@ -217,14 +213,10 @@ public class BotController : PlayerController
     {
         if (!IsServer) return;
 
-        GameObject[] waypointObjects = GameObject.FindGameObjectsWithTag(waypointTag);
+        waypoints = WaypointManager.Instance.GetWaypointArray();
 
-        if (waypointObjects.Length > 0)
+        if (waypoints != null && waypoints.Length > 0)
         {
-            waypoints = new Transform[waypointObjects.Length];
-            for (int i = 0; i < waypointObjects.Length; i++)
-                waypoints[i] = waypointObjects[i].transform;
-
             // 첫 웨이포인트 선택 (앞쪽 방향 우선)
             if (!isGoingToGoal)
                 TrySelectForwardWaypoint();
@@ -698,13 +690,7 @@ public class BotController : PlayerController
         // 클라이언트는 서버처럼 배열을 유지하지 않으므로 필요 시 태그 재검색
         if (!IsServer && (waypoints == null || waypoints.Length == 0))
         {
-            var objs = GameObject.FindGameObjectsWithTag(waypointTag);
-
-            if (objs == null || objs.Length == 0) return null;
-
-            waypoints = new Transform[objs.Length];
-            for (int i = 0; i < objs.Length; i++)
-                waypoints[i] = objs[i].transform;
+            waypoints = WaypointManager.Instance.GetWaypointArray();
         }
 
         if (waypoints != null && idx < waypoints.Length)
@@ -726,12 +712,8 @@ public class BotController : PlayerController
         // 배열이 없으면 태그로 재검색
         if (source == null || source.Length == 0)
         {
-            var objs = GameObject.FindGameObjectsWithTag(waypointTag);
-            if (objs == null || objs.Length == 0) return null;
-
-            source = new Transform[objs.Length];
-            for (int i = 0; i < objs.Length; i++)
-                source[i] = objs[i].transform;
+            source = WaypointManager.Instance.GetWaypointArray();
+            if (source == null || source.Length == 0) return null;
         }
 
         // z 앞쪽 기준이 되는 값
@@ -749,7 +731,7 @@ public class BotController : PlayerController
             var t = source[i];
             if (!t) continue;   // Null 가드
 
-            // 앞쪽이 아니거나 threshould 이내면 제외
+            // 앞쪽이 아니거나 threshold 이내면 제외
             if (t.position.z <= zRef) continue; // 뒤/가까운 웨이포인트 제외
 
             // 거리 제곱로 최소 거리 후보 갱신
@@ -766,8 +748,8 @@ public class BotController : PlayerController
 
     private Transform FindGoalForGizmo()
     {
-        var goalObj = GameObject.FindGameObjectWithTag("Goal");
-        return goalObj ? goalObj.transform : null;
+        // Goal 가져오기
+        return WaypointManager.Instance.GetGoal();
     }
 
     // 봇이 선택되었을 때만 표시되는 Gizmos (상세 정보)
