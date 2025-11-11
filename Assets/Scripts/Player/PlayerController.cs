@@ -109,6 +109,7 @@ public class PlayerController : NetworkBehaviour
             Camera.main.GetComponent<CameraFollow>().target = this.transform;
         }
     }
+
     public void EnablePhysics(bool on)
     {
         if (rb)
@@ -135,7 +136,7 @@ public class PlayerController : NetworkBehaviour
         respawnManager = FindFirstObjectByType<RespawnManager>();
 
         // GC 최적화: WaitForSeconds 사전 생성
-        botRespawnWait = new WaitForSeconds(2.3f);
+        botRespawnWait = new WaitForSeconds(2.267f);
 
         // Animator가 설정되지 않았다면 자동으로 찾기
         animator = animator != null ? animator : GetComponent<Animator>();
@@ -663,6 +664,9 @@ public class PlayerController : NetworkBehaviour
 
     public void ReleaseGrab()
     {
+        // 서버에서만 실행
+        if (!IsServer) return;
+
         // 내가 무언가를 들고 있었다면
         if (isHolding && holdingObject != null)
         {
@@ -675,6 +679,8 @@ public class PlayerController : NetworkBehaviour
                 {
                     heldPlayer.rb.isKinematic = false;
                 }
+                // 레이어 복구
+                heldPlayer.gameObject.layer = heldObjectOriginLayer;
             }
 
             else
@@ -690,22 +696,31 @@ public class PlayerController : NetworkBehaviour
                     {
                         targetRb.isKinematic = false;
                     }
+                    // 레이어 복구
+                    grabbable.gameObject.layer = heldObjectOriginLayer;
                 }
             }
 
             holdingObject = null;
         }
 
-        // 내가 잡혀있었다면
+        // 내가 잡혀있었다면 - 나 자신의 물리 복구
         if (netIsGrabbed.Value)
         {
-            if (!NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(grabberId, out NetworkObject grabberObject))
+            // 물리 재활성화
+            if (rb != null)
+            {
+                rb.isKinematic = false;
+            }
+
+            // 잡고 있던 사람의 상태 업데이트
+            if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(grabberId, out NetworkObject grabberObject))
             {
                 PlayerController grabbedBy = grabberObject.GetComponent<PlayerController>();
                 if (grabbedBy != null)
                 {
                     grabbedBy.holdingObject = null;
-                    grabbedBy.heldPlayerCache = null;  // 캐시 클리어
+                    grabbedBy.heldPlayerCache = null;
                     grabbedBy.isHolding = false;
                     grabbedBy.holdingTargetId = 0;
                 }
@@ -716,7 +731,7 @@ public class PlayerController : NetworkBehaviour
         holdingTargetId = 0;
         netIsGrabbed.Value = false;
         grabberId = 0;
-        heldPlayerCache = null;  // 캐시 클리어
+        heldPlayerCache = null;
         escapeJumpCount = 0;
     }
 
