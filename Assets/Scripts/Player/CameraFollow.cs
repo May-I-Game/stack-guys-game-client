@@ -1,4 +1,5 @@
 // CameraFollow.cs
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -42,7 +43,8 @@ public class CameraFollow : MonoBehaviour
     private Vector2 prevTouchPos;
     private int cameraTouchId = -1;                             // 카메라 드래그 전용 터치 ID
 
-    [SerializeField] private float cullingDistance = 30f;
+    private float bodyCullingDistance = 20f;
+    private float playerCullingDistance = 30f;
 
     void Start()
     {
@@ -68,37 +70,9 @@ public class CameraFollow : MonoBehaviour
         if (cam == null) return;
 
         float[] distances = new float[32];
-        distances[10] = cullingDistance;  // Layer 10 (DeadBody)는 20m까지만 렌더링
+        distances[6] = playerCullingDistance; //Layer6 (Player)는 20까지만 렌더링
+        distances[10] = bodyCullingDistance;  // Layer 10 (DeadBody)는 15m까지만 렌더링
         cam.layerCullDistances = distances;
-    }
-
-    // Scene 뷰에서 25m 반경을 시각화 (디버깅용)
-    private void OnDrawGizmos()
-    {
-        if (target == null) return;
-
-        // 25m 반경을 노란색 원으로 표시
-        Gizmos.color = Color.yellow;
-        DrawCircle(target.position, cullingDistance, 50);
-    }
-
-    // 원 그리기 헬퍼 함수
-    private void DrawCircle(Vector3 center, float radius, int segments)
-    {
-        float angleStep = 360f / segments;
-        Vector3 prevPoint = center + new Vector3(radius, 0, 0);
-
-        for (int i = 1; i <= segments; i++)
-        {
-            float angle = angleStep * i * Mathf.Deg2Rad;
-            Vector3 newPoint = center + new Vector3(
-                Mathf.Cos(angle) * radius,
-                0,
-                Mathf.Sin(angle) * radius
-            );
-            Gizmos.DrawLine(prevPoint, newPoint);
-            prevPoint = newPoint;
-        }
     }
 
     // LateUpdate는 플레이어 이동/애니메이션이 끝난 뒤 카메라가 따라붙도록 해줌

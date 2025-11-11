@@ -48,8 +48,6 @@ public class PlayerController : NetworkBehaviour
     private Vector2 lastSentInput = Vector2.zero;  // 실제로 서버에 전송한 마지막 입력
     private float lastInputSendTime = 0f;  // 마지막 입력 전송 시간
 
-    // GC 최적화: WaitForSeconds 캐싱
-    private WaitForSeconds botRespawnWait;
     private Vector3 lastHeldObjectPosition = Vector3.zero;  // 마지막 잡은 오브젝트 위치
     protected bool isJumpQueued;
     protected bool isGrabQueued;
@@ -133,9 +131,6 @@ public class PlayerController : NetworkBehaviour
         inputHandler = GetComponent<PlayerInputHandler>();
         nt = GetComponent<NetworkTransform>();
         respawnManager = FindFirstObjectByType<RespawnManager>();
-
-        // GC 최적화: WaitForSeconds 사전 생성
-        botRespawnWait = new WaitForSeconds(2.3f);
 
         // Animator가 설정되지 않았다면 자동으로 찾기
         animator = animator != null ? animator : GetComponent<Animator>();
@@ -302,9 +297,6 @@ public class PlayerController : NetworkBehaviour
     {
         // Owner만 실행 (다른 클라이언트는 무시)
         if (!IsOwner) return;
-
-        // 봇은 이미 BotRespawnDelay()로 리스폰하므로 무시
-        if (this is BotController) return;
 
         // ServerRpc 호출 (시체 생성 + 텔레포트)
         RespawnPlayerServerRpc();
@@ -735,18 +727,7 @@ public class PlayerController : NetworkBehaviour
 
         SetTriggerClientRpc("Death");
 
-        // 봇은 서버가 Owner이므로 직접 리스폰 타이머 시작
-        if (IsServer && this is BotController)
-        {
-            StartCoroutine(BotRespawnDelay());
-        }
-    }
-
-    // 봇 전용 리스폰 타이머 (애니메이션 길이 2.3초)
-    private System.Collections.IEnumerator BotRespawnDelay()
-    {
-        yield return botRespawnWait;  // GC 최적화: 캐싱된 WaitForSeconds 사용
-        DoRespawnTeleport();
+        // 애니메이션 이벤트에서 RespawnPlayer()가 호출됨
     }
 
     // 시체 생성 + 텔레포트
