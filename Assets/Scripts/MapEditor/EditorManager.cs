@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using TMPro;
+using System.IO;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -29,6 +29,33 @@ public class EditorManager : MonoBehaviour
 
     private Stack<IEditorAction> undoStack = new Stack<IEditorAction>();
     private Stack<IEditorAction> redoStack = new Stack<IEditorAction>();
+
+    private Dictionary<string, GameObject> prefabDatabase = new Dictionary<string, GameObject>();
+
+    private void Awake()
+    {
+        // 프리팹 데이터베이스 구축
+        foreach (PaletteCategory category in allCategories)
+        {
+            if (category == null) continue;
+
+            foreach (PaletteItem item in category.items)
+            {
+                if (item == null || item.prefab == null) continue;
+
+                GameObject prefab = item.prefab;
+
+                // 데이터베이스에 프리팹 이름이 이미 등록되지 않은 경우에만 추가
+                // (서로 다른 카테고리에 동일한 프리팹이 있을 수 있으므로)
+                if (!prefabDatabase.ContainsKey(prefab.name))
+                {
+                    prefabDatabase.Add(prefab.name, prefab);
+                }
+            }
+        }
+
+        Debug.Log($"프리팹 데이터베이스 자동 구축 완료. {prefabDatabase.Count}개 항목 로드됨.");
+    }
 
     private void Start()
     {
@@ -360,5 +387,133 @@ public class EditorManager : MonoBehaviour
 
         // (선택 사항) 팔레트가 바뀌었으니, 현재 선택된 프리팹을 초기화합니다.
         SelectObjectToPlace(null); // 토글 기능이 null을 처리해 줌
+    }
+
+    // --- [추가] 저장 / 불러오기 로직 ---
+
+    // 현재 맵을 JSON 파일로 저장
+    public void SaveMap(Text inputField)
+    {
+        string mapName = inputField.text;
+        if (string.IsNullOrEmpty(mapName))
+        {
+            Debug.LogError("맵 이름이 비어있습니다!");
+            return;
+        }
+
+        MapData mapData = new MapData();
+        mapData.mapName = mapName;
+        // TODO: mapData.startPos 저장 로직 (예: "StartPoint" objectId를 가진 오브젝트 찾기)
+
+        // 씬에 있는 모든 MapObjectInfo 컴포넌트를 찾습니다.
+        MapObjectInfo[] allMapObjects = FindObjectsByType<MapObjectInfo>(FindObjectsSortMode.None);
+
+        foreach (MapObjectInfo objInfo in allMapObjects)
+        {
+            // 비활성화된(Undo된) 오브젝트는 저장하지 않습니다.
+            if (!objInfo.gameObject.activeSelf)
+            {
+                continue;
+            }
+
+            MapObjectData data = new MapObjectData();
+            data.objectId = objInfo.objectId; // 프리팹 이름 ("platform_basic")
+            data.position = objInfo.transform.position;
+            data.rotation = objInfo.transform.rotation;
+            data.scale = objInfo.transform.localScale;
+
+            mapData.objects.Add(data);
+        }
+
+        // MapData 객체를 JSON 문자열로 직렬화
+        string json = JsonUtility.ToJson(mapData, true); // true: 보기 좋게 포맷팅
+
+        // 저장 경로 설정 (예: C:/Users/YourName/AppData/LocalLow/DefaultCompany/YourGame/MyMap.json)
+        string path = Path.Combine(Application.persistentDataPath, mapName + ".json");
+
+        try
+        {
+            File.WriteAllText(path, json);
+            Debug.Log($"맵 저장 성공: {path}");
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"맵 저장 실패: {e.Message}");
+        }
+    }
+
+    // (UI 버튼용) JSON 파일에서 맵을 불러옵니다.
+    public void LoadMap(Text inputField)
+    {
+        string mapName = inputField.text;
+        string path = Path.Combine(Application.persistentDataPath, mapName + ".json");
+
+        if (!File.Exists(path))
+        {
+            Debug.LogError($"불러올 맵 파일을 찾을 수 없습니다: {path}");
+            return;
+        }
+
+        try
+        {
+            // 파일에서 JSON 텍스트 읽기
+            string json = File.ReadAllText(path);
+
+            // JSON을 MapData 객체로 역직렬화
+            MapData mapData = JsonUtility.FromJson<MapData>(json);
+
+            // 현재 맵 상태 초기화 (오브젝트, Undo/Redo 스택)
+            ClearCurrentMap();
+
+            // 맵 데이터로 오브젝트 다시 생성
+            foreach (MapObjectData data in mapData.objects)
+            {
+                GameObject prefabToLoad;
+
+                // 데이터베이스에서 objectId로 원본 프리팹 찾기
+                if (prefabDatabase.TryGetValue(data.objectId, out prefabToLoad))
+                {
+                    // 프리팹 생성 및 위치/회전/크기 설정
+                    GameObject newObj = Instantiate(prefabToLoad, data.position, data.rotation);
+                    newObj.transform.localScale = data.scale;
+
+                    // 다시 편집/저장/삭제할 수 있도록 MapObjectInfo 컴포넌트 추가
+                    newObj.AddComponent<MapObjectInfo>().objectId = data.objectId;
+                }
+                else
+                {
+                    Debug.LogWarning($"데이터베이스에 '{data.objectId}' 프리팹이 없습니다. 로드 생략.");
+                }
+            }
+
+            // TODO: mapData.startPos 로드 로직
+
+            Debug.Log($"맵 불러오기 성공: {mapName}");
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"맵 불러오기 실패: {e.Message}");
+        }
+    }
+
+    // 맵 로드 전에 현재 씬의 모든 맵 오브젝트와 히스토리를 초기화합니다.
+    private void ClearCurrentMap()
+    {
+        // 현재 배치된 모든 맵 오브젝트 파괴
+        MapObjectInfo[] allMapObjects = FindObjectsByType<MapObjectInfo>(FindObjectsSortMode.None);
+        foreach (MapObjectInfo objInfo in allMapObjects)
+        {
+            Destroy(objInfo.gameObject);
+        }
+
+        // Undo/Redo 스택 비우기 (Cleanup 호출)
+        foreach (IEditorAction action in undoStack) action.Cleanup();
+        foreach (IEditorAction action in redoStack) action.Cleanup();
+
+        undoStack.Clear();
+        redoStack.Clear();
+
+        // 현재 선택된 프리팹/미리보기 초기화
+        SelectObjectToPlace(null);
     }
 }
