@@ -806,7 +806,7 @@ public class BotController : PlayerController
         // 봇은 카메라 설정 안함 (플레이어와 다른 점)
     }
 
-    private new void OnDestroy()
+    private void OnDestroy()
     {
         if (netIsDeath != null)
         {
