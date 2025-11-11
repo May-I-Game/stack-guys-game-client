@@ -1,13 +1,14 @@
+using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class EditorManager : MonoBehaviour
 {
     [Header("에디터 설정")]
-    [Tooltip("오브젝트를 배치할 수 있는 표면(지형, 바닥 등)의 레이어")]
-    public LayerMask placementLayerMask;
-
-    [Tooltip("배치 시 스냅할 그리드 크기 (0이면 스냅 없음)")]
     public float gridSize = 1.0f;
+    public float rotationStep = 45.0f;
 
     [Header("현재 상태")]
     [Tooltip("UI에서 선택되어 현재 배치할 프리팹")]
@@ -42,7 +43,27 @@ public class EditorManager : MonoBehaviour
         // 마우스 위치로 레이캐스팅
         HandlePlacementRaycast();
 
-        // 3. 배치 실행 (마우스 좌클릭)
+        // Q, E로 높이 조절
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            float heightStep = (gridSize > 0) ? gridSize : 1.0f;
+            currentGridPosition.y -= heightStep;
+            UpdatePreviewPosition();
+        }
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            float heightStep = (gridSize > 0) ? gridSize : 1.0f;
+            currentGridPosition.y += heightStep;
+            UpdatePreviewPosition();
+        }
+
+        // R키로 회전
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            RotatePreview();
+        }
+
+        // 좌클릭으로 배치
         if (Input.GetMouseButtonDown(0) && canPlace)
         {
             PlaceObject();
@@ -56,21 +77,48 @@ public class EditorManager : MonoBehaviour
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
 
-        // placementLayerMask에 설정된 레이어하고만 충돌을 감지합니다.
-        if (Physics.Raycast(ray, out hit, 1000f, placementLayerMask))
+        // [변경] LayerMask 없이 모든 레이어와 충돌을 감지합니다.
+        if (Physics.Raycast(ray, out hit, 1000f))
         {
             canPlace = true;
-            // 그리드 스냅 적용
-            currentGridPosition = SnapToGrid(hit.point);
+            Vector3 hitPoint = hit.point;
+
+            // 그리드 스냅 적용 (X, Z만)
+            float snappedX = (gridSize > 0) ? Mathf.Round(hitPoint.x / gridSize) * gridSize : hitPoint.x;
+            float snappedZ = (gridSize > 0) ? Mathf.Round(hitPoint.z / gridSize) * gridSize : hitPoint.z;
+
+            // 새 오브젝트 선택 후 첫 히트일 경우, Y 높이를 바닥 높이로 초기화
+            if (isFirstHitAfterSelect)
+            {
+                float snappedY = (gridSize > 0) ? Mathf.Round(hitPoint.y / gridSize) * gridSize : hitPoint.y;
+                currentGridPosition.y = snappedY;
+                isFirstHitAfterSelect = false; // 플래그 해제
+            }
+
+            // X, Z 값만 갱신 (Y는 Q/E로 설정된 값 유지)
+            currentGridPosition.x = snappedX;
+            currentGridPosition.z = snappedZ;
+
             UpdatePreviewPosition();
         }
         else
         {
+            // 허공에 마우스가 있을 경우 배치 비활성화
             canPlace = false;
-            UpdatePreviewPosition(); // canPlace가 false이므로 미리보기가 숨겨집니다.
+            UpdatePreviewPosition();
         }
     }
 
+    private void RotatePreview()
+    {
+        if (previewInstance == null) return;
+
+        // Y축으로 누적 회전
+        currentRotation *= Quaternion.Euler(0, rotationStep, 0);
+
+        // 미리보기 위치/회전 즉시 갱신
+        UpdatePreviewPosition();
+    }
 
     // 배치
     private void PlaceObject()
@@ -159,9 +207,6 @@ public class EditorManager : MonoBehaviour
     {
         if (gridSize <= 0) return position; // 그리드 0이면 스냅 안함
 
-        float x = Mathf.Round(position.x / gridSize) * gridSize;
-        float y = Mathf.Round(position.y / gridSize) * gridSize;
-        float z = Mathf.Round(position.z / gridSize) * gridSize;
 
         return new Vector3(x, y, z);
     }
