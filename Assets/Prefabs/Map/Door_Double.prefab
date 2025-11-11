@@ -197,7 +197,7 @@ MonoBehaviour:
   openSpeed: 3
   leftOpenAngle: -90
   rightOpenAngle: 90
-  doorNavObstacle: {fileID: 0}
+  doorNavObstacle: {fileID: 2281472550556256862}
 --- !u!65 &2352985189821707166
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -231,7 +231,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 64b6d978be54fda479d7078ecff48e27, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  doorNavObstacle: {fileID: 6751559471660551923}
+  ShowTopMostFoldoutHeaderGroup: 1
+  navMeshObstacle: {fileID: 6751559471660551923}
   nearWaypoint: {fileID: 0}
   isOpen: 0
 --- !u!208 &6751559471660551923

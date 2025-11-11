@@ -47,6 +47,9 @@ public class DoubleDoorTrigger : NetworkBehaviour
 
     void OnTriggerEnter(Collider other)
     {
+        // 스크립트가 비활성화 상태면 트리거 무시
+        if (!enabled) return;
+
         // 서버만 문 열기 처리
         if (!IsServer) return;
 
