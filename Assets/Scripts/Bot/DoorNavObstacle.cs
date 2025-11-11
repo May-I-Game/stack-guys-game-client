@@ -19,7 +19,12 @@ public class DoorNavObstacle : MonoBehaviour
             doorNavObstacle = GetComponent<NavMeshObstacle>();
 
         if (doorNavObstacle != null)
+        {
+            // 카빙 활성화: Obstacle이 NavMesh를 즉시 파내도록 설정
+            doorNavObstacle.carving = true;
+            doorNavObstacle.carveOnlyStationary = false;
             doorNavObstacle.enabled = !isOpen;
+        }
 
         // 웨이포인트 자동 탐색
         if (nearWaypoint == null)
@@ -44,8 +49,10 @@ public class DoorNavObstacle : MonoBehaviour
 
         if (nearWaypoint == null) return; // 없으면 패스
 
-        // 열린 문의 웨이포인트를 우선 방문 목록에 추가
+        // 열린 문의 웨이포인트를 우선 방문 목록에 추가 (큐에 추가만)
         BotController.RegisterOpenedDoorWaypoint(nearWaypoint);
+        
+        // ForceAllBotsToWaypoint 제거: 봇들이 현재 목표를 유지하고 순차적으로 처리
     }
 
     // 문 위치 기준 가장 가까운 Waypoint 태그 오브젝트 찾기
