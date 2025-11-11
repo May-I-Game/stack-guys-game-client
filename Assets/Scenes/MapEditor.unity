@@ -347,10 +347,10 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: LoginUIManager, Assembly-CSharp
-        m_MethodName: OnClickStart
-        m_Mode: 1
+      - m_Target: {fileID: 372239991}
+        m_TargetAssemblyTypeName: EditorManager, Assembly-CSharp
+        m_MethodName: ShowCategory
+        m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -544,7 +544,7 @@ GameObject:
   - component: {fileID: 171417007}
   - component: {fileID: 171417006}
   m_Layer: 5
-  m_Name: Pallete
+  m_Name: Palette
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1106,10 +1106,12 @@ MonoBehaviour:
   rotationStep: 45
   currentSelectedPrefab: {fileID: 0}
   previewMaterial: {fileID: 2100000, guid: e3ec0559e72f551499d2654d7f327001, type: 2}
-  paletteContentArea: {fileID: 0}
-  paletteButtonPrefab: {fileID: 0}
+  paletteContentArea: {fileID: 171417005}
+  paletteButtonPrefab: {fileID: 2743152181899445193, guid: 0eb90fbc6db4cc741beef8493174bb4c, type: 3}
   allCategories:
   - items:
+    - icon: {fileID: 2059076926, guid: 5d712259c989b7b49bbd885d9e692d74, type: 3}
+      prefab: {fileID: 4938921877892485057, guid: 8d7ef755250a05c44b288a981acb1da7, type: 3}
     - icon: {fileID: -1242478684, guid: 5d712259c989b7b49bbd885d9e692d74, type: 3}
       prefab: {fileID: 5004962763543223086, guid: b9cb3dc6300ba4f40bb60c2ab95644ad, type: 3}
     - icon: {fileID: 1728841740, guid: 5d712259c989b7b49bbd885d9e692d74, type: 3}
@@ -1136,7 +1138,7 @@ MonoBehaviour:
     - icon: {fileID: -966170853, guid: 0a1229c9dfef5f841ace6bfebc7f23a7, type: 3}
       prefab: {fileID: 2535131458319871261, guid: 1acd6f0487496c146ae96f97ca8b7b6a, type: 3}
     - icon: {fileID: 220506288, guid: 0a1229c9dfef5f841ace6bfebc7f23a7, type: 3}
-      prefab: {fileID: 8886429223091340966, guid: 06d1d94dacacb2640a9b03d246598bd1, type: 3}
+      prefab: {fileID: 4261741834152051863, guid: 222b1f3833da3a64cb338b36eb7bd980, type: 3}
     - icon: {fileID: 216698820, guid: 0a1229c9dfef5f841ace6bfebc7f23a7, type: 3}
       prefab: {fileID: 3393553057914590847, guid: 51bddc323b8c92c4683c7f5ef927f0bd, type: 3}
 --- !u!4 &372239992
@@ -1359,14 +1361,14 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: LoginUIManager, Assembly-CSharp
-        m_MethodName: OnClickStart
-        m_Mode: 1
+      - m_Target: {fileID: 372239991}
+        m_TargetAssemblyTypeName: EditorManager, Assembly-CSharp
+        m_MethodName: ShowCategory
+        m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
+          m_IntArgument: 1
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0

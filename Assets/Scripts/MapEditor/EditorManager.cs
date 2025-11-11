@@ -68,6 +68,12 @@ public class EditorManager : MonoBehaviour
             DeleteObject();
         }
 
+        // B 키로 커서 토글시 선택해제
+        if (Input.GetKeyDown(KeyCode.B))
+        {
+            currentSelectedPrefab = null;
+        }
+
         // 배치 로직
         if (currentSelectedPrefab == null)
         {
@@ -122,11 +128,10 @@ public class EditorManager : MonoBehaviour
             float snappedX = (gridSize > 0) ? Mathf.Round(hitPoint.x / gridSize) * gridSize : hitPoint.x;
             float snappedZ = (gridSize > 0) ? Mathf.Round(hitPoint.z / gridSize) * gridSize : hitPoint.z;
 
-            // 새 오브젝트 선택 후 첫 히트일 경우, Y 높이를 바닥 높이로 초기화
+            // 새 오브젝트 선택 후 첫 히트일 경우, Y 높이 초기화
             if (isFirstHitAfterSelect)
             {
-                float snappedY = (gridSize > 0) ? Mathf.Round(hitPoint.y / gridSize) * gridSize : hitPoint.y;
-                currentGridPosition.y = snappedY;
+                currentGridPosition.y = 0;
                 isFirstHitAfterSelect = false; // 플래그 해제
             }
 
@@ -163,8 +168,6 @@ public class EditorManager : MonoBehaviour
         // 직접 Instantiate 하는 대신, PlaceObjectAction을 생성하고 등록
         IEditorAction action = new PlaceObjectAction(currentSelectedPrefab, currentGridPosition, currentRotation);
         RegisterAction(action);
-
-        isFirstHitAfterSelect = true;
     }
 
     // 삭제
@@ -335,7 +338,7 @@ public class EditorManager : MonoBehaviour
             GameObject newButtonGO = Instantiate(paletteButtonPrefab, paletteContentArea);
 
             // 버튼 아이콘 설정
-            Image buttonIcon = newButtonGO.transform.Find("Icon").GetComponent<Image>(); // 프리팹 구조에 맞게 "Icon" 이름 수정
+            Image buttonIcon = newButtonGO.GetComponent<Image>();
             if (buttonIcon != null)
             {
                 buttonIcon.sprite = item.icon;

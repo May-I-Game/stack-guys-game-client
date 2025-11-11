@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 5061800688056191044}
   - component: {fileID: 2368942863980707845}
   m_Layer: 5
-  m_Name: prefabBtn
+  m_Name: paletteBtn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
