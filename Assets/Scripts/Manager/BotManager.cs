@@ -1,6 +1,7 @@
 using UnityEngine;
 using Unity.Netcode;
 using System.Collections.Generic;
+using Unity.Netcode.Components;
 
 public class BotManager : NetworkBehaviour
 {
@@ -108,11 +109,14 @@ public class BotManager : NetworkBehaviour
         // 스폰 위치 - botIndex가 배열 크기를 넘어도 안전하게 처리
         Transform spawnPoint = pointsToUse[botIndex % pointsToUse.Length];
 
+        // 오른쪽으로 45도 회전 추가
+        Quaternion spawnRotation = spawnPoint.rotation * Quaternion.Euler(0, 45, 0);
+
         // 봇 인스턴스 생성
         GameObject botInstance = Instantiate(
             botPrefab,
             spawnPoint.position,
-            spawnPoint.rotation
+            spawnRotation
         );
 
         // 봇 식별자 설정
@@ -136,6 +140,14 @@ public class BotManager : NetworkBehaviour
         {
             // 서버 소유로 스폰
             networkObject.Spawn();
+
+            // 스폰 후 회전값 다시 적용 (네트워크 동기화를 위해)
+            NetworkTransform nt = botInstance.GetComponent<NetworkTransform>();
+            if (nt != null)
+            {
+                // 텔레포트를 사용하여 위치와 회전을 명확히 설정
+                nt.Teleport(spawnPoint.position, spawnRotation, botInstance.transform.localScale);
+            }
 
             PlayerNameSync nameSync = botInstance.GetComponent<PlayerNameSync>();
             if (nameSync != null)
