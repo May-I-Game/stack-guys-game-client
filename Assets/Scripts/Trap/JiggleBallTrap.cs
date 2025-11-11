@@ -13,29 +13,34 @@ public class JiggleBallTrap : MonoBehaviour
 
     void Start()
     {
-        if (NetworkManager.Singleton.IsServer)
+        if ((NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer)
+            && EditorManager.Instance == null) return;
+
+        if (autoRotate)
         {
-            if (autoRotate)
-            {
-                StartCoroutine(AutoRotateRoutine());
-            }
+            StartCoroutine(AutoRotateRoutine());
         }
     }
 
     private IEnumerator AutoRotateRoutine()
     {
-        while (GameManager.instance.IsLobby)
+        while (true)
         {
-            yield return null;
-        }
+            while ((GameManager.instance && GameManager.instance.IsLobby)
+               || (EditorManager.Instance && EditorManager.Instance.IsEdit))
+            {
+                yield return null;
+            }
 
-        while (GameManager.instance.IsGame)
-        {
-            yield return RotateTo(leftZ);
-            yield return new WaitForSeconds(stayTime);
+            while ((GameManager.instance && GameManager.instance.IsGame)
+                   || (EditorManager.Instance && EditorManager.Instance.IsGame))
+            {
+                yield return RotateTo(leftZ);
+                yield return new WaitForSeconds(stayTime);
 
-            yield return RotateTo(rightZ);
-            yield return new WaitForSeconds(stayTime);
+                yield return RotateTo(rightZ);
+                yield return new WaitForSeconds(stayTime);
+            }
         }
     }
 

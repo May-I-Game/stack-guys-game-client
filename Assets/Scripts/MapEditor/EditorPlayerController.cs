@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class EditorPlayerController : MonoBehaviour
@@ -23,11 +24,9 @@ public class EditorPlayerController : MonoBehaviour
 
     private Rigidbody rb;
     private CapsuleCollider col;
-    private PlayerInputHandler inputHandler;
 
     private Vector2 moveDir = Vector2.zero;
     private Vector2 lastSentInput = Vector2.zero;  // 실제로 서버에 전송한 마지막 입력
-    private float lastInputSendTime = 0f;  // 마지막 입력 전송 시간
 
     // GC 최적화: WaitForSeconds 캐싱
     private bool isJumpQueued;
@@ -48,10 +47,8 @@ public class EditorPlayerController : MonoBehaviour
     private bool isHit = false; // 충돌 상태 (이동 불가)
     private bool canDive = false; // 다이브 가능 상태 (점프 중)
 
-    // 리스폰 구역 Index 값
-    private int respawnId;
-
-    [SerializeField] protected RespawnManager respawnManager;     // 리스폰 리스트를 사용하기 위하여 선언
+    private int respawnIdx = 0;
+    public List<Transform> respawnAreas = new List<Transform>();
 
     //시네마틱 동기화를 위한 사용자 입력 무시 변수
     public bool inputEnabled = true;
@@ -65,9 +62,6 @@ public class EditorPlayerController : MonoBehaviour
     private void Start()
     {
         Camera.main.GetComponent<CameraFollow>().target = this.transform;
-
-        inputHandler = GetComponent<PlayerInputHandler>();
-        respawnManager = FindFirstObjectByType<RespawnManager>();
 
         // Animator가 설정되지 않았다면 자동으로 찾기
         animator = animator != null ? animator : GetComponent<Animator>();
@@ -83,22 +77,14 @@ public class EditorPlayerController : MonoBehaviour
             return;
         }
 
-        Vector2 currentInput = inputHandler.MoveInput;
+        MovePlayerInput();
 
-        // ===== 입력 동기화 최적화 (모바일 조이스틱 기준) =====
-        float timeSinceLastSend = Time.time - lastInputSendTime;
-        float inputDelta = Vector2.Distance(currentInput, lastSentInput);
-
-        MovePlayerInput(currentInput);
-        lastSentInput = currentInput;
-        lastInputSendTime = Time.time;
-
-        // 점프 입력
-        if (inputHandler.JumpInput)
+        // Space 키로 점프 또는 다이브 (PC만)
+        if (Input.GetKeyDown(KeyCode.Space))
         {
             JumpPlayerInput();
-            inputHandler.ResetJumpInput();
         }
+
         UpdateAnimation();
     }
 
@@ -125,7 +111,7 @@ public class EditorPlayerController : MonoBehaviour
         inputEnabled = enabled;
     }
 
-    private void MovePlayerInput(Vector2 direction)
+    private void MovePlayerInput()
     {
         // 충돌 중이거나 다이브 착지 중이면 입력 무시
         if (isHit || isDiveGrounded)
@@ -134,18 +120,43 @@ public class EditorPlayerController : MonoBehaviour
             return;
         }
 
+        // ============ PC: 기존 키보드 입력 ============ // WASD 입력 받기
+        float horizontal = Input.GetAxisRaw("Horizontal"); // A, D
+        float vertical = Input.GetAxisRaw("Vertical");     // W, S
+
+        // ============ 카메라에 영향을 받는 이동 ===========
+        Transform cam = EditorManager.Instance.playerCam.transform;
+        Vector2 currentInput;
+        // GC 최적화: Vector2 재사용 (매 프레임 할당 방지)
+        Vector2 foward = new Vector2(cam.forward.x, cam.forward.z);
+        foward.Normalize();
+
+        Vector2 right = new Vector2(cam.right.x, cam.right.z);
+        right.Normalize();
+
+        // 입력(Vertical=앞/뒤, Horizontal=좌/우)을 카메라 기준으로 합성
+        currentInput = foward * vertical + right * horizontal;
+
+        // ===== 입력 동기화 최적화 =====
+        float inputDelta = Vector2.Distance(currentInput, lastSentInput);
+
+        // 대각선 과입력(√2) 보정
+        if (currentInput.sqrMagnitude > 1f) currentInput.Normalize();
+
         // 이동 방향 임계값 체크: 방향 변화가 크거나 멈출 때만 동기화
-        Vector2 directionDelta = direction - moveDir;
-        if (directionDelta.magnitude >= 0.1f || direction == Vector2.zero)
+        Vector2 directionDelta = currentInput - moveDir;
+        if (directionDelta.magnitude >= 0.1f || currentInput == Vector2.zero)
         {
-            moveDir = direction;
+            moveDir = currentInput;
         }
+
+        lastSentInput = currentInput;
     }
 
-    protected void JumpPlayerInput()
+    private void JumpPlayerInput()
     {
         // 충돌 중이거나 다이브 착지 중이면 입력 무시
-        if (isHit || isGrounded)
+        if (isHit || isDiveGrounded)
         {
             return;
         }
@@ -183,7 +194,6 @@ public class EditorPlayerController : MonoBehaviour
         // 이동 요청이 있으면
         if (moveDir.magnitude >= 0.1f)
         {
-            ServerPerformanceProfiler.Start("PlayerController.Move");
             // 이동
             Vector3 movement = new Vector3(
                 moveDir.x,
@@ -197,7 +207,6 @@ public class EditorPlayerController : MonoBehaviour
             transform.rotation = targetRotation;
 
             isMove = true;
-            ServerPerformanceProfiler.End("PlayerController.Move");
         }
         else
         {
@@ -273,7 +282,7 @@ public class EditorPlayerController : MonoBehaviour
         animator.SetTrigger("Death");
     }
 
-    // 시체 생성 + 텔레포트
+    // 시체 생성 + 리스폰
     private void DoRespawnTeleport()
     {
         // 시체 생성 (리스폰 시점에 생성하여 자연스러움)
@@ -285,12 +294,6 @@ public class EditorPlayerController : MonoBehaviour
             SetLayerRecursively(bodyInstance, 10);
         }
 
-        // 리스폰 리스트 가져오기
-        int index = respawnId;
-
-        var dest = respawnManager.respawnPoints[index];
-        if (!dest) { Debug.LogWarning("Respawn Transform null"); return; }
-
         // 이동/회전 속도 초기화
         if (rb != null)
         {
@@ -299,27 +302,8 @@ public class EditorPlayerController : MonoBehaviour
         }
 
         // 캐릭터 텔레포트
-        transform.position = dest.position;
-        transform.rotation = dest.rotation;
-
-        ResetPlayerState();
-    }
-
-
-    // 좌표를 이용한 텔레포트
-    // 순간이동에도 쓰이므로 public
-    public void DoRespawn(Vector3 pos, Quaternion rot)
-    {
-        // 이동/회전 속도 초기화
-        if (rb != null)
-        {
-            rb.linearVelocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
-        }
-
-        // 캐릭터 텔레포트
-        transform.position = pos;
-        transform.rotation = rot;
+        transform.position = respawnAreas[respawnIdx].position;
+        transform.rotation = respawnAreas[respawnIdx].rotation;
 
         ResetPlayerState();
     }
@@ -356,7 +340,6 @@ public class EditorPlayerController : MonoBehaviour
         // 프레임 스키핑: Unity 전역 프레임 카운터 사용 (모든 플레이어가 동기화됨)
         if (Time.frameCount % groundCheckInterval != 0) return;
 
-        ServerPerformanceProfiler.Start("PlayerController.GroundCheck");
         // 캐싱된 계산 (매번 계산하지 않도록)
         float offsetDist = col.height / 2f - col.radius;
         Vector3 bottomSphereCenter = col.center + (Vector3.down * offsetDist);

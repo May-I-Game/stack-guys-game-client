@@ -15,6 +15,7 @@ TagManager:
   - Goal
   - Waypoint
   - Ocean
+  - SpawnPoint
   layers:
   - Default
   - TransparentFX
