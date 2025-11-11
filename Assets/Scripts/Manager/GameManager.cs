@@ -32,7 +32,6 @@ public class GameManager : NetworkBehaviour
     [SerializeField] private GameObject PingCount;
     [SerializeField] private GameObject LobbyUI;
     [SerializeField] private GameObject gameUI;
-    [SerializeField] private GameObject MobilUI;
 
     [Header("Settings")]
     [SerializeField] private float startCountdownTime = 5f;
@@ -391,28 +390,25 @@ public class GameManager : NetworkBehaviour
     {
         //카운트 다운 내리기
         gameEndcountdown.gameObject.SetActive(false);
+        // 결과 화면 표시
 
         if (FPSCount != null)
         {
-            FPSCount.SetActive(false);
+            FPSCount.gameObject.SetActive(false);
         }
         if (PingCount != null)
         {
-            PingCount.SetActive(false);
+            PingCount.gameObject.SetActive(false);
         }
         if (LobbyUI != null)
         {
-            LobbyUI.SetActive(false);
+            LobbyUI.gameObject.SetActive(false);
         }
         if (gameUI != null)
         {
-            gameUI.SetActive(false);
+            gameUI.gameObject.SetActive(false);
         }
-        if (MobilUI != null)
-        {
-            MobilUI.SetActive(false);
-        }
-        // 결과 화면 표시
+
         if (resultPanel != null)
         {
             resultPanel.SetActive(true);
@@ -452,10 +448,6 @@ public class GameManager : NetworkBehaviour
         {
             gameUI.gameObject.SetActive(true);
         }
-        if (MobilUI != null)
-        {
-            MobilUI.gameObject.SetActive(true);
-        }
 
     }
     private void UpdateCountDownUI(float prviousValue, float newValue)
@@ -476,27 +468,27 @@ public class GameManager : NetworkBehaviour
         // 1등
         if (rankings.Count > 0 && firstPlaceText != null)
         {
-            firstPlaceText.text = $"{rankings[0]}";
+            firstPlaceText.text = $"1.: {rankings[0]}";
         }
 
         // 2등
         if (rankings.Count > 1 && secondPlaceText != null)
         {
-            secondPlaceText.text = $"{rankings[1]}";
+            secondPlaceText.text = $"2.: {rankings[1]}";
         }
         else if (secondPlaceText != null)
         {
-            secondPlaceText.text = "-";
+            secondPlaceText.text = "2.: -";
         }
 
         // 3등
         if (rankings.Count > 2 && thirdPlaceText != null)
         {
-            thirdPlaceText.text = $"{rankings[2]}";
+            thirdPlaceText.text = $"3.: {rankings[2]}";
         }
         else if (thirdPlaceText != null)
         {
-            thirdPlaceText.text = "-";
+            thirdPlaceText.text = "3.: -";
         }
     }
 
@@ -526,29 +518,8 @@ public class GameManager : NetworkBehaviour
             yield return null;
         }
 
-        if (FPSCount != null)
-        {
-            FPSCount.SetActive(false);
-        }
-        if (PingCount != null)
-        {
-            PingCount.SetActive(false);
-        }
-        if (LobbyUI != null)
-        {
-            LobbyUI.SetActive(false);
-        }
-        if (gameUI != null)
-        {
-            gameUI.SetActive(false);
-        }
-        if (MobilUI != null)
-        {
-            MobilUI.SetActive(false);
-        }
         //timeline재생
         timeline.Play();
-
         //트랙 bgm on
         trackBGM.Play();
 
@@ -582,26 +553,7 @@ public class GameManager : NetworkBehaviour
         {
             localPlayer.SetInputEnabled(true);
         }
-        if (FPSCount != null)
-        {
-            FPSCount.SetActive(true);
-        }
-        if (PingCount != null)
-        {
-            PingCount.SetActive(true);
-        }
-        if (LobbyUI != null)
-        {
-            LobbyUI.SetActive(true);
-        }
-        if (gameUI != null)
-        {
-            gameUI.SetActive(true);
-        }
-        if (MobilUI != null)
-        {
-            MobilUI.SetActive(true);
-        }
+
         // 시네마틱 끝나고 봇 입력 활성화
         if (IsServer && BotManager.Singleton != null)
         {
