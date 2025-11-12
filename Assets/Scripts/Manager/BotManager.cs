@@ -110,7 +110,7 @@ public class BotManager : NetworkBehaviour
         Transform spawnPoint = pointsToUse[botIndex % pointsToUse.Length];
 
         // 오른쪽으로 45도 회전 추가
-        Quaternion spawnRotation = spawnPoint.rotation * Quaternion.Euler(0, 45, 0);
+        Quaternion spawnRotation = spawnPoint.rotation * Quaternion.Euler(0, 90, 0);
 
         // 봇 인스턴스 생성
         GameObject botInstance = Instantiate(
