@@ -167,7 +167,7 @@ public class BotController : PlayerController
             // NavMeshAgent 재초기화
             if (navAgent != null)
             {
-                // NavMeshAget 완전 리셋 (false, true 해야 리셋됨)
+                // NavMeshAget 완전 리셋 (false, true 해야 내부 상태 리셋됨)
                 navAgent.enabled = false;
                 navAgent.enabled = true;
 
@@ -177,25 +177,33 @@ public class BotController : PlayerController
                     navAgent.Warp(transform.position);
                 }
 
+                // 경로 및 이동 상태 초기화
                 navAgent.ResetPath();
-                navAgent.velocity = Vector3.zero;
+                navAgent.isStopped = false;
             }
+
+            // Rigidbody 속도 초기화
+            if (rb != null)
+            {
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+            }
+
+            // AI 상태 초기화
+            isGoingToWaypoint = false;
+            isGoingToGoal = false;
+            currentWaypoint = null;
+            currentWaypointIndex.Value = -1;
+            overrideActive = false;
+            overrideWaypoint = null;
+
+            nextPathUpdateTime = 0f;
+            nextWaypointSearchTime = 0f;
+
+            // 목표 재탐색
+            FindGoal();
+            RefreshWaypoints();
         }
-
-        // AI 상태 초기화
-        isGoingToWaypoint = false;
-        isGoingToGoal = false;
-        currentWaypoint = null;
-        currentWaypointIndex.Value = -1;
-        overrideActive = false;
-        overrideWaypoint = null;
-
-        nextPathUpdateTime = 0f;
-        nextWaypointSearchTime = 0f;
-
-        // 목표 재탐색
-        FindGoal();
-        RefreshWaypoints();
     }
 
     // Goal 태그를 가진 오브젝트 찾기 (서버 전용)
@@ -205,7 +213,7 @@ public class BotController : PlayerController
 
         // Goal 태그를 가진 오브젝트 찾기
         goalTransform = WaypointManager.Instance.GetGoal();
-        
+
     }
 
     // 웨이포인트 재탐색 및 배열 갱신 (서버 전용)
