@@ -23,7 +23,7 @@ public class BotController : PlayerController
 
     [SerializeField] private bool requireReachableWaypoint = true;      // 도달 가능한 웨이포인트만 사용하도록 강제
 
-    private bool isGoingToGoal = false;                                 // Goal로 직행 중인가?
+    private bool isGoingToGoal = false;                                 // Goal로 가는중인가?
 
     private NavMeshAgent navAgent;
     private NavMeshPath pathBuffer;                                     // 경로 검사용 버퍼
@@ -38,10 +38,6 @@ public class BotController : PlayerController
     // 서버에서 선택한 웨이포인트 인덱스, 에디터 기즈모는 이 값을 통해 동일한 웨이포인트를 보여줌
     private NetworkVariable<int> currentWaypointIndex = new(
         -1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-
-    // 문 열림 이벤트로 강제 이동할 웨이포인트
-    private Transform overrideWaypoint;     // 강제 목표 웨이포인트
-    private bool overrideActive = false;    // 강제 모드 여부
 
     // 전역 우선순위 - 문이 열릴 때 등록되는 웨이포인트들
     private static readonly System.Collections.Generic.List<Transform> openedDoorWaypoints =
@@ -194,8 +190,6 @@ public class BotController : PlayerController
             isGoingToGoal = false;
             currentWaypoint = null;
             currentWaypointIndex.Value = -1;
-            overrideActive = false;
-            overrideWaypoint = null;
 
             nextPathUpdateTime = 0f;
             nextWaypointSearchTime = 0f;
@@ -234,11 +228,11 @@ public class BotController : PlayerController
             waypoints = null;
             isGoingToWaypoint = false;
             currentWaypoint = null;
-            currentWaypointIndex.Value = -1; // NetworkVariable 웨이포인트 인덱스 초기화 (없음)
+            currentWaypointIndex.Value = -1; // NetworkVariable 웨이포인트 인덱스 초기화
         }
     }
 
-    // 지정 위치로의 경로가 "완전 경로"인지 검사
+    // 지정 위치로의 경로가 완전 경로인지 검사
     private bool IsReachable(Vector3 targetPos)
     {
         if (navAgent == null || !navAgent.isActiveAndEnabled || !navAgent.isOnNavMesh)
@@ -250,14 +244,14 @@ public class BotController : PlayerController
         return pathBuffer.status == NavMeshPathStatus.PathComplete;
     }
 
-    // SetDestination을 너무 자주 갱신하지 않도록 간격 제어 + 완전 경로일 때만 설정
+    // SetDestination을 너무 자주 갱신하지 않도록 간격 제어, 완전 경로일 때만 설정
     private void SetDestinationIfDue(Vector3 targetPos)
     {
         if (Time.time > nextPathUpdateTime)
         {
             if (navAgent.isActiveAndEnabled && navAgent.isOnNavMesh)
             {
-                // 부분 경로 또는 실패 경로는 설정하지 않음
+                // 부분 경로, 실패 경로는 설정하지 않음
                 if (!requireReachableWaypoint || IsReachable(targetPos))
                 {
                     navAgent.SetDestination(targetPos);
@@ -268,7 +262,7 @@ public class BotController : PlayerController
         }
     }
 
-    // Goal로 강제 이동 (경로 완전성 체크 무시)
+    // Goal로 강제 이동 (경로 체크 무시)
     private void SetDestinationToGoalForced()
     {
         if (goalTransform == null) return;
@@ -346,7 +340,7 @@ public class BotController : PlayerController
         // 항상 가장 가까운 N개 중 랜덤 선택
         Vector3 origin = transform.position;
 
-        // forwardIndices를 거리 기준 오름차순 정렬 (가까운 순)
+        // forwardIndices를 거리 기준 오름차순 정렬
         forwardIndices.Sort((a, b) =>
         {
             float distA = (waypoints[a].position - origin).sqrMagnitude;
@@ -366,57 +360,9 @@ public class BotController : PlayerController
         return true;
     }
 
-    // AI 로직 - 우선순위 : 강제 웨이포인트 > 열린 문 > 랜덤 웨이포인트 > Goal
+    // AI 로직 (우선순위: 열린 문 > 랜덤 웨이포인트 > Goal)
     private void UpdateBotAI()
     {
-        // 강제 웨이포인트 모드 - 가장 먼저 처리하고 일반 로직은 중단
-        if (overrideActive && overrideWaypoint != null)
-        {
-            float dist = Vector3.Distance(transform.position, overrideWaypoint.position);
-
-            if (dist < waypointReachedDistance)
-            {
-                // 강제 목표에 도착 -> 강제 모드 해제, 일반 로직 시작
-                overrideActive = false;
-                overrideWaypoint = null;
-
-                // 다음 프레임에 일반 로직이 새 목표를 잡도록 초기화
-                isGoingToWaypoint = false;
-                isGoingToGoal = false;
-                currentWaypoint = null;
-                currentWaypointIndex.Value = -1;
-            }
-            else
-            {
-                // 아직 미도달 -> 강제 목표로 계속 진행 (완전 경로만)
-                if (!requireReachableWaypoint || IsReachable(overrideWaypoint.position))
-                    SetDestinationIfDue(overrideWaypoint.position);
-            }
-
-            // 이동 입력 (완전 경로일 때만)
-            if (navAgent.hasPath && navAgent.pathStatus == NavMeshPathStatus.PathComplete &&
-                !isHit && !netIsDiveGrounded.Value && !netIsGrabbed.Value)
-            {
-                Vector3 direction = navAgent.desiredVelocity.normalized;
-
-                if (direction.magnitude > 0.1f)
-                {
-                    moveDir = new Vector2(direction.x, direction.z);
-                    navAgent.nextPosition = transform.position;
-                }
-                else
-                {
-                    moveDir = Vector2.zero;
-                }
-            }
-            else
-            {
-                moveDir = Vector2.zero;
-            }
-
-            return; // 강제 모드에서는 아래 일반 웨이포인트 건너뜀
-        }
-
         // 열린 문 우선순위 처리: 등록 순서대로, 내 앞쪽이며 도달 가능한 문 먼저
         Transform priorityTarget = GetNextPriorityWaypointAhead();
         if (priorityTarget != null)
@@ -440,8 +386,6 @@ public class BotController : PlayerController
                 isGoingToGoal = false;
                 currentWaypoint = null;
                 currentWaypointIndex.Value = -1;
-                // 다음 프레임에 GetNextPriorityWaypointAhead()가 다음 문을 자동으로 선택
-                // 또는 모든 문을 통과했으면 null 반환 → 랜덤 웨이포인트/Goal로 진행
             }
             else
             {
@@ -513,7 +457,7 @@ public class BotController : PlayerController
                 // 도달 -> 다음 앞쪽 웨이포인트 시도, 실패하면 Goal로 폴백
                 if (distanceToWaypoint < waypointReachedDistance)
                 {
-                    // 다음 앞쪽 웨이포인트 선택 실패 시 Goal 진행 (경로 체크 판정)
+                    // 다음 앞쪽 웨이포인트 선택 실패 시 Goal 진행
                     if (!TrySelectForwardWaypoint())
                     {
                         isGoingToGoal = true;
@@ -529,7 +473,7 @@ public class BotController : PlayerController
                         SetDestinationIfDue(currentWaypoint.position);
                     else
                     {
-                        // 현재 웨이포인트가 막혀 있으면 다른 앞쪽 웨이포인트 재선택, 실패하면 Goal로 (경로 체크 없이)
+                        // 현재 웨이포인트가 막혀 있으면 다른 앞쪽 웨이포인트 재선택, 실패하면 Goal로 (경로 체크 안함)
                         if (!TrySelectForwardWaypoint())
                         {
                             isGoingToGoal = true;
@@ -557,7 +501,7 @@ public class BotController : PlayerController
         }
 
         // NavMesh 경로를 moveDir으로 변환하여 PlayerMove()가 실제 이동 처리
-        // 유효한 "완전 경로"가 있고 피격/다이브/잡힘 상태가 아닐 때만 이동
+        // 유효한 경로가 있고 피격/다이브/잡힘 상태가 아닐 때만 이동
         if (navAgent.hasPath && navAgent.pathStatus == NavMeshPathStatus.PathComplete &&
             !isHit && !netIsDiveGrounded.Value && !netIsGrabbed.Value)
         {
@@ -565,7 +509,7 @@ public class BotController : PlayerController
 
             if (direction.magnitude > 0.1f)
             {
-                // 캐릭터 이동 입력은 XZ 평면만 사용 (x=좌우, z=전후)
+                // 캐릭터 이동 입력
                 Vector2 moveInput = new Vector2(direction.x, direction.z);
 
                 moveDir = moveInput; // 이번 프레임 이동 방향
@@ -582,48 +526,6 @@ public class BotController : PlayerController
         }
     }
 
-    // 봇의 웨이포인트를 강제로 전환
-    public void ForceWaypoint(Transform wp)
-    {
-        if (!IsServer || wp == null) return;
-
-        // 리스트가 비어있다면 최신화 (인데스 동기화용)
-        if (waypoints == null || waypoints.Length == 0)
-            RefreshWaypoints();
-
-        overrideWaypoint = wp;
-        overrideActive = true;
-
-        // 현재 목표/상태 갱신
-        currentWaypoint = wp;
-        isGoingToWaypoint = true;
-        isGoingToGoal = false;
-
-        // 기즈모 동기화를 위해 인덱스 설정 (안전 가드)
-        int forcedIndex = -1;
-        if (waypoints != null)
-        {
-            for (int i = 0; i < waypoints.Length; i++)
-            {
-                if (waypoints[i] == wp)
-                {
-                    forcedIndex = i;
-                    break;
-                }
-            }
-        }
-
-        currentWaypointIndex.Value = forcedIndex; // NetworkVariable 웨이포인트 인덱스
-
-        if (navAgent != null && navAgent.isOnNavMesh)
-        {
-            navAgent.ResetPath();
-            if (!requireReachableWaypoint || IsReachable(wp.position))
-                navAgent.SetDestination(wp.position);
-            nextPathUpdateTime = Time.time + updatePathInterval;
-        }
-    }
-
     // 문 열림 시 호출되어 웨이포인트를 전역 우선순위 목록에 추가
     public static void RegisterOpenedDoorWaypoint(Transform wp)
     {
@@ -636,8 +538,6 @@ public class BotController : PlayerController
     /////////////////////////////////////////
     // Gizmos 관련
     /////////////////////////////////////////
-
-    // Goal 태그 재검색 (서버 참조 없을 때)
 
     // 웨이포인트 배열에서 인덱스 찾기 (기즈모 동기화용)
     private int GetWaypointIndex(Transform wp)
@@ -659,25 +559,16 @@ public class BotController : PlayerController
 
         if (!showPathInEditor) return;
 
-        // 선택한 봇의 선 색상
-        if (overrideActive && overrideWaypoint != null)
+        // 서버 선택 인덱스 우선, 없으면 앞쪽 웨이포인트 Fallback
+        Transform forwardWp = GetSyncedCurrentWaypoint();
+        if (forwardWp == null)
+            forwardWp = FindForwardWaypointForGizmo();            // 선택 없으면 앞쪽 하나 선택
+
+        // 웨이포인트 선 색상
+        if (forwardWp != null)
         {
             Gizmos.color = waypointLineColor;
-            Gizmos.DrawLine(transform.position, overrideWaypoint.position);
-        }
-        else
-        {
-            // 서버 선택 인덱스 우선, 없으면 앞쪽 웨이포인트 Fallback
-            Transform forwardWp = GetSyncedCurrentWaypoint();
-            if (forwardWp == null)
-                forwardWp = FindForwardWaypointForGizmo();            // 선택 없으면 앞쪽 하나 선택
-
-            // 웨이포인트 선 색상
-            if (forwardWp != null)
-            {
-                Gizmos.color = waypointLineColor;
-                Gizmos.DrawLine(transform.position, forwardWp.position);
-            }
+            Gizmos.DrawLine(transform.position, forwardWp.position);
         }
 
         // Goal은 서버가 못 찾으면 클라이언트 태그 재검색
@@ -760,18 +651,10 @@ public class BotController : PlayerController
         return WaypointManager.Instance.GetGoal();
     }
 
-    // 봇이 선택되었을 때만 표시되는 Gizmos (상세 정보)
+    // 봇이 선택되었을 때만 표시되는 Gizmos
     private void OnDrawGizmosSelected()
     {
         if (!showPathInEditor) return;
-
-        // 강제 웨이포인트가 있으면 그것만 강조
-        if (overrideActive && overrideWaypoint != null)
-        {
-            Gizmos.color = selectedColor; // 선택 시 색상
-            Gizmos.DrawLine(transform.position, overrideWaypoint.position);
-            return;
-        }
 
         // 동기화된 인덱스를 이용하여 서버와 동일한 웨이포인트를 찾아 선을 그림
         Transform selectedWp = GetSyncedCurrentWaypoint();
@@ -783,7 +666,7 @@ public class BotController : PlayerController
 
     public override void OnNetworkSpawn()
     {
-        // 서버만 물리 활성화 (PlayerController와 동일)
+        // 서버만 물리 활성화
         if (IsServer)
         {
             EnablePhysics(true);
@@ -793,7 +676,7 @@ public class BotController : PlayerController
             EnablePhysics(false);
         }
 
-        // 봇은 카메라 설정 안함 (플레이어와 다른 점)
+        // 봇은 카메라 설정 안함
     }
 
     private void OnDestroy()
@@ -805,7 +688,6 @@ public class BotController : PlayerController
     }
 }
 
-// 열린 문 우선 = 등록된 순서대로 내 앞 + 도달 가능한 문을 우선 방문
-// 리스폰 후에도 동일한 순서로 다시 방문
-// 열린 문이 없을 때만 랜덤 앞쪽 웨이포인트 진행
-// 이동은 PathComplete일 때만 수행 (골 제외)
+// 1. 열린 문 우선순위 (FIFO + 내 앞 + 도달 가능)
+// 2. 랜덤 앞쪽 웨이포인트 (가장 가까운 4개 중 랜덤)
+// 3. Goal 직행 (경로 검증 없이 강제)
