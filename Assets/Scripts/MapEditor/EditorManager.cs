@@ -52,7 +52,7 @@ public class EditorManager : MonoBehaviour
 
     private Dictionary<string, GameObject> prefabDatabase = new Dictionary<string, GameObject>();
 
-    private EditorState currentEditorState;
+    private EditorState currentEditorState = EditorState.Editor;
 
     public static EditorManager Instance;
 
@@ -108,6 +108,16 @@ public class EditorManager : MonoBehaviour
         if (EventSystem.current.IsPointerOverGameObject())
         {
             // UI 위에 마우스가 있으니, 미리보기를 숨깁니다.
+            if (previewInstance != null && previewInstance.activeSelf)
+            {
+                previewInstance.SetActive(false);
+            }
+            return;
+        }
+
+        // 플레이 모드에서는 에디터 기능 비활성화
+        if (IsGame)
+        {
             if (previewInstance != null && previewInstance.activeSelf)
             {
                 previewInstance.SetActive(false);
@@ -236,12 +246,11 @@ public class EditorManager : MonoBehaviour
         if (Physics.Raycast(ray, out hit, 1000f))
         {
             // "MapObjectInfo" 컴포넌트가 있고, 현재 활성화된(삭제되지 않은) 오브젝트만 삭제
-            MapObjectInfo info = hit.collider.GetComponent<MapObjectInfo>();
-
+            MapObjectInfo info = hit.collider.GetComponentInParent<MapObjectInfo>();
             if (info != null && hit.collider.gameObject.activeSelf)
             {
                 // 직접 Destroy 하는 대신, DeleteObjectAction을 생성하고 등록
-                IEditorAction action = new DeleteObjectAction(hit.collider.gameObject);
+                IEditorAction action = new DeleteObjectAction(info.gameObject);
                 RegisterAction(action);
             }
         }
@@ -370,6 +379,8 @@ public class EditorManager : MonoBehaviour
     // 지정된 인덱스의 카테고리를 상단 팔레트에 표시
     public void ShowCategory(int categoryIndex)
     {
+        if (!IsEdit) return;
+
         if (categoryIndex < 0 || categoryIndex >= allCategories.Count)
         {
             Debug.LogError("유효하지 않은 카테고리 인덱스입니다: " + categoryIndex);
@@ -544,6 +555,7 @@ public class EditorManager : MonoBehaviour
 
     public void OpenSaveLoadPanel()
     {
+        if (!IsEdit) return;
         if (saveLoadPanel == null) return;
 
         saveLoadPanel.SetActive(true);
@@ -649,7 +661,6 @@ public class EditorManager : MonoBehaviour
     private void StartGame()
     {
         CloseSaveLoadPanel();
-        currentEditorState = EditorState.Playing;
 
         GameObject spawnPointObj = GameObject.FindGameObjectWithTag("SpawnPoint");
         if (spawnPointObj == null)
@@ -657,6 +668,8 @@ public class EditorManager : MonoBehaviour
             Debug.LogError("맵에 'SpawnPoint'가 없습니다! 플레이 테스트를 시작할 수 없습니다.");
             return;
         }
+
+        currentEditorState = EditorState.Playing;
 
         spawnPoint = spawnPointObj.transform;
         currentPlayer = Instantiate(playerPref, spawnPoint.position, spawnPoint.rotation).GetComponent<EditorPlayerController>();
