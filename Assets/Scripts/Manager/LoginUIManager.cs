@@ -298,30 +298,6 @@ public class LoginUIManager : MonoBehaviour
         Debug.Log($"[Transport] Protocol: {transport.Protocol}");
         Debug.Log($"[Transport] UseWebSockets: {transport.UseWebSockets}");
 
-        //        var nm = NetworkManager.Singleton;
-        //        if (nm == null)
-        //        {
-        //            Debug.LogError("❌ NetworkManager not found!");
-        //            OnConnectionFailed($"NetworkManager not found!");
-        //            isConnecting = false;
-        //            return;
-        //        }
-
-        //        var transport = nm.GetComponent<UnityTransport>();
-        //        if (transport == null)
-        //        {
-        //            Debug.LogError("❌ UnityTransport missing on NetworkManager");
-        //            OnConnectionFailed($"missing on NetworkManager");
-        //            isConnecting = false;
-        //            return;
-        //        }
-
-        //#if UNITY_WEBGL && !UNITY_EDITOR
-        //        transport.UseWebSockets = true;  // WebGL 강제
-        //#endif
-        //        transport.SetConnectionData(serverAddress, serverPort);
-        //        Debug.Log($"Connecting to {serverAddress}:{serverPort} ...");
-
         // ConnectionData 구성: [1바이트 캐릭터][이름(UTF8 ≤16B)][0x00][playerSessionId UTF8]
         byte[] nameBytes = TruncateUtf8(clientName, MAX_NAME_BYTES);
         byte[] sessionBytes = System.Text.Encoding.UTF8.GetBytes(playerSessionId ?? "");
