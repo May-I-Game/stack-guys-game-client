@@ -36,19 +36,19 @@ public class BotController : PlayerController
 
     // NavMeshLink 점프 관련 변수
     private bool isTraversingLink = false;                              // NavMeshLink 통과 중인가?
-    private Vector3 linkStartPos;                                       // NavMeshLink 시작 위치
-    private Vector3 linkEndPos;                                         // NavMeshLink 끝나는 위치  
     private float linkTraverseTime = 0f;                                // NavMeshLink 통과 경과 시간
     private float linkJumpDuration = 0.5f;                              // NavMeshLink 점프 시간
+
+#if UNITY_EDITOR
+    [SerializeField] private bool showWaypointInEditor = false;             // 에디터/클라이언트에서 웨이포인트 기즈모 표시 여부
+    [SerializeField] private bool showGoalInEditor = false;                 // 에디터/클라이언트에서 골 기즈모 표시 여부
+#endif
 
     // 이 부분을 전처리기로 감싸면 Netcode가 초기화 순서를 체크할 때 문제 발생
     // 서버에서 선택한 웨이포인트 인덱스, 에디터 기즈모는 이 값을 통해 동일한 웨이포인트를 보여줌
     private NetworkVariable<int> currentWaypointIndex = new(
         -1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-#if UNITY_EDITOR
-    [SerializeField] private bool showPathInEditor = false;             // 에디터/클라이언트에서 기즈모 표시 여부
-#endif
 
     // 전역 우선순위 - 문이 열릴 때 등록되는 웨이포인트들
     private static readonly System.Collections.Generic.List<Transform> openedDoorWaypoints =
@@ -568,7 +568,7 @@ public class BotController : PlayerController
             moveDir = Vector2.zero;
         }
     }
-    
+
     // 점프 구간 시작
     private void StartLinkTraversal()
     {
@@ -576,10 +576,6 @@ public class BotController : PlayerController
 
         // Unity의 OffMeshLinkData 가져오기
         OffMeshLinkData linkData = navAgent.currentOffMeshLinkData;
-
-        // 링크 정보 저장
-        linkStartPos = linkData.startPos;
-        linkEndPos = linkData.endPos;
 
         // 통과 시작
         isTraversingLink = true;
@@ -679,7 +675,7 @@ public class BotController : PlayerController
     {
         base.OnDrawGizmos();
 
-        if (!showPathInEditor) return;
+        if (!showWaypointInEditor && !showGoalInEditor) return;
 
         // 서버 선택 인덱스 우선, 없으면 앞쪽 웨이포인트 Fallback
         Transform forwardWp = GetSyncedCurrentWaypoint();
@@ -687,7 +683,7 @@ public class BotController : PlayerController
             forwardWp = FindForwardWaypointForGizmo();            // 선택 없으면 앞쪽 하나 선택
 
         // 웨이포인트 선 색상
-        if (forwardWp != null)
+        if (forwardWp != null && showWaypointInEditor)
         {
             Gizmos.color = waypointLineColor;
             Gizmos.DrawLine(transform.position, forwardWp.position);
@@ -695,7 +691,7 @@ public class BotController : PlayerController
 
         // Goal은 서버가 못 찾으면 클라이언트 태그 재검색
         Transform goal = goalTransform != null ? goalTransform : FindGoalForGizmo();
-        if (goal != null)
+        if (goal != null && showGoalInEditor)
         {
             Gizmos.color = goalLineColor;
             Gizmos.DrawLine(transform.position, goal.position);
@@ -776,7 +772,7 @@ public class BotController : PlayerController
     // 봇이 선택되었을 때만 표시되는 Gizmos
     private void OnDrawGizmosSelected()
     {
-        if (!showPathInEditor) return;
+        if (!showGoalInEditor && !showWaypointInEditor) return;
 
         // 동기화된 인덱스를 이용하여 서버와 동일한 웨이포인트를 찾아 선을 그림
         Transform selectedWp = GetSyncedCurrentWaypoint();
