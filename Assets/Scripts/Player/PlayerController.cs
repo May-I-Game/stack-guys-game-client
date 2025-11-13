@@ -2,6 +2,7 @@ using Unity.Collections;
 using Unity.Netcode;
 using Unity.Netcode.Components;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class PlayerController : NetworkBehaviour
 {
@@ -483,8 +484,17 @@ public class PlayerController : NetworkBehaviour
 
     private void TryGrab()
     {
+        float scale = transform.localScale.x;
+        Vector3 grabOffset = transform.forward * 1f * scale
+                           + transform.up * 1f * scale;
+
         // GC 최적화: NonAlloc 버전 사용
-        int count = Physics.OverlapSphereNonAlloc(transform.position, grabRange, grabColliders);
+        int count = Physics.OverlapBoxNonAlloc(
+            transform.position + grabOffset,
+            Vector3.one * grabRange * scale,
+            grabColliders,
+            transform.rotation
+        );
 
         for (int i = 0; i < count; i++)
         {
@@ -509,6 +519,38 @@ public class PlayerController : NetworkBehaviour
                 return;
             }
         }
+    }
+
+    protected virtual void OnDrawGizmos()
+    {
+        // 에디터/프리팹 모드에서도 안전하게 동작하도록 보완
+        if (col == null)
+        {
+            col = GetComponent<CapsuleCollider>();
+            if (col == null)
+            {
+                // 콜라이더가 없으면 기즈모를 그리지 않음
+                return;
+            }
+        }
+
+        float scale = transform.localScale.x;
+        Vector3 grabOffset = transform.forward * 1f * scale
+                           + transform.up * 1f * scale;
+
+        Gizmos.color = Color.red;
+        Vector3 center = transform.position + grabOffset;
+        Vector3 size = (Vector3.one * grabRange * scale) * 2;
+
+        // 기즈모의 좌표계 행렬을 현재 오브젝트의 회전값으로 변경
+        Matrix4x4 rotationMatrix = Matrix4x4.TRS(center, transform.rotation, size);
+        Gizmos.matrix = rotationMatrix;
+
+        // 행렬에서 이미 위치와 크기를 적용했으므로, 여기서는 1x1x1 큐브를 그립니다.
+        Gizmos.DrawWireCube(Vector3.zero, Vector3.one);
+
+        // 행렬 초기화 (다른 기즈모에 영향 주지 않기 위해)
+        Gizmos.matrix = Matrix4x4.identity;
     }
 
     private void GrabPlayer(PlayerController otherPlayer)
@@ -795,7 +837,7 @@ public class PlayerController : NetworkBehaviour
     private System.Collections.IEnumerator BotRespawnDelay()
     {
         //yield return botRespawnWait;  // GC 최적화: 캐싱된 WaitForSeconds 사용
-        
+
         // 7초에서 10초 사이의 랜덤 시간 설정
         float randomRespawnTime = Random.Range(7f, 10f);
         yield return new WaitForSeconds(randomRespawnTime);
@@ -955,41 +997,6 @@ public class PlayerController : NetworkBehaviour
             }
         }
         ServerPerformanceProfiler.End("PlayerController.GroundCheck");
-    }
-
-    protected virtual void OnDrawGizmos()
-    {
-        // 에디터/프리팹 모드에서도 안전하게 동작하도록 보완
-        if (col == null)
-        {
-            col = GetComponent<CapsuleCollider>();
-            if (col == null)
-            {
-                // 콜라이더가 없으면 기즈모를 그리지 않음
-                return;
-            }
-        }
-
-        float offsetDist = col.height / 2f - col.radius;
-        Vector3 bottomSphereCenter = col.center + (Vector3.down * offsetDist);
-        Vector3 castOrigin = transform.TransformPoint(bottomSphereCenter);
-        float scale = transform.localScale.y;
-        float scaledRadius = col.radius * scale * 0.95f;
-        float scaledDistance = groundCheckDist * scale;
-
-        Vector3 startPos = castOrigin;
-        Vector3 endPos = startPos + Vector3.down * scaledDistance;
-
-        Gizmos.color = netIsGrounded.Value ? Color.green : Color.red;
-
-        // 시작점 구
-        Gizmos.DrawWireSphere(startPos, scaledRadius);
-
-        // 끝점 구
-        Gizmos.DrawWireSphere(endPos, scaledRadius);
-
-        // 연결선
-        Gizmos.DrawLine(startPos, endPos);
     }
 
     // 특정 물체와 충돌할 때
