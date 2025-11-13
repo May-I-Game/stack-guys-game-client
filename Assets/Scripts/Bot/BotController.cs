@@ -679,8 +679,10 @@ public class BotController : PlayerController
         // 봇은 카메라 설정 안함
     }
 
-    private void OnDestroy()
+    public override void OnDestroy()
     {
+        base.OnDestroy();
+
         if (netIsDeath != null)
         {
             netIsDeath.OnValueChanged -= OnDeathStateChanged;

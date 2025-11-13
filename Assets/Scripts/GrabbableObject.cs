@@ -50,8 +50,9 @@ public class GrabbableObject : NetworkBehaviour
                         Debug.Log($"[GrabbableObject] Settled, NetworkTransform disabled");
                     }
 
-                    // 선택적: Rigidbody도 Kinematic으로 (물리 최적화)
+                    // Rigidbody 물리 최적화
                     rb.isKinematic = true;
+                    rb.detectCollisions = false;  // 충돌 감지 완전 비활성화 (Physics 최적화)
                 }
             }
             else
@@ -77,10 +78,11 @@ public class GrabbableObject : NetworkBehaviour
             Debug.Log($"[GrabbableObject] Grabbed, NetworkTransform enabled");
         }
 
-        // Rigidbody Kinematic으로 (잡혀있는 동안은 물리 정지)
+        // Rigidbody 설정 (잡혀있는 동안은 물리 정지, 하지만 충돌 감지는 켜기)
         if (rb != null)
         {
             rb.isKinematic = true;
+            rb.detectCollisions = true;  // 잡혔을 때는 충돌 감지 재활성화
         }
     }
 
@@ -103,6 +105,7 @@ public class GrabbableObject : NetworkBehaviour
         if (rb != null)
         {
             rb.isKinematic = false;
+            rb.detectCollisions = true;  // 던졌을 때 충돌 감지 활성화
         }
     }
 
