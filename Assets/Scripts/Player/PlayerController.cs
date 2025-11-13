@@ -1,3 +1,4 @@
+using Unity.Collections;
 using Unity.Netcode;
 using Unity.Netcode.Components;
 using UnityEngine;
@@ -39,6 +40,13 @@ public class PlayerController : NetworkBehaviour
     public float speedThreshold = 0.5f;  // 0.5 m/s 이상 변화만
     [Tooltip("땅 체크 간격 (프레임). 1=매프레임, 2=2프레임마다. 권장: 2")]
     public int groundCheckInterval = 2;  // 2프레임마다 체크 (50Hz → 25Hz)
+
+    [Header("Player Info")]
+    private NetworkVariable<FixedString32Bytes> playerName = new NetworkVariable<FixedString32Bytes>(
+    "",
+    NetworkVariableReadPermission.Everyone,
+    NetworkVariableWritePermission.Owner
+);
 
     protected Rigidbody rb;
     private CapsuleCollider col;
@@ -107,6 +115,16 @@ public class PlayerController : NetworkBehaviour
         if (IsOwner)
         {
             Camera.main.GetComponent<CameraFollow>().target = this.transform;
+
+            string savedName = PlayerPrefs.GetString("player_name", ""); // 소문자!
+
+            if (string.IsNullOrEmpty(savedName))
+            {
+                savedName = $"Player{OwnerClientId}";
+                Debug.LogWarning($"PlayerPrefs에 이름 없음! 기본 이름: {savedName}");
+            }//todo 삭제
+            playerName.Value = savedName;
+            Debug.Log($"플레이어 이름 설정: {savedName}");
         }
     }
 
@@ -252,6 +270,12 @@ public class PlayerController : NetworkBehaviour
         inputEnabled = enabled;
     }
 
+    public string GetPlayerName()
+    {
+        string name = playerName.Value.ToString();
+        return string.IsNullOrEmpty(name) ? $"Player{OwnerClientId}" : name;
+    }
+
     // 클라에서 서버에게 요청할 Rpc 모음, 봇의 소유권 문제 때문에 false 설정
     #region ServerRpcs
     [ServerRpc]
@@ -381,7 +405,17 @@ public class PlayerController : NetworkBehaviour
             // 땅에 있을 때: 점프
             if (netIsGrounded.Value)
             {
-                rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+                // 봇일때 점프
+                if (this is BotController bot)
+                {
+                    rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+                    rb.AddForce(Vector3.forward * 3f, ForceMode.Impulse);
+                }
+                else
+                {
+                    rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+                }
+
                 netIsGrounded.Value = false; // 점프 시 강제로 false 설정
                 canDive = true; // 점프 후 다이브 가능
             }
@@ -762,10 +796,9 @@ public class PlayerController : NetworkBehaviour
     {
         //yield return botRespawnWait;  // GC 최적화: 캐싱된 WaitForSeconds 사용
         
-        // 2.3초에서 10초 사이의 랜덤 시간 설정
-        float randomRespawnTime = Random.Range(2.267f, 10f);
+        // 7초에서 10초 사이의 랜덤 시간 설정
+        float randomRespawnTime = Random.Range(7f, 10f);
         yield return new WaitForSeconds(randomRespawnTime);
-        Debug.Log("리스폰 걸린 시간 :" + randomRespawnTime);
         DoRespawnTeleport();
     }
 

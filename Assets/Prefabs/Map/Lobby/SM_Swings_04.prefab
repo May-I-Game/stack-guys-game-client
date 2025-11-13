@@ -11,7 +11,9 @@ GameObject:
   - component: {fileID: 4475529917923657734}
   - component: {fileID: 6654759948969391127}
   - component: {fileID: 1955877168968808886}
-  - component: {fileID: 2836253388086418461}
+  - component: {fileID: 520198857514069956}
+  - component: {fileID: 7305793822742575099}
+  - component: {fileID: 3717410766308679420}
   m_Layer: 0
   m_Name: SM_Swings_04
   m_TagString: Untagged
@@ -28,10 +30,11 @@ Transform:
   m_GameObject: {fileID: 6719185328378848061}
   serializedVersion: 2
   m_LocalRotation: {x: -0.00000001545431, y: -0.7071068, z: 0.00000001545431, w: -0.7071068}
-  m_LocalPosition: {x: -64.95, y: 0.5, z: -295.82}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 8080644032388014064}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &6654759948969391127
@@ -87,7 +90,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &2836253388086418461
+--- !u!65 &520198857514069956
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -106,5 +109,100 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 3.0670362, y: 2.5263572, z: 1.2077563}
-  m_Center: {x: 0, y: 1.2631795, z: 0.0000012218952}
+  m_Size: {x: 0.1, y: 2.5263572, z: 1.2077565}
+  m_Center: {x: 1.48, y: 1.2631795, z: 0.0000012218956}
+--- !u!65 &7305793822742575099
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6719185328378848061}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.1, y: 2.5263572, z: 1.2077565}
+  m_Center: {x: -1.48, y: 1.2631795, z: 0.0000012218956}
+--- !u!65 &3717410766308679420
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6719185328378848061}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1.94, y: 0.1, z: 0.55}
+  m_Center: {x: -6.582181e-15, y: 0.62, z: 0.12}
+--- !u!1 &8598079310120346577
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8080644032388014064}
+  - component: {fileID: 2828160996553386295}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8080644032388014064
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8598079310120346577}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.11976176, y: -0, z: 0.00000001862645, w: 0.9928027}
+  m_LocalPosition: {x: 0, y: 0.887, z: -0.158}
+  m_LocalScale: {x: 1.9201, y: 0.6, z: 0.1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4475529917923657734}
+  m_LocalEulerAnglesHint: {x: -13.757, y: 0, z: 0}
+--- !u!65 &2828160996553386295
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8598079310120346577}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}

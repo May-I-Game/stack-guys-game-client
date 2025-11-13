@@ -10,9 +10,9 @@ public class BotManager : NetworkBehaviour
     [Header("Bot Prefab")]
     [SerializeField] private GameObject botPrefab;
 
-    [Header("Bot Settings")]
-    [SerializeField] private int numberOfBots = 3;      // 생성할 봇 수
-    [SerializeField] private Transform[] spawnPoints;
+    //[Header("Bot Settings")]
+    //[SerializeField] private int numberOfBots = 3;      // 생성할 봇 수
+    //[SerializeField] private Transform[] spawnPoints;
 
     private List<GameObject> spawnedBots = new List<GameObject>();
 
@@ -66,38 +66,38 @@ public class BotManager : NetworkBehaviour
         }
     }
 
-    private void SpawnBots()
-    {
-        if (!IsServer)
-        {
-            Debug.LogWarning("[BotManager] 서버만 봇을 생성할 수 있음");
-            return;
-        }
+    //private void SpawnBots()
+    //{
+    //    if (!IsServer)
+    //    {
+    //        Debug.LogWarning("[BotManager] 서버만 봇을 생성할 수 있음");
+    //        return;
+    //    }
 
-        if (botPrefab == null)
-        {
-            Debug.LogError("[BotManager] 봇 프리팹이 설정 안됨");
-            return;
-        }
+    //    if (botPrefab == null)
+    //    {
+    //        Debug.LogError("[BotManager] 봇 프리팹이 설정 안됨");
+    //        return;
+    //    }
 
-        if (spawnPoints == null || spawnPoints.Length == 0)
-        {
-            Debug.LogError("[BotManager] 스폰 포인트가 설정 안됨");
-            return;
-        }
+    //    if (spawnPoints == null || spawnPoints.Length == 0)
+    //    {
+    //        Debug.LogError("[BotManager] 스폰 포인트가 설정 안됨");
+    //        return;
+    //    }
 
-        for (int i = 0; i < numberOfBots; i++)
-        {
-            SpawnBot(i);
-        }
+    //    for (int i = 0; i < numberOfBots; i++)
+    //    {
+    //        SpawnBot(i);
+    //    }
 
-        Debug.Log($"[BotManager] {numberOfBots}개의 봇을 생성");
-    }
+    //    Debug.Log($"[BotManager] {numberOfBots}개의 봇을 생성");
+    //}
 
     private void SpawnBot(int botIndex, Transform[] spawnPointsArray = null, bool disableInput = false)
     {
         // 스폰 포인트 배열 (파라미터로 받은거 우선, 없으면 기존 spawnPoints 사용)
-        Transform[] pointsToUse = spawnPointsArray ?? spawnPoints;
+        Transform[] pointsToUse = spawnPointsArray;
 
         // 스폰 포인트 검증
         if (pointsToUse == null || pointsToUse.Length == 0)
