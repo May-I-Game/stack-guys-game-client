@@ -1,3 +1,4 @@
+using Unity.Collections;
 using Unity.Netcode;
 using Unity.Netcode.Components;
 using UnityEngine;
@@ -39,6 +40,13 @@ public class PlayerController : NetworkBehaviour
     public float speedThreshold = 0.5f;  // 0.5 m/s 이상 변화만
     [Tooltip("땅 체크 간격 (프레임). 1=매프레임, 2=2프레임마다. 권장: 2")]
     public int groundCheckInterval = 2;  // 2프레임마다 체크 (50Hz → 25Hz)
+
+    [Header("Player Info")]
+    private NetworkVariable<FixedString32Bytes> playerName = new NetworkVariable<FixedString32Bytes>(
+    "",
+    NetworkVariableReadPermission.Everyone,
+    NetworkVariableWritePermission.Owner
+);
 
     protected Rigidbody rb;
     private CapsuleCollider col;
@@ -107,6 +115,16 @@ public class PlayerController : NetworkBehaviour
         if (IsOwner)
         {
             Camera.main.GetComponent<CameraFollow>().target = this.transform;
+
+            string savedName = PlayerPrefs.GetString("player_name", ""); // 소문자!
+
+            if (string.IsNullOrEmpty(savedName))
+            {
+                savedName = $"Player{OwnerClientId}";
+                Debug.LogWarning($"PlayerPrefs에 이름 없음! 기본 이름: {savedName}");
+            }//todo 삭제
+            playerName.Value = savedName;
+            Debug.Log($"플레이어 이름 설정: {savedName}");
         }
     }
 
@@ -250,6 +268,12 @@ public class PlayerController : NetworkBehaviour
     public void SetInputEnabled(bool enabled)
     {
         inputEnabled = enabled;
+    }
+
+    public string GetPlayerName()
+    {
+        string name = playerName.Value.ToString();
+        return string.IsNullOrEmpty(name) ? $"Player{OwnerClientId}" : name;
     }
 
     // 클라에서 서버에게 요청할 Rpc 모음, 봇의 소유권 문제 때문에 false 설정
