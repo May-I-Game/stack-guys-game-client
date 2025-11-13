@@ -227,6 +227,8 @@ public class GameManager : NetworkBehaviour
     private void OnRankingsChanged(NetworkListEvent<FixedString32Bytes> changeEvent)
     {
         UpdateQualifiedUI();
+
+        UpdateRankingUI();
     }
 
     private void UpdateQualifiedUI()
@@ -263,6 +265,8 @@ public class GameManager : NetworkBehaviour
             player.inputEnabled = false;
 
         rankings.Add(playerName);              // NetworkList는 서버에서만 쓰기
+        //TOdo 삭제필요
+        Debug.Log($"도착한 플레이어: {playerName}, 현재 순위: {rankings.Count}등");
 
         if (rankings.Count == 1 && !isCountingDown)
         {
@@ -446,7 +450,7 @@ public class GameManager : NetworkBehaviour
         }
         if (LobbyUI != null)
         {
-            LobbyUI.gameObject.SetActive(true);
+            LobbyUI.gameObject.SetActive(false);
         }
         if (gameUI != null)
         {
@@ -469,6 +473,7 @@ public class GameManager : NetworkBehaviour
 
     private void UpdateRankingUI()
     {
+        Debug.Log($"[UpdateRankingUI] 순위 업데이트 - 총 {rankings.Count}명 도착");
         // 1등
         if (rankings.Count > 0 && firstPlaceText != null)
         {

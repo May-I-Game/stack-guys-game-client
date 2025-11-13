@@ -19,9 +19,9 @@ public class GoalFlag : NetworkBehaviour
         // 서버에서 직접 처리 (Owner 체크 불필요, 서버가 모든 플레이어를 감지)
         // PlayerPrefs는 각 클라이언트 로컬이므로, 여기서는 ClientId만 전달
         // GameManager에서 플레이어 이름을 관리해야 함
-        Debug.Log("통과 완료!!");
-        GameManager.instance.PlayerReachedGoal("Player", player.OwnerClientId);
-
+        string playerName = player.GetPlayerName();
+        Debug.Log($"도착 완료!! 플레이어: {playerName}");
+        GameManager.instance.PlayerReachedGoal(playerName, player.OwnerClientId);
 
         hasFinished = true;
     }
