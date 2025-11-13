@@ -59,9 +59,11 @@ public class BotController : PlayerController
 
     protected override void Update()
     {
-        // 클라이언트 - 애니메이션만 업데이트, AI는 서버에서만 동작
+        // 서버는 애니메이션 업데이트할 필요 없음
         if (!IsServer)
+        {
             UpdateAnimation();
+        }
     }
 
     protected override void Start()
@@ -134,6 +136,12 @@ public class BotController : PlayerController
                 ServerPerformanceProfiler.Start("BotController.BotUpdate");
                 UpdateBotAI();
                 ServerPerformanceProfiler.End("BotController.BotUpdate");
+            }
+            
+            // NavMeshAgent 위치 동기화 (큰 충돌 후 경로 계산이 망가짐)
+            if (navAgent != null && navAgent.isActiveAndEnabled && navAgent.isOnNavMesh)
+            {
+                navAgent.nextPosition = transform.position;
             }
         }
 
