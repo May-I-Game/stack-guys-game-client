@@ -1,8 +1,6 @@
-using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -194,7 +192,6 @@ public class NetworkGameManager : MonoBehaviour
             }
         }
     }
-
 
     private void SpawnPlayerForClient(ulong clientId)
     {
@@ -398,6 +395,7 @@ public class NetworkGameManager : MonoBehaviour
 
     private void OnApplicationPause(bool pauseStatus)
     {
+        if (NetworkManager.Singleton.IsServer) return;
         if (pauseStatus)
         {
             // 백그라운드로 전환
@@ -412,6 +410,7 @@ public class NetworkGameManager : MonoBehaviour
 
     private void OnApplicationFocus(bool hasFocus)
     {
+        if (NetworkManager.Singleton.IsServer) return;
         if (!hasFocus && !isInBackground)
         {
             // 포커스 잃음 (Alt+Tab 등)
