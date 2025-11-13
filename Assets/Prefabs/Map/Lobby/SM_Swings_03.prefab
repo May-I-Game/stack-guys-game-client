@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 519878192990423421}
   - component: {fileID: 7264628381654135373}
   - component: {fileID: 3558579584626334583}
-  - component: {fileID: 4830377472368674241}
   m_Layer: 0
   m_Name: SM_Swings_03
   m_TagString: Untagged
@@ -87,24 +86,3 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &4830377472368674241
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6025686009017090137}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 3.0670362, y: 2.5263565, z: 1.2077563}
-  m_Center: {x: 0, y: 1.2631835, z: 0.0000012218952}
