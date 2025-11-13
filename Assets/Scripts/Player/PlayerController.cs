@@ -381,7 +381,17 @@ public class PlayerController : NetworkBehaviour
             // 땅에 있을 때: 점프
             if (netIsGrounded.Value)
             {
-                rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+                // 봇일때 점프
+                if (this is BotController bot)
+                {
+                    rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+                    rb.AddForce(Vector3.forward * 2, ForceMode.Impulse);
+                }
+                else
+                {
+                    rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+                }
+
                 netIsGrounded.Value = false; // 점프 시 강제로 false 설정
                 canDive = true; // 점프 후 다이브 가능
             }
@@ -762,10 +772,9 @@ public class PlayerController : NetworkBehaviour
     {
         //yield return botRespawnWait;  // GC 최적화: 캐싱된 WaitForSeconds 사용
         
-        // 2.3초에서 10초 사이의 랜덤 시간 설정
-        float randomRespawnTime = Random.Range(2.267f, 10f);
+        // 7초에서 10초 사이의 랜덤 시간 설정
+        float randomRespawnTime = Random.Range(7f, 10f);
         yield return new WaitForSeconds(randomRespawnTime);
-        Debug.Log("리스폰 걸린 시간 :" + randomRespawnTime);
         DoRespawnTeleport();
     }
 
