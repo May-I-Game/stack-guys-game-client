@@ -185,6 +185,13 @@ public class NetworkProximityManager : MonoBehaviour
     private void UpdateVisibilityForClient(NetworkClient client)
     {
         ulong clientId = client.ClientId;
+
+        // 연결 상태 확인 - 연결되지 않은 클라이언트는 스킵
+        if (!NetworkManager.Singleton.ConnectedClients.ContainsKey(clientId))
+        {
+            return;
+        }
+
         Vector3 clientPosition = client.PlayerObject.transform.position;
 
         // 캐시 초기화
