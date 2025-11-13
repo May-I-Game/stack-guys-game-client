@@ -740,7 +740,7 @@ public class PlayerController : NetworkBehaviour
         if (netIsDeath.Value) return;
 
         // 죽은 위치 저장 (시체 생성용)
-        deathPosition = transform.position;
+        // deathPosition = transform.position;
 
         netIsDeath.Value = true;
 
@@ -760,7 +760,12 @@ public class PlayerController : NetworkBehaviour
     // 봇 전용 리스폰 타이머 (애니메이션 길이 2.3초)
     private System.Collections.IEnumerator BotRespawnDelay()
     {
-        yield return botRespawnWait;  // GC 최적화: 캐싱된 WaitForSeconds 사용
+        //yield return botRespawnWait;  // GC 최적화: 캐싱된 WaitForSeconds 사용
+        
+        // 2.3초에서 10초 사이의 랜덤 시간 설정
+        float randomRespawnTime = Random.Range(2.267f, 10f);
+        yield return new WaitForSeconds(randomRespawnTime);
+        Debug.Log("리스폰 걸린 시간 :" + randomRespawnTime);
         DoRespawnTeleport();
     }
 
@@ -772,7 +777,8 @@ public class PlayerController : NetworkBehaviour
         // 시체 생성 (리스폰 시점에 생성하여 자연스러움)
         if (bodyPrefab != null)
         {
-            GameObject bodyInstance = Instantiate(bodyPrefab, deathPosition, transform.rotation);
+            // deathPosition 대신 현재 위치 사용 (애니메이션 종료 후 누운 위치
+            GameObject bodyInstance = Instantiate(bodyPrefab, transform.position, transform.rotation);
 
             // Layer 설정: DeadBody (Layer 10) - 거리 기반 컬링 적용
             SetLayerRecursively(bodyInstance, 10);
