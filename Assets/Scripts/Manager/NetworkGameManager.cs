@@ -24,10 +24,14 @@ public class NetworkGameManager : MonoBehaviour
     [SerializeField] private bool enableProximitySystem = true;
     [Tooltip("Proximity Debug UI 활성화 (서버 전용)")]
     [SerializeField] private bool enableProximityDebugUI = true;
+    [Tooltip("Connection Health Monitor 활성화 (서버 전용)")]
+    [SerializeField] private bool enableConnectionHealthMonitor = true;
     [Tooltip("Proximity Manager 컴포넌트 (자동 생성됨)")]
     private NetworkProximityManager proximityManager;
     [Tooltip("Proximity Debug UI 컴포넌트 (자동 생성됨)")]
     private ProximityDebugUI proximityDebugUI;
+    [Tooltip("Connection Health Monitor 컴포넌트 (자동 생성됨)")]
+    private ConnectionHealthMonitor connectionHealthMonitor;
 
     private bool hasInitialized = false;
     private Dictionary<ulong, int> clientCharacterSelections = new Dictionary<ulong, int>();
@@ -178,6 +182,17 @@ public class NetworkGameManager : MonoBehaviour
         }
 
         Debug.Log("[NetworkGameManager] Proximity system initialized");
+
+        // Connection Health Monitor 초기화 (활성화된 경우)
+        if (enableConnectionHealthMonitor)
+        {
+            connectionHealthMonitor = GetComponent<ConnectionHealthMonitor>();
+            if (connectionHealthMonitor == null)
+            {
+                connectionHealthMonitor = gameObject.AddComponent<ConnectionHealthMonitor>();
+                Debug.Log("[NetworkGameManager] ConnectionHealthMonitor component added");
+            }
+        }
     }
 
 
