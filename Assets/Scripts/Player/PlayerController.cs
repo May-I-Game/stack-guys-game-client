@@ -47,7 +47,7 @@ public class PlayerController : NetworkBehaviour
     "",
     NetworkVariableReadPermission.Everyone,
     NetworkVariableWritePermission.Owner
-);
+    );
 
     protected Rigidbody rb;
     private CapsuleCollider col;
@@ -66,14 +66,10 @@ public class PlayerController : NetworkBehaviour
 
     public GameObject bodyPrefab;
 
-    // TODO : 애니메이션 종료시에 함수 호출해서
-    // netIsDiveGrounded 말고 private bool 변수 사용해서 서버만 동기화하도록
-    private float diveGroundedDuration = 0.65f; // 다이브 착지 애니메이션 길이
-
     protected NetworkVariable<bool> netIsMove = new NetworkVariable<bool>(false); // 움직이는중인지
     protected NetworkVariable<bool> netIsGrounded = new NetworkVariable<bool>(true); // 땅인지
-    protected NetworkVariable<bool> netIsDiving = new NetworkVariable<bool>(false); // 공중 다이브 중인지
-    protected NetworkVariable<bool> netIsDiveGrounded = new NetworkVariable<bool>(false); // 다이브 착지 상태 (이동 불가)
+    protected bool isDiving = false; // 공중 다이브 중인지
+    protected bool isDiveGrounded = false; // 다이브 착지 상태 (이동 불가)
     protected NetworkVariable<bool> netIsDeath = new NetworkVariable<bool>(false); // 죽었는지
     protected bool isHit = false; // 충돌 상태 (이동 불가)
     protected bool canDive = false; // 다이브 가능 상태 (점프 중)
@@ -279,18 +275,9 @@ public class PlayerController : NetworkBehaviour
 
     // 클라에서 서버에게 요청할 Rpc 모음, 봇의 소유권 문제 때문에 false 설정
     #region ServerRpcs
-    [ServerRpc]
+    [ServerRpc(Delivery = RpcDelivery.Unreliable)]
     protected void MovePlayerServerRpc(Vector2 direction)
     {
-        // 충돌 중이거나 다이브 착지 중이면 입력 무시
-        if (isHit || netIsDiveGrounded.Value)
-        {
-            moveDir = Vector2.zero;
-            return;
-        }
-
-        // Debug.Log($"[이동] 플레이어 이동 Rpc 호출됨!: {direction}");
-
         // 이동 방향 임계값 체크: 방향 변화가 크거나 멈출 때만 동기화
         Vector2 directionDelta = direction - moveDir;
         if (directionDelta.magnitude >= inputDeltaThreshold || direction == Vector2.zero)
@@ -299,11 +286,11 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
-    [ServerRpc]
+    [ServerRpc(Delivery = RpcDelivery.Unreliable)]
     protected void JumpPlayerServerRpc()
     {
         // 충돌 중이거나 다이브 착지 중이면 입력 무시
-        if (isHit || netIsDiveGrounded.Value)
+        if (isHit || isDiveGrounded)
         {
             return;
         }
@@ -311,11 +298,11 @@ public class PlayerController : NetworkBehaviour
         isJumpQueued = true;
     }
 
-    [ServerRpc]
+    [ServerRpc(Delivery = RpcDelivery.Unreliable)]
     private void GrabPlayerServerRpc()
     {
         // 충돌 중이거나 공중에 있거나 다이브 착지 중이거나 잡힌 상태면 입력 무시
-        if (isHit || !netIsGrounded.Value || netIsDiveGrounded.Value || netIsGrabbed.Value)
+        if (isHit || !netIsGrounded.Value || isDiveGrounded || netIsGrabbed.Value)
         {
             return;
         }
@@ -352,6 +339,13 @@ public class PlayerController : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership = false)]
+    public void ResetDiveGroundedStateServerRpc()
+    {
+        Debug.Log("다이브리셋 호출됨!!");
+        isDiveGrounded = false;
+    }
+
+    [ServerRpc(RequireOwnership = false)]
     public void ResetStateServerRpc()
     {
         ResetPlayerState();
@@ -363,6 +357,9 @@ public class PlayerController : NetworkBehaviour
     #region ServerLogic
     protected void PlayerMove()
     {
+        // 충돌 중이거나 다이브 착지 중이면 입력 무시
+        if (isHit || isDiveGrounded) return;
+
         // 이동 요청이 있으면
         if (moveDir.magnitude >= 0.1f)
         {
@@ -421,7 +418,7 @@ public class PlayerController : NetworkBehaviour
                 canDive = true; // 점프 후 다이브 가능
             }
             // 공중에 있을 때: 다이브
-            else if (canDive && !netIsDiving.Value && !isHolding)
+            else if (canDive && !isDiving && !isHolding)
             {
                 PlayerDive();
             }
@@ -432,7 +429,7 @@ public class PlayerController : NetworkBehaviour
 
     private void PlayerDive()
     {
-        netIsDiving.Value = true;
+        isDiving = true;
         canDive = false;
 
         // 현재 바라보는 방향으로 앞으로 힘 가하기
@@ -447,22 +444,13 @@ public class PlayerController : NetworkBehaviour
     // 다이브 착지 처리
     private void OnDiveLand()
     {
-        if (!netIsDiving.Value) return;
+        if (!isDiving) return;
 
-        netIsDiving.Value = false;
-        netIsDiveGrounded.Value = true;
+        isDiving = false;
+        isDiveGrounded = true;
 
         Debug.Log("[다이브 착지] 착지 애니메이션 재생, 조작 불가");
-
-        // 착지 애니메이션이 끝나면 복구
-        StartCoroutine(ResetDiveGroundedState());
-    }
-
-    // 다이브 착지 상태 복구
-    private System.Collections.IEnumerator ResetDiveGroundedState()
-    {
-        yield return new WaitForSeconds(diveGroundedDuration);
-        netIsDiveGrounded.Value = false;
+        SetTriggerClientRpc("DiveLand");
     }
 
     protected void PlayerGrab()
@@ -917,8 +905,8 @@ public class PlayerController : NetworkBehaviour
         moveDir = Vector2.zero;
         isJumpQueued = false;
         netIsGrounded.Value = true;
-        netIsDiving.Value = false;
-        netIsDiveGrounded.Value = false;
+        isDiving = false;
+        isDiveGrounded = false;
         netIsDeath.Value = false;
         canDive = false;
         isHit = false;
@@ -986,7 +974,7 @@ public class PlayerController : NetworkBehaviour
         // 착지 시 처리 (최적화: 조건을 미리 체크)
         if (isGrounded && rb.linearVelocity.y <= 0.1f)
         {
-            if (netIsDiving.Value)
+            if (isDiving)
             {
                 OnDiveLand();
             }
@@ -1119,10 +1107,6 @@ public class PlayerController : NetworkBehaviour
             animator.SetBool("IsMoving", netIsMove.Value);
             // 점프 상태를 애니메이터에 전달
             animator.SetBool("IsGrounded", netIsGrounded.Value);
-            // 다이브 상태를 애니메이터에 전달
-            animator.SetBool("IsDiving", netIsDiving.Value);
-            // 다이브 착지 상태를 애니메이터에 전달
-            animator.SetBool("IsDiveGrounded", netIsDiveGrounded.Value);
             // 잡힌 상태를 애니메이터에 전달
             animator.SetBool("IsGrabbed", netIsGrabbed.Value);
         }

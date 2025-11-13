@@ -11,7 +11,7 @@ public class ConsoleBotController : PlayerController
     public void MoveBot(Vector2 direction)
     {
         // 충돌 중이거나 다이브 착지 중이면 입력 무시
-        if (isHit || netIsDiveGrounded.Value)
+        if (isHit || isDiving)
         {
             moveDir = Vector2.zero;
             return;
@@ -30,7 +30,7 @@ public class ConsoleBotController : PlayerController
     public void JumpBot()
     {
         // 충돌 중이거나 다이브 착지 중이면 입력 무시
-        if (isHit || netIsDiveGrounded.Value)
+        if (isHit || isDiving)
         {
             return;
         }

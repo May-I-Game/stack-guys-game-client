@@ -1,3 +1,4 @@
+using Amazon.S3.Model;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -130,8 +131,6 @@ public class WebSocketManager : MonoBehaviour
 
     void ExecuteGameFunction(string sessionId, RemoteCommand cmd)
     {
-        Debug.Log($"명령 수신: {cmd.functionName} ({cmd.parameter})");
-
         switch (cmd.functionName)
         {
             case "MovePlayer":

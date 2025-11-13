@@ -433,7 +433,7 @@ public class BotController : PlayerController
 
             // 이동 입력 (완전 경로일 때만)
             if (navAgent.hasPath && navAgent.pathStatus == NavMeshPathStatus.PathComplete &&
-                !isHit && !netIsDiveGrounded.Value && !netIsGrabbed.Value)
+                !isHit && !isDiving && !netIsGrabbed.Value)
             {
                 Vector3 direction = navAgent.desiredVelocity.normalized;
 
@@ -462,7 +462,7 @@ public class BotController : PlayerController
             SetDestinationToGoalForced();
 
             // NavMesh 경로를 moveDir으로 변환 (부분 경로여도 허용)
-            if (navAgent.hasPath && !isHit && !netIsDiveGrounded.Value && !netIsGrabbed.Value)
+            if (navAgent.hasPath && !isHit && !isDiving && !netIsGrabbed.Value)
             {
                 Vector3 direction = navAgent.desiredVelocity.normalized;
 
@@ -546,7 +546,7 @@ public class BotController : PlayerController
         // NavMesh 경로를 moveDir으로 변환하여 PlayerMove()가 실제 이동 처리
         // 유효한 경로가 있고 피격/다이브/잡힘 상태가 아닐 때만 이동
         if (navAgent.hasPath && navAgent.pathStatus == NavMeshPathStatus.PathComplete &&
-            !isHit && !netIsDiveGrounded.Value && !netIsGrabbed.Value)
+            !isHit && !isDiving && !netIsGrabbed.Value)
         {
             Vector3 direction = navAgent.desiredVelocity.normalized;
 
