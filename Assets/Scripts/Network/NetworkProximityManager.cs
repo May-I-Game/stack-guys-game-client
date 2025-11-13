@@ -238,7 +238,7 @@ public class NetworkProximityManager : MonoBehaviour
 
                         if (debugLog)
                         {
-                            Debug.Log($"[Proximity] Show Object {targetId} to Client {clientId} (dist: {distance:F1}m)");
+                            // Debug.Log($"[Proximity] Show Object {targetId} to Client {clientId} (dist: {distance:F1}m)");
                         }
                     }
                     catch (System.Exception e)
@@ -261,7 +261,7 @@ public class NetworkProximityManager : MonoBehaviour
 
                         if (debugLog)
                         {
-                            Debug.Log($"[Proximity] Hide Object {targetId} from Client {clientId} (dist: {distance:F1}m)");
+                            // Debug.Log($"[Proximity] Hide Object {targetId} from Client {clientId} (dist: {distance:F1}m)");
                         }
                     }
                     catch (System.Exception e)
