@@ -762,8 +762,8 @@ public class PlayerController : NetworkBehaviour
     {
         //yield return botRespawnWait;  // GC 최적화: 캐싱된 WaitForSeconds 사용
         
-        // 2.3초에서 10초 사이의 랜덤 시간 설정
-        float randomRespawnTime = Random.Range(2.267f, 10f);
+        // 7초에서 10초 사이의 랜덤 시간 설정
+        float randomRespawnTime = Random.Range(7f, 10f);
         yield return new WaitForSeconds(randomRespawnTime);
         Debug.Log("리스폰 걸린 시간 :" + randomRespawnTime);
         DoRespawnTeleport();
