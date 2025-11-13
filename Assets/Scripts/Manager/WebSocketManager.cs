@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Unity.Netcode;
@@ -63,8 +64,8 @@ public class WebSocketManager : MonoBehaviour
                     break;
 
                 case EventType.Message:
-                    // 나중에 움직임 처리 등을 여기서 함
                     Debug.Log($"[{evt.sessionId}] 메시지: {evt.message}");
+                    HandleMessage(evt.sessionId, evt.message);
                     break;
             }
         }
@@ -113,6 +114,20 @@ public class WebSocketManager : MonoBehaviour
         }
     }
 
+    void HandleMessage(string sessionId, string jsonMessage)
+    {
+        try
+        {
+            // JSON 파싱
+            RemoteCommand cmd = JsonUtility.FromJson<RemoteCommand>(jsonMessage);
+            ExecuteGameFunction(sessionId, cmd);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"JSON 파싱 에러: {e.Message}");
+        }
+    }
+
     void ExecuteGameFunction(string sessionId, RemoteCommand cmd)
     {
         Debug.Log($"명령 수신: {cmd.functionName} ({cmd.parameter})");
@@ -138,8 +153,14 @@ public class WebSocketManager : MonoBehaviour
     {
         if (connectedBots.ContainsKey(sessionId)) return;
 
-        GameObject bot = Instantiate(playerPref, Vector3.zero, Quaternion.identity);
+        Vector3 spawnPos = new Vector3(UnityEngine.Random.Range(-545f, -535f), 1f, UnityEngine.Random.Range(10f, 15f));
+        GameObject bot = Instantiate(playerPref, spawnPos, Quaternion.identity);
         bot.GetComponent<NetworkObject>().Spawn();
+        PlayerNameSync nameSync = bot.GetComponent<PlayerNameSync>();
+        if (nameSync != null)
+        {
+            nameSync.SetPlayerName("ConsoleBot");
+        }
 
         connectedBots.Add(sessionId, bot.GetComponent<ConsoleBotController>());
     }

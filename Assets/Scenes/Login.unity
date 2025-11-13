@@ -6643,7 +6643,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8dfc0d3382da5a8498a66930b63f2443, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerPref: {fileID: 0}
+  playerPref: {fileID: 5785324236016558479, guid: bd7016a894e7d3c4fa62c49ee773a799, type: 3}
 --- !u!1001 &6375971551843311023
 PrefabInstance:
   m_ObjectHideFlags: 0

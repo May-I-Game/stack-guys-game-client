@@ -311,6 +311,7 @@ public class NetworkGameManager : MonoBehaviour
 
     private void OnApplicationPause(bool pauseStatus)
     {
+        if (NetworkManager.Singleton.IsServer) return;
         if (pauseStatus)
         {
             // 백그라운드로 전환
@@ -325,6 +326,7 @@ public class NetworkGameManager : MonoBehaviour
 
     private void OnApplicationFocus(bool hasFocus)
     {
+        if (NetworkManager.Singleton.IsServer) return;
         if (!hasFocus && !isInBackground)
         {
             // 포커스 잃음 (Alt+Tab 등)
