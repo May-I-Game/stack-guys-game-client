@@ -19,12 +19,34 @@ public class DummyGameStarter : MonoBehaviour
     private void Start()
     {
 #if DUMMY_CLIENT
-        if (NetworkManager.Singleton != null)
+        StartCoroutine(WaitAndConnect());
+#endif
+    }
+
+    private IEnumerator WaitAndConnect()
+    {
+        // NetworkManager가 초기화될 때까지 대기
+        while (NetworkManager.Singleton == null)
         {
-            //networkManager 콜백 구독
-            NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
-            NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
+            Debug.Log("[DummyGameStarter] Waiting for NetworkManager...");
+            yield return new WaitForSeconds(0.1f);
         }
+
+        // NetworkManager가 이미 시작되었는지 확인
+        while (NetworkManager.Singleton.IsClient || NetworkManager.Singleton.IsServer)
+        {
+            Debug.Log("[DummyGameStarter] Waiting for NetworkManager to be ready...");
+            yield return new WaitForSeconds(0.1f);
+        }
+
+        //networkManager 콜백 구독
+        NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
+        NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
+
+        Debug.Log("[DummyGameStarter] NetworkManager ready, starting connection...");
+
+        // 추가 안전성을 위해 약간 더 대기
+        yield return new WaitForSeconds(0.5f);
 
         if (isLocalMod)
         {
@@ -34,7 +56,6 @@ public class DummyGameStarter : MonoBehaviour
         {
             StartCoroutine(FindGameAndConnect());
         }
-#endif
     }
 
     private void OnDestroy()
@@ -51,12 +72,18 @@ public class DummyGameStarter : MonoBehaviour
 
     private void OnClientConnected(ulong clientId)
     {
+        Debug.Log($"[DummyGameStarter] OnClientConnected called - ClientId: {clientId}, LocalClientId: {NetworkManager.Singleton.LocalClientId}");
+
         //성공적으로 자신이 연결됨
         if (clientId == NetworkManager.Singleton.LocalClientId)
         {
-            Debug.Log("Successfully connected to server!");
+            Debug.Log("[DummyGameStarter] Successfully connected to server!");
             CancelInvoke(nameof(CheckConnectionTimeout));
             isConnecting = false;
+        }
+        else
+        {
+            Debug.Log($"[DummyGameStarter] Other client connected: {clientId}");
         }
     }
     private void OnClientDisconnected(ulong clientId)
@@ -77,12 +104,27 @@ public class DummyGameStarter : MonoBehaviour
     {
         if (NetworkManager.Singleton == null)
         {
-            Debug.Log("NetworkManager not found!");
+            Debug.LogError("NetworkManager not found!");
             isConnecting = false;
             return;
         }
 
         isConnecting = true;
+
+        var transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
+        if (transport == null)
+        {
+            Debug.LogError("UnityTransport not found!");
+            isConnecting = false;
+            return;
+        }
+
+        string serverIp = "127.0.0.1"; // 로컬 테스트용 - 같은 PC에서 서버 실행 시
+        ushort serverPort = 7779;
+
+        Debug.Log($"[DummyGameStarter] Attempting to connect to {serverIp}:{serverPort}");
+
+        transport.SetConnectionData(serverIp, serverPort);
 
         //서버로 캐릭터 인덱스를 보내기
         byte[] payload = new byte[17];
@@ -101,7 +143,8 @@ public class DummyGameStarter : MonoBehaviour
         PlayerPrefs.SetString("player_name", clientName);
         PlayerPrefs.Save();
 
-        Debug.Log($"Character Index : {clientCharIndex}, Name: {clientName}");
+        Debug.Log($"[DummyGameStarter] Character Index: {clientCharIndex}, Name: {clientName}");
+        Debug.Log($"[DummyGameStarter] Connection payload size: {payload.Length} bytes");
 
         //클라이언트 시작
         bool startResult = NetworkManager.Singleton.StartClient();
@@ -109,11 +152,12 @@ public class DummyGameStarter : MonoBehaviour
         //클라-서버 연결 실패했을 경우
         if (!startResult)
         {
-            Debug.Log("연결 실패");
+            Debug.LogError("[DummyGameStarter] StartClient() returned false - 연결 실패");
             isConnecting = false;
             return;
         }
 
+        Debug.Log("[DummyGameStarter] StartClient() succeeded, waiting for connection...");
         Invoke(nameof(CheckConnectionTimeout), 10f);
     }
 

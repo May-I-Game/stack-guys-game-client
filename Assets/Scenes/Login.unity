@@ -4556,7 +4556,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01e3e5f34683dc34b925cffa242a807d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serverAddress: 127.0.0.1
+  serverAddress: 172.21.101.227
   serverPort: 7779
   matchApiUrl: https://dyoew1dfdmn0g.cloudfront.net/api/find-game
   ticketStatusUrl: https://dyoew1dfdmn0g.cloudfront.net/api/ticket-status
@@ -6266,7 +6266,7 @@ MonoBehaviour:
   m_ProtocolType: 0
   m_UseWebSockets: 1
   m_UseEncryption: 0
-  m_MaxPacketQueueSize: 2048
+  m_MaxPacketQueueSize: 512
   m_MaxPayloadSize: 6144
   m_HeartbeatTimeoutMS: 500
   m_ConnectTimeoutMS: 1000
@@ -6293,6 +6293,7 @@ GameObject:
   - component: {fileID: 879064189002693086}
   - component: {fileID: 1912217668570669831}
   - component: {fileID: 6062109301357747959}
+  - component: {fileID: 6062109301357747960}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: Untagged
@@ -6312,7 +6313,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 18b8a20568e1f0b4fb3fb1cea7d973ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isServerMod: 1
+  isServerMod: 0
   gameSceneName: GameScene
   characterPrefabs:
   - {fileID: 5785324236016558479, guid: a43ef8e1e961de34fb719499a2851b9a, type: 3}
@@ -6329,6 +6330,8 @@ MonoBehaviour:
   - {fileID: 5309982938216476723, guid: 43c0ac29a41a27446af684a239f6b066, type: 3}
   - {fileID: 5785324236016558479, guid: 32a80714f8c91684084c599ca110faf8, type: 3}
   maxBackgroundTime: 30
+  enableProximitySystem: 1
+  enableProximityDebugUI: 1
 --- !u!1001 &1951648188819123406
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6471,7 +6474,7 @@ MonoBehaviour:
     Prefabs:
       NetworkPrefabsLists:
       - {fileID: 11400000, guid: 5343cf97fe7dbc04a98e22b75d38f099, type: 2}
-    TickRate: 30
+    TickRate: 20
     ClientConnectionBufferTimeout: 10
     ConnectionApproval: 0
     ConnectionData: 
@@ -6493,7 +6496,7 @@ MonoBehaviour:
     NetworkProfilingMetrics: 1
     OldPrefabList: []
   RunInBackground: 1
-  LogLevel: 1
+  LogLevel: 0
 --- !u!1001 &5945134698270362466
 PrefabInstance:
   m_ObjectHideFlags: 0

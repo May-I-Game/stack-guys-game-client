@@ -9,56 +9,20 @@ public class GrabbableObject : NetworkBehaviour
     public NetworkVariable<bool> netIsGrabbed = new NetworkVariable<bool>(false);
     public PlayerController holder = null;
 
-    // 시체 NetworkTransform 최적화
+    // 시체 NetworkTransform 최적화 (Inspector에서 disabled 상태로 시작)
     private NetworkTransform networkTransform;
     private Rigidbody rb;
-    private float settleTime = 0f;
-    private bool isSettled = false;
-    private const float SETTLE_VELOCITY_THRESHOLD = 0.1f;
-    private const float SETTLE_DURATION = 1f;
 
     private void Start()
     {
         networkTransform = GetComponent<NetworkTransform>();
         rb = GetComponent<Rigidbody>();
 
-        // 시체는 처음에 동기화 OFF (떨어진 후 정착하면 자동으로 OFF)
-        // 생성 시에는 ON으로 시작 (떨어지는 동안 동기화 필요)
-    }
-
-    private void FixedUpdate()
-    {
-        if (!IsServer) return;
-
-        // 잡혀있지 않고, 아직 정착 안 했으면 정착 체크
-        if (!netIsGrabbed.Value && !isSettled && rb != null && networkTransform != null)
+        // NetworkTransform은 Inspector에서 disabled 상태로 설정되어야 함
+        // 시체는 기본적으로 동기화 OFF
+        if (networkTransform != null)
         {
-            // 속도가 임계값 이하면 정착 타이머 증가
-            if (rb.linearVelocity.magnitude < SETTLE_VELOCITY_THRESHOLD)
-            {
-                settleTime += Time.fixedDeltaTime;
-
-                // 일정 시간 동안 정지 상태 = 정착
-                if (settleTime >= SETTLE_DURATION)
-                {
-                    isSettled = true;
-
-                    // NetworkTransform 동기화 중지 (네트워크 최적화)
-                    if (networkTransform.enabled)
-                    {
-                        networkTransform.enabled = false;
-                        Debug.Log($"[GrabbableObject] Settled, NetworkTransform disabled");
-                    }
-
-                    // 선택적: Rigidbody도 Kinematic으로 (물리 최적화)
-                    rb.isKinematic = true;
-                }
-            }
-            else
-            {
-                // 다시 움직이면 타이머 리셋
-                settleTime = 0f;
-            }
+            networkTransform.enabled = false;
         }
     }
 
@@ -67,11 +31,8 @@ public class GrabbableObject : NetworkBehaviour
     {
         if (!IsServer) return;
 
-        isSettled = false;
-        settleTime = 0f;
-
-        // NetworkTransform 동기화 켜기
-        if (networkTransform != null && !networkTransform.enabled)
+        // NetworkTransform 활성화 (잡혀있는 동안 동기화)
+        if (networkTransform != null)
         {
             networkTransform.enabled = true;
             Debug.Log($"[GrabbableObject] Grabbed, NetworkTransform enabled");
@@ -89,20 +50,38 @@ public class GrabbableObject : NetworkBehaviour
     {
         if (!IsServer) return;
 
-        isSettled = false;
-        settleTime = 0f;
-
-        // NetworkTransform 동기화 켜기 (날아가는 동안 동기화 필요)
-        if (networkTransform != null && !networkTransform.enabled)
+        // NetworkTransform 활성화 유지 (날아가는 동안 동기화 필요)
+        if (networkTransform != null)
         {
             networkTransform.enabled = true;
-            Debug.Log($"[GrabbableObject] Thrown, NetworkTransform enabled");
         }
 
         // Rigidbody 물리 활성화 (던져진 후 날아감)
         if (rb != null)
         {
             rb.isKinematic = false;
+        }
+
+        // 1초 후 NetworkTransform 비활성화 (정착 후 불필요)
+        Invoke(nameof(DisableNetworkTransformAfterSettle), 1f);
+    }
+
+    // 정착 후 NetworkTransform 비활성화
+    private void DisableNetworkTransformAfterSettle()
+    {
+        if (!IsServer) return;
+
+        // 다시 잡히지 않았고, NetworkTransform이 활성화되어 있으면 비활성화
+        if (!netIsGrabbed.Value && networkTransform != null && networkTransform.enabled)
+        {
+            networkTransform.enabled = false;
+            Debug.Log($"[GrabbableObject] Settled, NetworkTransform disabled");
+
+            // Rigidbody Kinematic으로 (물리 최적화)
+            if (rb != null)
+            {
+                rb.isKinematic = true;
+            }
         }
     }
 
