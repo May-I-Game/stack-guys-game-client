@@ -1,4 +1,5 @@
 using Unity.Netcode;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -16,7 +17,6 @@ public class BotController : PlayerController
     private int topClosestCount = 4;                                    // 가장 가까운 N개 웨이포인트
 
     [Header("Debug Visualization")]
-    [SerializeField] private bool showPathInEditor = false;             // 에디터/클라이언트에서 기즈모 표시 여부
     [SerializeField] private Color waypointLineColor = Color.blue;      // 웨이포인트 직선 색상
     [SerializeField] private Color goalLineColor = Color.yellow;        // 목표 직선 색상
     [SerializeField] private Color selectedColor = Color.red;           // 봇을 선택했을때 직선 색상
@@ -35,9 +35,14 @@ public class BotController : PlayerController
     private float nextPathUpdateTime;                                   // 다음 업데이트 시간
     private float nextWaypointSearchTime;                               // 다음 웨이포인트 재탐색 시간
 
+    // 이 부분을 전처리기로 감싸면 Netcode가 초기화 순서를 체크할 때 문제 발생
     // 서버에서 선택한 웨이포인트 인덱스, 에디터 기즈모는 이 값을 통해 동일한 웨이포인트를 보여줌
     private NetworkVariable<int> currentWaypointIndex = new(
         -1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
+#if UNITY_EDITOR
+    [SerializeField] private bool showPathInEditor = false;             // 에디터/클라이언트에서 기즈모 표시 여부
+#endif
 
     // 전역 우선순위 - 문이 열릴 때 등록되는 웨이포인트들
     private static readonly System.Collections.Generic.List<Transform> openedDoorWaypoints =
@@ -189,8 +194,9 @@ public class BotController : PlayerController
             isGoingToWaypoint = false;
             isGoingToGoal = false;
             currentWaypoint = null;
+#if UNITY_EDITOR
             currentWaypointIndex.Value = -1;
-
+#endif
             nextPathUpdateTime = 0f;
             nextWaypointSearchTime = 0f;
 
@@ -228,7 +234,9 @@ public class BotController : PlayerController
             waypoints = null;
             isGoingToWaypoint = false;
             currentWaypoint = null;
+#if UNITY_EDITOR
             currentWaypointIndex.Value = -1; // NetworkVariable 웨이포인트 인덱스 초기화
+#endif
         }
     }
 
@@ -308,7 +316,9 @@ public class BotController : PlayerController
         {
             isGoingToWaypoint = false;
             currentWaypoint = null;
+#if UNITY_EDITOR
             currentWaypointIndex.Value = -1;
+#endif
             return false;
         }
 
@@ -333,7 +343,9 @@ public class BotController : PlayerController
         {
             isGoingToWaypoint = false;
             currentWaypoint = null;
+#if UNITY_EDITOR
             currentWaypointIndex.Value = -1;
+#endif
             return false;
         }
 
@@ -354,7 +366,9 @@ public class BotController : PlayerController
         int chosen = forwardIndices[randomPick];
 
         currentWaypoint = waypoints[chosen];
+#if UNITY_EDITOR
         currentWaypointIndex.Value = chosen;    // 기즈모 동기화를 위한 인덱스 저장
+#endif
         isGoingToWaypoint = true;
         isGoingToGoal = false;
         return true;
@@ -373,7 +387,9 @@ public class BotController : PlayerController
                 currentWaypoint = priorityTarget;
                 isGoingToWaypoint = true;
                 isGoingToGoal = false;
+#if UNITY_EDITOR
                 currentWaypointIndex.Value = GetWaypointIndex(priorityTarget);
+#endif
             }
 
             float distToDoor = Vector3.Distance(transform.position, priorityTarget.position);
@@ -385,7 +401,9 @@ public class BotController : PlayerController
                 isGoingToWaypoint = false;
                 isGoingToGoal = false;
                 currentWaypoint = null;
+#if UNITY_EDITOR
                 currentWaypointIndex.Value = -1;
+#endif
             }
             else
             {
@@ -463,7 +481,9 @@ public class BotController : PlayerController
                         isGoingToGoal = true;
                         isGoingToWaypoint = false;
                         currentWaypoint = null;
+#if UNITY_EDITOR
                         currentWaypointIndex.Value = -1;
+#endif
                     }
                 }
                 else
@@ -479,7 +499,9 @@ public class BotController : PlayerController
                             isGoingToGoal = true;
                             isGoingToWaypoint = false;
                             currentWaypoint = null;
+#if UNITY_EDITOR
                             currentWaypointIndex.Value = -1;
+#endif
 
                         }
                     }
@@ -539,6 +561,7 @@ public class BotController : PlayerController
     // Gizmos 관련
     /////////////////////////////////////////
 
+#if UNITY_EDITOR
     // 웨이포인트 배열에서 인덱스 찾기 (기즈모 동기화용)
     private int GetWaypointIndex(Transform wp)
     {
@@ -663,6 +686,7 @@ public class BotController : PlayerController
         Gizmos.color = selectedColor; // 선택 시 색상
         Gizmos.DrawLine(transform.position, selectedWp.position);
     }
+#endif
 
     public override void OnNetworkSpawn()
     {
