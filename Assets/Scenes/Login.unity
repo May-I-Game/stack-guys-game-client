@@ -3427,7 +3427,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isLocalMod: 1
-  matchApiUrl: https://dyoew1dfdmn0g.cloudfront.net/api/find-game
+  matchApiUrl: http://172.21.102.166:8000/
   ticketStatusUrl: https://dyoew1dfdmn0g.cloudfront.net/api/ticket-status
 --- !u!4 &1233099839
 Transform:
@@ -6292,6 +6292,7 @@ GameObject:
   - component: {fileID: 3608776883841163579}
   - component: {fileID: 879064189002693086}
   - component: {fileID: 1912217668570669831}
+  - component: {fileID: 6062109301357747959}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: Untagged
@@ -6630,6 +6631,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6062109301357747959
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1038098876669395663}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8dfc0d3382da5a8498a66930b63f2443, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerPref: {fileID: 5785324236016558479, guid: bd7016a894e7d3c4fa62c49ee773a799, type: 3}
 --- !u!1001 &6375971551843311023
 PrefabInstance:
   m_ObjectHideFlags: 0
