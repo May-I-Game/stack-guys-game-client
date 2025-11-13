@@ -387,14 +387,14 @@ public class BotController : PlayerController
         if (navAgent != null && navAgent.isOnOffMeshLink && !isTraversingLink)
         {
             // NavMeshLink를 막 진입한 순간 AI 로직 안돌림 (점프 시작)
-            StartLinkTraversal();
+            StartJumpLink();
             return;
         }
 
         // NavMeshLink 통과 중인 경우 - 점프 진행 중
         if (isTraversingLink)
         {
-            UpdateLinkTraversal();
+            UpdateJumpLink();
             return;
         }
 
@@ -570,7 +570,7 @@ public class BotController : PlayerController
     }
 
     // 점프 구간 시작
-    private void StartLinkTraversal()
+    private void StartJumpLink()
     {
         if (!navAgent.isOnOffMeshLink) return;
 
@@ -588,7 +588,7 @@ public class BotController : PlayerController
     // 길 찾기(NavMeshAgent) = 어디로 가야 하는지만 계산
     // 실제 이동/점프 물리 = PlayerController의 Rigidbody가 전부 담당
     // 점프 구간 통과중 (진행도에 따른 포물선 점프)
-    private void UpdateLinkTraversal()
+    private void UpdateJumpLink()
     {
         if (!isTraversingLink) return;
 
@@ -601,7 +601,7 @@ public class BotController : PlayerController
         if (normalizedTime >= 1f)
         {
             // 통과 완료
-            CompleteTraversal();
+            CompleteJumpLink();
         }
         // 여기서 직접 물리 처리 X
         //else
@@ -630,7 +630,7 @@ public class BotController : PlayerController
     }
 
     // 점프 구간 통과 완료
-    private void CompleteTraversal()
+    private void CompleteJumpLink()
     {
         if (!isTraversingLink) return;
 
