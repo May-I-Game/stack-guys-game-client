@@ -23,6 +23,14 @@ public class BotController : PlayerController
 
     [SerializeField] private bool requireReachableWaypoint = true;      // 도달 가능한 웨이포인트만 사용하도록 강제
 
+    // NavMeshLink 점프 관련 변수
+    private bool isTraversingLink = false;                              // 현재 NavMeshLink를 통과 중인지 여부
+    private Vector3 linkStartPos;                                       // NavMeshLink 시작 위치 (점프 시작점)
+    private Vector3 linkEndPos;                                         // NavMeshLink 끝 위치 (착지 예정점)
+    private float linkTraverseTime = 0f;                                // NavMeshLink 통과 시작 후 경과 시간
+    private float linkJumpDuration = 0.8f;                              // 점프 전체 소요 시간 
+    private bool hasJumpedAtLink = false;                               // 이미 점프를 실행했는지 여부 (중복 체크)
+
     private bool isGoingToGoal = false;                                 // Goal로 가는중인가?
 
     private NavMeshAgent navAgent;
@@ -377,6 +385,21 @@ public class BotController : PlayerController
     // AI 로직 (우선순위: 열린 문 > 랜덤 웨이포인트 > Goal)
     private void UpdateBotAI()
     {
+        // NavMesh 감지 및 처리
+        if (navAgent != null && navAgent.isOnOffMeshLink && !isTraversingLink)
+        {
+            // NavMeshLink를 막 진입한 순간 AI 로직 안돌림 (점프 시작)
+            StartLinkTraversal();
+            return;
+        }
+
+        // NavMeshLink 통과 중인 경우 - 점프 진행 중
+        if (isTraversingLink)
+        {
+            UpdateLinkTraversal();
+            return;
+        }
+
         // 열린 문 우선순위 처리: 등록 순서대로, 내 앞쪽이며 도달 가능한 문 먼저
         Transform priorityTarget = GetNextPriorityWaypointAhead();
         if (priorityTarget != null)
@@ -546,6 +569,103 @@ public class BotController : PlayerController
         {
             moveDir = Vector2.zero;
         }
+    }
+
+    // NavMeshLink 통과 시작 (서버에서만 실행됨)
+    private void StartLinkTraversal()
+    {
+        // 안전 체크: NavMeshLink 위에 있는지 다시 확인
+        if (!navAgent.isOnOffMeshLink) return;
+
+        // OffMeshLinkData 구조체의 정보
+        OffMeshLinkData linkData = navAgent.currentOffMeshLinkData;
+
+        // 링크의 시작점과 끝점 저장 (월드 좌표)
+        linkStartPos = linkData.startPos;
+        linkEndPos = linkData.endPos;
+
+        // NavMeshLink 통과 상태 플래그 설정
+        isTraversingLink = true;                    // 통과 중 표시
+        linkTraverseTime = 0f;                      // 시간 카운터 리셋
+
+        navAgent.updatePosition = false;  // NavAgent 자동 위치 업데이트 비활성화
+        navAgent.updateRotation = false;  // NavAgent 자동 회전 비활성화
+
+        isJumpQueued = true;
+    }
+
+    // NavMeshLink 통과 중 (점프 물리 처리)
+    private void UpdateLinkTraversal()
+    {
+        // 통과 중이 아니면 실행 안 함
+        if (!isTraversingLink) return;
+
+        // 첫 프레임에서 플레이어와 동일한 점프력 적용
+        if (!hasJumpedAtLink && rb != null)
+        {
+            // jumpforce는 상속받은 값
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+
+            //// 수평 방향으로도 약간의 힘 추가
+            Vector3 horizontalDir = (linkEndPos - linkStartPos).normalized;
+            horizontalDir.y = 0; // 수평 성분만 사용
+            float horizontalForce = Vector3.Distance(linkStartPos, linkEndPos) * 0.5f; // 거리에 비레
+            rb.AddForce(horizontalDir * horizontalForce, ForceMode.Impulse);
+
+            hasJumpedAtLink = true; // 중복 실행방지
+            isJumpQueued = false;   // 점프 큐 해제
+        }
+
+        // 통과 시간 업데이트
+        linkTraverseTime += Time.deltaTime;
+
+        // 수동 위치 동기화, NavAgent의 포지션을 현재 봇 위치로 업데이트
+        if (navAgent != null)
+        {
+            navAgent.nextPosition = transform.position;
+        }
+
+        // 착지 감지 및 완료 처리
+        float maxTime = 2f;         // 최대 2초 (안전장치)
+        float distanceToEnd = Vector3.Distance(transform.position, linkEndPos);
+
+        // 완료 조건: 최대 시간 초과 || 끝점에 충분히 가까워짐 && 아래로 떨어지는 중
+        if (linkTraverseTime > maxTime || (distanceToEnd < 1f && rb.linearVelocity.y <= 0))
+        {
+            CompleteTraversal();
+        }
+
+        // 봇 회전 업데이트, 점프 중에도 진행 방향을 바라보도록 설정
+        Vector3 lookDir = (linkEndPos - linkStartPos).normalized;
+        lookDir.y = 0; // 수평 회전만
+        if (lookDir != Vector3.zero)
+        {
+            transform.rotation = Quaternion.Slerp(
+                transform.rotation,
+                Quaternion.LookRotation(lookDir),
+                Time.deltaTime * rotationSpeed
+            );
+        }
+    }
+
+    // NavMEshLink 통과 완료 - 정상 AI 모드 복귀
+    private void CompleteTraversal()
+    {
+        // 중복 호출 방지
+        if (!isTraversingLink) return;
+
+        // 함수를 호출해야 NavAgent가 다음 경로를 계산 할 수 있음
+        navAgent.CompleteOffMeshLink();
+
+        navAgent.updatePosition = true;   // 위치 업데이트 재활성화
+        navAgent.updateRotation = true;   // 회전 업데이트 재활성화
+
+        // 상태 초기화
+        isTraversingLink = false;   // 통과 완료 표시
+        linkTraverseTime = 0f;      // 시간 리셋
+
+        // NavAgent 위치를 현재 위치로 동기화
+        navAgent.nextPosition = transform.position;
     }
 
     // 문 열림 시 호출되어 웨이포인트를 전역 우선순위 목록에 추가
