@@ -6293,6 +6293,7 @@ GameObject:
   - component: {fileID: 879064189002693086}
   - component: {fileID: 1912217668570669831}
   - component: {fileID: 6062109301357747959}
+  - component: {fileID: 6062109301357747961}
   - component: {fileID: 6062109301357747960}
   m_Layer: 0
   m_Name: NetworkManager
@@ -6332,6 +6333,7 @@ MonoBehaviour:
   maxBackgroundTime: 30
   enableProximitySystem: 1
   enableProximityDebugUI: 1
+  enableConnectionHealthMonitor: 1
 --- !u!1001 &1951648188819123406
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6647,6 +6649,41 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerPref: {fileID: 5785324236016558479, guid: bd7016a894e7d3c4fa62c49ee773a799, type: 3}
+--- !u!114 &6062109301357747960
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1038098876669395663}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f5a8b9c2d4e6f1a3b5c7d9e0f2a4b6c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  visibilityRange: 20
+  updateInterval: 0.5
+  hysteresisDistance: 5
+  maxUpdatesPerFrame: 50
+  manageBotVisibility: 1
+  debugLog: 1
+  showGizmos: 1
+--- !u!114 &6062109301357747961
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1038098876669395663}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: afe731e937730074da44d76e6c8597b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  logInterval: 5
+  detailedLog: 1
+  estimatedBytesPerObject: 100
+  estimatedBytesPerClient: 50
 --- !u!1001 &6375971551843311023
 PrefabInstance:
   m_ObjectHideFlags: 0
