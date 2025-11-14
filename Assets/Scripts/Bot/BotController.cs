@@ -39,6 +39,7 @@ public class BotController : PlayerController
     private float linkTraverseTime = 0f;                                // NavMeshLink 통과 경과 시간
     private float linkJumpDuration = 0.5f;                              // NavMeshLink 점프 시간
 
+
 #if UNITY_EDITOR
     [SerializeField] private bool showWaypointInEditor = false;         // 에디터/클라이언트에서 웨이포인트 기즈모 표시 여부
     [SerializeField] private bool showGoalInEditor = false;             // 에디터/클라이언트에서 골 기즈모 표시 여부
@@ -112,6 +113,17 @@ public class BotController : PlayerController
         if (netIsDeath.Value) return;
 
         ServerPerformanceProfiler.Start("BotController.FixedUpdate");
+
+        // 관심 영역 밖 봇들의 Hit 상태 초기화 타이머
+        if (isHit)
+        {
+            hitTime += Time.fixedDeltaTime;
+            if (hitTime >= hitDuration)
+            {
+                isHit = false;
+                hitTime = 0f;
+            }
+        }
 
         // 웨이포인트 주기적으로 재탐색
         if (Time.time > nextWaypointSearchTime)
