@@ -19,8 +19,21 @@ public class BotController : PlayerController
     [SerializeField] private Color waypointLineColor = Color.blue;      // 웨이포인트 직선 색상
     [SerializeField] private Color goalLineColor = Color.yellow;        // 목표 직선 색상
     [SerializeField] private Color selectedColor = Color.red;           // 봇을 선택했을때 직선 색상
-
     [SerializeField] private bool requireReachableWaypoint = true;      // 도달 가능한 웨이포인트만 사용하도록 강제
+
+#if UNITY_EDITOR
+    [SerializeField] private bool showWaypointInEditor = false;         // 에디터/클라이언트에서 웨이포인트 기즈모 표시 여부
+    [SerializeField] private bool showGoalInEditor = false;             // 에디터/클라이언트에서 골 기즈모 표시 여부
+#endif
+
+    [Header("Debug Settings")]
+    [SerializeField] private bool enableDebugLogs = true;
+    [SerializeField] private float debugLogInterval = 3f;               // 로그 출력 주기
+
+    private Vector3 lastDebugPosition;                                  // 이전 디버그 시점에서 캐릭터 포지션
+    private float lastDebugLogTime = 0f;                                // 이전 디버그 시간
+    private float totalDistanceMoved = 0f;                              // 움직인 거리
+    private int consecutiveStuckFrames = 0;                             // 연속적으로 멈춰있는 회수
 
     private Transform goalTransform;
     private bool isGoingToGoal = false;                                 // Goal로 가는중인가?
@@ -38,12 +51,6 @@ public class BotController : PlayerController
     private bool isTraversingLink = false;                              // NavMeshLink 통과 중인가?
     private float linkTraverseTime = 0f;                                // NavMeshLink 통과 경과 시간
     private float linkJumpDuration = 0.5f;                              // NavMeshLink 점프 시간
-
-
-#if UNITY_EDITOR
-    [SerializeField] private bool showWaypointInEditor = false;         // 에디터/클라이언트에서 웨이포인트 기즈모 표시 여부
-    [SerializeField] private bool showGoalInEditor = false;             // 에디터/클라이언트에서 골 기즈모 표시 여부
-#endif
 
     // 이 부분을 전처리기로 감싸면 Netcode가 초기화 순서를 체크할 때 문제 발생
     // 서버에서 선택한 웨이포인트 인덱스, 에디터 기즈모는 이 값을 통해 동일한 웨이포인트를 보여줌
@@ -114,6 +121,9 @@ public class BotController : PlayerController
 
         ServerPerformanceProfiler.Start("BotController.FixedUpdate");
 
+        // 봇 디버깅
+        DebugBotState();
+
         // 관심 영역 밖 봇들의 Hit 상태 초기화 타이머
         if (isHit)
         {
@@ -149,7 +159,7 @@ public class BotController : PlayerController
                 UpdateBotAI();
                 ServerPerformanceProfiler.End("BotController.BotUpdate");
             }
-            
+
             // NavMeshAgent 위치 동기화 (큰 충돌 후 경로 계산이 망가짐)
             if (navAgent != null && navAgent.isActiveAndEnabled && navAgent.isOnNavMesh)
             {
@@ -802,6 +812,166 @@ public class BotController : PlayerController
         Gizmos.DrawLine(transform.position, selectedWp.position);
     }
 #endif
+
+    /////////////////////////////////////////
+    // 디버그 관련
+    /////////////////////////////////////////
+
+    private void DebugBotState()
+    {
+        if (!enableDebugLogs || !IsServer) return;
+
+        // 주기적으로만 로그
+        if (Time.time < lastDebugLogTime + debugLogInterval) return;
+        lastDebugLogTime = Time.time;
+
+        // 실제 이동 거리 계산
+        float actualDistance = Vector3.Distance(transform.position, lastDebugPosition);
+        totalDistanceMoved += actualDistance;
+
+        // NavMeshAgent 상태 체크
+        string navStatus = "Unknown";
+        float remainingDistance = 0f;
+        bool hasValidPath = false;
+        bool isOnNavMesh = false;
+        Vector3 desiredVelocity = Vector3.zero;
+
+        if (navAgent != null && navAgent.isActiveAndEnabled)
+        {
+            isOnNavMesh = navAgent.isOnNavMesh;
+            if (navAgent.isOnNavMesh)
+            {
+                hasValidPath = navAgent.hasPath;
+                navStatus = navAgent.pathStatus.ToString();
+                remainingDistance = navAgent.remainingDistance;
+                desiredVelocity = navAgent.desiredVelocity;
+            }
+            else
+            {
+                navStatus = "NOT_ON_NAVMESH";
+            }
+        }
+        else
+        {
+            navStatus = "AGENT_DISABLED";
+        }
+
+        // 움직임 의도 vs 실제 이동 불일치 체크 (봇이 멈춤)
+        bool intendToMove = moveDir.magnitude > 0.1f;
+        bool actuallyMoved = actualDistance > 0.05f;
+        bool isStuck = intendToMove && !actuallyMoved && !isHit && !isDiving && !netIsGrabbed.Value;
+
+        if (isStuck)
+        {
+            consecutiveStuckFrames++;
+        }
+        else
+        {
+            consecutiveStuckFrames = 0;
+        }
+
+        // 목적지 상태 체크 (Nav 목적지 없음)
+        string destinationInfo = "None";
+        float distanceToDestination = 0f;
+        bool hasDestination = false;
+
+        if (isGoingToGoal && goalTransform != null)
+        {
+            destinationInfo = $"Goal";
+            distanceToDestination = Vector3.Distance(transform.position, goalTransform.position);
+            hasDestination = true;
+        }
+        else if (isGoingToWaypoint && currentWaypoint != null)
+        {
+            destinationInfo = $"Waypoint[{currentWaypointIndex.Value}]";
+            distanceToDestination = Vector3.Distance(transform.position, currentWaypoint.position);
+            hasDestination = true;
+        }
+
+        // 문제 상황 감지
+        bool hasProblem = false;
+        string problemDescription = "";
+
+        // 의도는 있는데 실제로 안 움직임
+        if (isStuck && consecutiveStuckFrames >= 2)
+        {
+            hasProblem = true;
+            problemDescription += "[STUCK] 봇이 제자리에 멈춤 \n";
+        }
+
+        // 목적지 없음
+        //if (!hasDestination && !netIsDeath.Value)
+        //{
+        //    hasProblem = true;
+        //    problemDescription += "[NO_DESTINATION] 목적지 없음 \n";
+        //}
+
+        // NavMesh 경로 없음
+        //if (!hasValidPath && hasDestination)
+        //{
+        //    hasProblem = true;
+        //    problemDescription += "[NO_PATH] NavMesh 경로 없음 \n";
+        //}
+
+        // NavMesh에서 벗어남
+        //if (!isOnNavMesh)
+        //{
+        //    hasProblem = true;
+        //    problemDescription += "[OFF_NAVMESH] NavMesh 이탈 \n";
+        //}
+
+        // 경로는 있는데 desiredVelocity가 없음 (경로 막힘)
+        //if (hasValidPath && hasDestination && desiredVelocity.magnitude < 0.1f && !isHit)
+        //{
+        //    hasProblem = true;
+        //    problemDescription += "[NO_VELOCITY] 경로는 있지만 이동 속도 없음\n";
+        //}
+
+        // isHit가 오래 지속됨
+        //if (isHit)
+        //{
+        //    hasProblem = true;
+        //    problemDescription += "[HIT_STATE] Hit 상태 지속 중";
+        //}
+
+        if (hasProblem)
+        {
+            Debug.LogWarning($"[Bot {NetworkObjectId}] PROBLEM DETECTED!\n" +
+                      $"  {problemDescription}\n" +
+                      $"  Position: {transform.position}\n" +
+                      $"  Actual Movement: {actualDistance:F3}m (Total: {totalDistanceMoved:F1}m)\n" +
+                      $"  moveDir: {moveDir} (magnitude: {moveDir.magnitude:F2})\n" +
+                      $"  netIsMove: {netIsMove.Value}\n" +
+                      $"  \n" +
+                      $"  === NavMesh Status ===\n" +
+                      $"  Status: {navStatus}\n" +
+                      $"  Has Path: {hasValidPath}\n" +
+                      $"  Remaining Distance: {remainingDistance:F2}m\n" +
+                      $"  On NavMesh: {isOnNavMesh}\n" +
+                      $"  Desired Velocity: {desiredVelocity} (mag: {desiredVelocity.magnitude:F2})\n" +
+                      $"  \n" +
+                      $"  === Destination ===\n" +
+                      $"  Has Destination: {hasDestination}\n" +
+                      $"  Target: {destinationInfo}\n" +
+                      $"  Distance to Target: {distanceToDestination:F2}m\n" +
+                      $"  Is Going To Goal: {isGoingToGoal}\n" +
+                      $"  Is Going To Waypoint: {isGoingToWaypoint}\n" +
+                      $"  \n" +
+                      $"  === State Flags ===\n" +
+                      $"  Is Stuck: {isStuck} (Consecutive: {consecutiveStuckFrames})\n" +
+                      $"  Is Hit: {isHit}\n" +
+                      $"  Is Diving: {isDiving}\n" +
+                      $"  Is Grabbed: {netIsGrabbed.Value}\n" +
+                      $"  Is Grounded: {netIsGrounded.Value}\n" +
+                      $"  Is Death: {netIsDeath.Value}\n" +
+                      $"  \n" +
+                      $"  === Physics ===\n" +
+                      $"  RB Velocity: {(rb != null ? rb.linearVelocity : Vector3.zero)}\n" +
+                      $"  RB isKinematic: {(rb != null ? rb.isKinematic : false)}");
+        }
+
+        lastDebugPosition = transform.position;
+    }
 
     public override void OnNetworkSpawn()
     {
