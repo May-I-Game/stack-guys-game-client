@@ -1,48 +1,106 @@
 using UnityEngine;
-using UnityEngine.Events; // UnityEvent를 사용하기 위해 필요
+using UnityEngine.Events;
+using Unity.Netcode;
 
-public class PressButton : MonoBehaviour
+public class PressButton : NetworkBehaviour
 {
-    // 버튼이 눌렸을 때 실행될 함수를 인스펙터에서 등록할 수 있게 해줍니다.
+    [Header("Wall Settings")]
+    [SerializeField] private GameObject wall;
+
+    [Header("Events")]
     public UnityEvent onPressed;
-    // 버튼에서 물건이 제거되었을 때 실행될 함수를 등록할 수 있습니다. (선택 사항)
     public UnityEvent onReleased;
 
     private int objectsOnPlate = 0;
     private bool isPressed = false;
 
-    // 물건이 버튼 영역(트리거)에 진입했을 때 호출됩니다.
+    // 벽 활성화 상태를 네트워크로 동기화 (서버만 쓰기 가능)
+    private NetworkVariable<bool> isWallActive = new NetworkVariable<bool>(
+        false,
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Server
+    );
+
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+
+        // 초기 벽 상태 적용
+        UpdateWallState(isWallActive.Value);
+
+        // NetworkVariable 값 변경 감지 리스너 등록
+        isWallActive.OnValueChanged += OnWallStateChanged;
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        // 리스너 해제
+        isWallActive.OnValueChanged -= OnWallStateChanged;
+        base.OnNetworkDespawn();
+    }
+
     private void OnTriggerEnter(Collider other)
     {
-        // Rigidbody를 가진 오브젝트만 감지하도록 할 수 있습니다. (선택 사항)
+        // 서버에서만 실행
+        if (!IsServer) return;
+
         if (other.GetComponent<Rigidbody>() != null)
         {
             objectsOnPlate++;
-            // 처음 물건이 올라갔을 때만 이벤트 실행
+
             if (objectsOnPlate == 1 && !isPressed)
             {
                 isPressed = true;
                 Debug.Log("버튼 눌림!");
-                onPressed.Invoke(); // 등록된 함수 실행
-                // 시각적인 변화 (예: 버튼을 살짝 아래로 내리는 코드)를 여기에 추가할 수 있습니다.
+
+                // NetworkVariable 값 변경 -> 모든 클라이언트에 자동 동기화
+                isWallActive.Value = true;
+
+                onPressed.Invoke();
             }
         }
     }
 
-    // 물건이 버튼 영역(트리거)에서 나갔을 때 호출됩니다.
     private void OnTriggerExit(Collider other)
     {
+        // 서버에서만 실행
+        if (!IsServer) return;
+
         if (other.GetComponent<Rigidbody>() != null)
         {
             objectsOnPlate--;
-            // 모든 물건이 제거되었을 때만 이벤트 실행
+
             if (objectsOnPlate == 0 && isPressed)
             {
                 isPressed = false;
                 Debug.Log("버튼 해제됨!");
-                onReleased.Invoke(); // 등록된 함수 실행
-                // 시각적인 변화 (예: 버튼을 원래 위치로 올리는 코드)를 여기에 추가할 수 있습니다.
+
+                // NetworkVariable 값 변경 -> 모든 클라이언트에 자동 동기화
+                isWallActive.Value = false;
+
+                onReleased.Invoke();
             }
+        }
+    }
+
+    // NetworkVariable 값이 변경되면 모든 클라이언트에서 호출됨
+    private void OnWallStateChanged(bool oldValue, bool newValue)
+    {
+        Debug.Log($"[PressButton] 벽 상태 변경: {oldValue} -> {newValue}");
+        UpdateWallState(newValue);
+    }
+
+    // 벽의 활성화 상태 업데이트
+    private void UpdateWallState(bool active)
+    {
+        if (wall != null)
+        {
+            wall.SetActive(active);
+            Debug.Log($"[PressButton] 벽 {(active ? "활성화" : "비활성화")}");
+        }
+        else
+        {
+            Debug.LogWarning("[PressButton] Wall GameObject가 할당되지 않았습니다!");
         }
     }
 }
