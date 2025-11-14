@@ -40,8 +40,8 @@ public class BotController : PlayerController
     private float linkJumpDuration = 0.5f;                              // NavMeshLink 점프 시간
 
 #if UNITY_EDITOR
-    [SerializeField] private bool showWaypointInEditor = false;             // 에디터/클라이언트에서 웨이포인트 기즈모 표시 여부
-    [SerializeField] private bool showGoalInEditor = false;                 // 에디터/클라이언트에서 골 기즈모 표시 여부
+    [SerializeField] private bool showWaypointInEditor = false;         // 에디터/클라이언트에서 웨이포인트 기즈모 표시 여부
+    [SerializeField] private bool showGoalInEditor = false;             // 에디터/클라이언트에서 골 기즈모 표시 여부
 #endif
 
     // 이 부분을 전처리기로 감싸면 Netcode가 초기화 순서를 체크할 때 문제 발생
