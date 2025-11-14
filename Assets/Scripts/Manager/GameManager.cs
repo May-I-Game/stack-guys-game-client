@@ -272,7 +272,7 @@ public class GameManager : NetworkBehaviour
 
         var player = playerObj.GetComponent<PlayerController>();
         if (player != null)
-            player.inputEnabled = false;
+            player.inputEnabled.Value = false;
 
         rankings.Add(playerName);              // NetworkList는 서버에서만 쓰기
 

@@ -143,7 +143,7 @@ public class BotController : PlayerController
         }
 
         // 이동이 활성화 되어 있고 navAgent가 활성화가 되어 있을때 AI 작동
-        if (inputEnabled && navAgent != null && navAgent.enabled)
+        if (inputEnabled.Value && navAgent != null && navAgent.enabled)
         {
             // 목표 지점이 없으면 일정 주기로 찾기
             if (goalTransform == null && Time.time > nextPathUpdateTime)
