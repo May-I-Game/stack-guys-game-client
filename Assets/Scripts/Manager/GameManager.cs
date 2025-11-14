@@ -293,12 +293,21 @@ public class GameManager : NetworkBehaviour
     private IEnumerator StartGameCountdown()
     {
         isCountingDown = true;
+        bool inputDisabled = false;
 
         // 게임 시작 카운트다운
         remainingTime.Value = startCountdownTime;
         while (remainingTime.Value > 0)
         {
             remainingTime.Value -= Time.deltaTime;
+
+            // 텔레포트 전에 1초 전에 입력을 막음 (텔레포트 이후 위치 이동 버그 수정)
+            if (remainingTime.Value <= 1 && !inputDisabled)
+            {
+                DisableAllPlayerInputClientRpc();
+                inputDisabled = true;
+            }
+
             yield return null;
         }
 
@@ -349,6 +358,13 @@ public class GameManager : NetworkBehaviour
 
             // 순환하면서 스폰 위치 지정
             Vector3 spawnPos = gameSpawnPoints[i % gameSpawnPoints.Length].position;
+
+            // 플레이어 상태 초기화 (움직여진 상태에서 텔레포트 버그 수정)
+            PlayerController controller = playerObject.GetComponent<PlayerController>();
+            if (controller != null)
+            {
+                controller.ResetStateServerRpc();
+            }
 
             // 해당 플레이어에게 텔레포트 명령
             nt.Teleport(spawnPos, Quaternion.identity, playerObject.transform.localScale);
@@ -466,6 +482,19 @@ public class GameManager : NetworkBehaviour
         }
 
     }
+
+    // 텔레포트 이전의 입력이 스폰 이후 영향을 막기 위한 Rpc
+    [ClientRpc]
+    private void DisableAllPlayerInputClientRpc()
+    {
+        var localPlayer = GetLocalPlayer();
+        if (localPlayer != null)
+        {
+            localPlayer.SetInputEnabled(false);
+            localPlayer.ResetStateServerRpc();
+        }
+    }
+
     private void UpdateCountDownUI(float prviousValue, float newValue)
     {
         // 카운트 다운
@@ -611,11 +640,6 @@ public class GameManager : NetworkBehaviour
         if (gameUI != null)
         {
             gameUI.SetActive(true);
-        }
-        // 시네마틱 끝나고 봇 입력 활성화
-        if (IsServer && BotManager.Singleton != null)
-        {
-            BotManager.Singleton.EnableAllBots();
         }
     }
 

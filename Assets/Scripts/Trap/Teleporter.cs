@@ -40,6 +40,12 @@ public class Teleporter : MonoBehaviour
             rb.angularVelocity = Vector3.zero;
         }
 
+        // PlayerController 입력 상태 초기화 (텔레포트 전 입력이 남아있는 버그)
+        if (controller != null)
+        {
+            controller.ResetStateServerRpc();
+        }
+
         // 실제 위치 이동
         // 네트워크 객체의 Transform 을 직접 변경시 미끄러지는 현상 발생함(보간에 의해)
         // NetworkTransform 의 Teleport 메서드를 사용하여 위치를 갱신해야함
