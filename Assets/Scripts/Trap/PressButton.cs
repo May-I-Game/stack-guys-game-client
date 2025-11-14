@@ -12,10 +12,6 @@ public class PressButton : NetworkBehaviour
     [SerializeField] private float pressDepth = 0.1f;   // 버튼이 눌리는 깊이
     [SerializeField] private float buttonSpeed = 10f;   // 버튼 애니메이션 속도
 
-    [Header("Events")]
-    public UnityEvent onPressed;
-    public UnityEvent onReleased;
-
     private int objectsOnPlate = 0;
     private bool isPressed = false;
 
@@ -92,8 +88,6 @@ public class PressButton : NetworkBehaviour
 
                 // NetworkVariable 값 변경 -> 모든 클라이언트에 자동 동기화
                 isWallActive.Value = true;
-
-                onPressed.Invoke();
             }
         }
     }
@@ -120,8 +114,6 @@ public class PressButton : NetworkBehaviour
 
                 // NetworkVariable 값 변경 -> 모든 클라이언트에 자동 동기화
                 isWallActive.Value = false;
-
-                onReleased.Invoke();
             }
         }
     }
