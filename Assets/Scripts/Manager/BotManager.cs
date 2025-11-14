@@ -180,10 +180,16 @@ public class BotManager : NetworkBehaviour
         // 서버에서만 실행
         if (!IsServer) return;
 
-        // 생성된 모든 봇을 순회하면서 입력 활성화
+        // 생성된 모든 봇을 순회하면서 봇일때만 입력 활성화
         foreach (var bot in spawnedBots)
         {
             if (bot == null) continue;
+
+            NetworkBotIdentity botIdentity = bot.GetComponent<NetworkBotIdentity>();
+            if (botIdentity == null || !botIdentity.IsBot)
+            {
+                continue;
+            }
 
             PlayerController botController = bot.GetComponent<PlayerController>();
             if (botController != null)

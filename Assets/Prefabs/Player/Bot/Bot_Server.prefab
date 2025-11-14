@@ -1250,6 +1250,7 @@ GameObject:
   - component: {fileID: -3220614678576546571}
   - component: {fileID: -7438272633985568390}
   - component: {fileID: -8318179441568257339}
+  - component: {fileID: 4330659005984477901}
   m_Layer: 6
   m_Name: Bot_Server
   m_TagString: Player
@@ -1505,6 +1506,8 @@ MonoBehaviour:
   requireReachableWaypoint: 1
   showWaypointInEditor: 1
   showGoalInEditor: 0
+  enableDebugLogs: 1
+  debugLogInterval: 3
 --- !u!114 &-8318179441568257339
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1521,6 +1524,20 @@ MonoBehaviour:
   visibleRange: 20
   hysteresisDistance: 5
   updateInterval: 0.5
+--- !u!114 &4330659005984477901
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5309982938216476723}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c0fc26f85e8208e4fa1328ff70f7216f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  IsBot: 1
 --- !u!1 &5935630077146863053
 GameObject:
   m_ObjectHideFlags: 0
