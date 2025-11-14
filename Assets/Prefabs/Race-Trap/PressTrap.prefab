@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 1559400068344770946}
   - component: {fileID: 4987035464191640184}
   - component: {fileID: 4439868601276905995}
+  - component: {fileID: 5693497038110522800}
   m_Layer: 0
   m_Name: PressTrap
   m_TagString: Untagged
@@ -199,3 +200,18 @@ MonoBehaviour:
   speed: 5
   stayDownTime: 0.5
   randomDelayRange: {x: 0.5, y: 2}
+--- !u!114 &5693497038110522800
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8734134464399296137}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5cd7f019413a53429138754987568a1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  visibleRange: 60
+  hysteresisDistance: 5

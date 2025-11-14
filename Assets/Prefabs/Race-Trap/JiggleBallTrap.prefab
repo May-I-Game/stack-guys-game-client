@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 4845607283574333709}
   - component: {fileID: 608591907818925671}
   - component: {fileID: 8483400690529011042}
+  - component: {fileID: 2971029767819098473}
   m_Layer: 0
   m_Name: JiggleBallTrap
   m_TagString: weakObstacles
@@ -228,6 +229,21 @@ MonoBehaviour:
   rotationSpeed: 100
   stayTime: 0.2
   autoRotate: 1
+--- !u!114 &2971029767819098473
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9006198460573164273}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5cd7f019413a53429138754987568a1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  visibleRange: 60
+  hysteresisDistance: 5
 --- !u!1001 &3138672789909997265
 PrefabInstance:
   m_ObjectHideFlags: 0

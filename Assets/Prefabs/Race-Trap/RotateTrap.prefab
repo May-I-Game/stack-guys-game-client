@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: -3010420748556910596}
   - component: {fileID: 7822240412649268509}
   - component: {fileID: 2945019474331822409}
+  - component: {fileID: -4693297957131046655}
   m_Layer: 0
   m_Name: RotateTrap
   m_TagString: weakObstacles
@@ -227,3 +228,18 @@ MonoBehaviour:
   spaceMode: 0
   clockWise: 1
   randomizeStartAngle: 1
+--- !u!114 &-4693297957131046655
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4256038781415686108}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5cd7f019413a53429138754987568a1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  visibleRange: 60
+  hysteresisDistance: 5
