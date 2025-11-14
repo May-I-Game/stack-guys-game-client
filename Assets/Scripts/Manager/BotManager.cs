@@ -17,7 +17,6 @@ public class BotManager : NetworkBehaviour
     [SerializeField] private PreSpawnManager preSpawnManager;
 
     private List<GameObject> spawnedBots = new List<GameObject>();
-    private List<GameObject> preSpawndBots = new List<GameObject>();
     bool hasPreSpawned = false;
 
     //[Header("Bot Settings")]
@@ -113,17 +112,8 @@ public class BotManager : NetworkBehaviour
             yield break;
         }
 
-        // 현재 spawnedBots 개수 기록 (Pre-spawn 전)
-        int initialBotCount = spawnedBots.Count;
-
-        // 기존 SpawnBotsFromIndex 재활용
+        // 기존 SpawnBotsFromIndex 재활용하여 Pre-spawn 영역에 봇 생성
         SpawnBotsFromIndex(0, prePoints);
-
-        // Pre-spawn된 봇들만 따로 리스트에 추가
-        for (int i = initialBotCount; i < spawnedBots.Count; i++)
-        {
-            preSpawndBots.Add(spawnedBots[i]);
-        }
 
         hasPreSpawned = true;
     }
@@ -302,6 +292,14 @@ public class BotManager : NetworkBehaviour
             return;
         }
 
+        // 이미 생성한 봇이 있으면 이동만 수행
+        if (hasPreSpawned && spawnedBots.Count > 0)
+        {
+            Debug.Log($"[BotManager] Pre-spawn된 봇 사용 - {botsToSpawn}개 이동");
+            MovePreSpawnedBotsToGameStart(startIndex, spawnPoints);
+            return; // 새로 생성하지 않고 종료
+        }
+
         // startIndex부터 끝까지 반복하면서 각 스폰 포인트에 봇 생성
         for (int i = startIndex; i < spawnPoints.Length; i++)
         {
@@ -311,6 +309,46 @@ public class BotManager : NetworkBehaviour
 
         // 생성 완료 로그
         Debug.Log($"[BotManager] {botsToSpawn}개의 봇을 생성");
+    }
+
+    // 게임 시작할때 미리 생성된 봇들을 텔레포트
+    private void MovePreSpawnedBotsToGameStart(int startIndex, Transform[] spawnPoints)
+    {
+        if (!IsServer) return;
+
+        // 이동할 봇 개수 계산 (스폰 포인트 - 플레이어 수)
+        int botsToMove = spawnPoints.Length - startIndex;
+
+        // spawnedBots 개수가 더 적다면 spawnedBots 개수 선택
+        botsToMove = Mathf.Min(botsToMove, spawnedBots.Count);
+
+        // 이동할 봇이 없으면 종료
+        if (botsToMove <= 0)
+        {
+            Debug.Log("[BotManager] 이동할 봇 없음");
+            return;
+        }
+
+        // spawnedBots 봇들을 순서대로 텔레포트
+        for (int i = 0; i < botsToMove; i++)
+        {
+            int spawnIndex = startIndex + i;
+            GameObject bot = spawnedBots[i];
+
+            // 스폰 포인트 인덱스 체크
+            if (bot != null && spawnIndex < spawnPoints.Length)
+            {
+                // 봇의 트랜스폼 가져와서 90도 회전 적용
+                NetworkTransform nt = bot.GetComponent<NetworkTransform>();
+                if (nt != null)
+                {
+                    Quaternion rotation = spawnPoints[spawnIndex].rotation * Quaternion.Euler(0, 90, 0);
+
+                    // 위치 이동 (네트워크 동기화)
+                    nt.Teleport(spawnPoints[spawnIndex].position, rotation, bot.transform.localScale);
+                }
+            }
+        }
     }
 
     // 생성된 모든 봇 정리
