@@ -367,8 +367,8 @@ public class PlayerController : NetworkBehaviour
     #region ServerLogic
     protected void PlayerMove()
     {
-        // 충돌 중이거나 다이브 착지 중이면 입력 무시
-        if (isHit || isDiveGrounded) return;
+        // 충돌 중이거나 다이브 착지 중이거나 잡힌 상태면 입력 무시
+        if (isHit || isDiveGrounded || netIsGrabbed.Value) return;
 
         // 이동 요청이 있으면
         if (moveDir.magnitude >= 0.1f)
