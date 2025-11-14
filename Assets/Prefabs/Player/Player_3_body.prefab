@@ -144,6 +144,7 @@ GameObject:
   - component: {fileID: 8172756677666563106}
   - component: {fileID: -4623009998803465673}
   - component: {fileID: 2969669871231173552}
+  - component: {fileID: 1761188360386720500}
   m_Layer: 10
   m_Name: Player_3_body
   m_TagString: Ground
@@ -318,6 +319,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
+--- !u!114 &1761188360386720500
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 875528914262663268}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5cd7f019413a53429138754987568a1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  visibleRange: 60
+  hysteresisDistance: 5
 --- !u!1 &1110593909047419037
 GameObject:
   m_ObjectHideFlags: 0

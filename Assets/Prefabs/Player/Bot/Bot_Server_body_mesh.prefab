@@ -198,6 +198,7 @@ GameObject:
   - component: {fileID: -2807452952502682404}
   - component: {fileID: -549299482384468206}
   - component: {fileID: -2393278130673067030}
+  - component: {fileID: 2315715883588640249}
   m_Layer: 10
   m_Name: Bot_Server_body_mesh
   m_TagString: Ground
@@ -372,6 +373,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
+--- !u!114 &2315715883588640249
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3584532267402211322}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5cd7f019413a53429138754987568a1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  visibleRange: 60
+  hysteresisDistance: 5
 --- !u!1 &4470539858166938326
 GameObject:
   m_ObjectHideFlags: 0
