@@ -39,9 +39,10 @@ public class BotController : PlayerController
     private float linkTraverseTime = 0f;                                // NavMeshLink 통과 경과 시간
     private float linkJumpDuration = 0.5f;                              // NavMeshLink 점프 시간
 
+
 #if UNITY_EDITOR
-    [SerializeField] private bool showWaypointInEditor = false;             // 에디터/클라이언트에서 웨이포인트 기즈모 표시 여부
-    [SerializeField] private bool showGoalInEditor = false;                 // 에디터/클라이언트에서 골 기즈모 표시 여부
+    [SerializeField] private bool showWaypointInEditor = false;         // 에디터/클라이언트에서 웨이포인트 기즈모 표시 여부
+    [SerializeField] private bool showGoalInEditor = false;             // 에디터/클라이언트에서 골 기즈모 표시 여부
 #endif
 
     // 이 부분을 전처리기로 감싸면 Netcode가 초기화 순서를 체크할 때 문제 발생
@@ -59,9 +60,11 @@ public class BotController : PlayerController
 
     protected override void Update()
     {
-        // 클라이언트 - 애니메이션만 업데이트, AI는 서버에서만 동작
+        // 서버는 애니메이션 업데이트할 필요 없음
         if (!IsServer)
+        {
             UpdateAnimation();
+        }
     }
 
     protected override void Start()
@@ -111,6 +114,17 @@ public class BotController : PlayerController
 
         ServerPerformanceProfiler.Start("BotController.FixedUpdate");
 
+        // 관심 영역 밖 봇들의 Hit 상태 초기화 타이머
+        if (isHit)
+        {
+            hitTime += Time.fixedDeltaTime;
+            if (hitTime >= hitDuration)
+            {
+                isHit = false;
+                hitTime = 0f;
+            }
+        }
+
         // 웨이포인트 주기적으로 재탐색
         if (Time.time > nextWaypointSearchTime)
         {
@@ -134,6 +148,12 @@ public class BotController : PlayerController
                 ServerPerformanceProfiler.Start("BotController.BotUpdate");
                 UpdateBotAI();
                 ServerPerformanceProfiler.End("BotController.BotUpdate");
+            }
+            
+            // NavMeshAgent 위치 동기화 (큰 충돌 후 경로 계산이 망가짐)
+            if (navAgent != null && navAgent.isActiveAndEnabled && navAgent.isOnNavMesh)
+            {
+                navAgent.nextPosition = transform.position;
             }
         }
 
