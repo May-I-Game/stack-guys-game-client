@@ -1748,8 +1748,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  visibleRange: 60
+  visibleRange: 20
   hysteresisDistance: 5
+  updateInterval: 0.5
 --- !u!1 &7496605244048769823
 GameObject:
   m_ObjectHideFlags: 0

@@ -138,19 +138,8 @@ public class BotManager : NetworkBehaviour
         NetworkObject networkObject = botInstance.GetComponent<NetworkObject>();
         if (networkObject != null)
         {
-            // Proximity 시스템을 위해 SpawnWithObservers = false로 설정
-            // 이렇게 하면 NetworkShow/NetworkHide로 가시성 제어 가능
-            networkObject.SpawnWithObservers = false;
-
             // 서버 소유로 스폰
             networkObject.Spawn();
-
-            // 모든 연결된 클라이언트에게 수동으로 보이게 설정
-            // (Proximity Manager가 나중에 거리 기반으로 숨길 것임)
-            foreach (var clientId in NetworkManager.Singleton.ConnectedClientsIds)
-            {
-                networkObject.NetworkShow(clientId);
-            }
 
             // 스폰 후 회전값 다시 적용 (네트워크 동기화를 위해)
             NetworkTransform nt = botInstance.GetComponent<NetworkTransform>();

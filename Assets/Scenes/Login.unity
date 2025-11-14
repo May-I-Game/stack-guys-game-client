@@ -4556,7 +4556,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01e3e5f34683dc34b925cffa242a807d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serverAddress: 127.0.0.1
+  serverAddress: 172.21.102.63
   serverPort: 7779
   matchApiUrl: https://dyoew1dfdmn0g.cloudfront.net/api/find-game
   ticketStatusUrl: https://dyoew1dfdmn0g.cloudfront.net/api/ticket-status
@@ -6330,9 +6330,6 @@ MonoBehaviour:
   - {fileID: 5309982938216476723, guid: 43c0ac29a41a27446af684a239f6b066, type: 3}
   - {fileID: 5785324236016558479, guid: 32a80714f8c91684084c599ca110faf8, type: 3}
   maxBackgroundTime: 30
-  enableProximitySystem: 1
-  enableProximityDebugUI: 1
-  enableConnectionHealthMonitor: 1
 --- !u!1001 &1951648188819123406
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6628,7 +6625,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1038098876669395663}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -6975,8 +6972,8 @@ SceneRoots:
   m_Roots:
   - {fileID: 1812526544}
   - {fileID: 1244441095}
-  - {fileID: 420280539}
   - {fileID: 6062109301357747958}
+  - {fileID: 420280539}
   - {fileID: 1607066190}
   - {fileID: 1797907442}
   - {fileID: 1206528543}

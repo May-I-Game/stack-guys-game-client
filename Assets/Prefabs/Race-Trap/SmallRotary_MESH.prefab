@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 8787043514663720264}
   - component: {fileID: 1173040027746686558}
   - component: {fileID: 5110754408032818574}
-  - component: {fileID: -1455572753602670253}
   m_Layer: 0
   m_Name: SmallRotary_MESH
   m_TagString: Untagged
@@ -91,15 +90,15 @@ MonoBehaviour:
   AuthorityMode: 0
   TickSyncChildren: 0
   UseUnreliableDeltas: 0
-  SyncPositionX: 1
-  SyncPositionY: 1
-  SyncPositionZ: 1
-  SyncRotAngleX: 1
+  SyncPositionX: 0
+  SyncPositionY: 0
+  SyncPositionZ: 0
+  SyncRotAngleX: 0
   SyncRotAngleY: 1
-  SyncRotAngleZ: 1
-  SyncScaleX: 1
-  SyncScaleY: 1
-  SyncScaleZ: 1
+  SyncRotAngleZ: 0
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
   PositionThreshold: 0.001
   RotAngleThreshold: 0.01
   ScaleThreshold: 0.01
@@ -127,21 +126,6 @@ MonoBehaviour:
   spaceMode: 0
   clockWise: 1
   randomizeStartAngle: 0
---- !u!114 &-1455572753602670253
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2345849747060107459}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b5cd7f019413a53429138754987568a1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
-  visibleRange: 60
-  hysteresisDistance: 5
 --- !u!1 &4676957283621765139
 GameObject:
   m_ObjectHideFlags: 0
