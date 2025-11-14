@@ -231,7 +231,6 @@ public class NetworkGameManager : MonoBehaviour
     {
         int characterIndex = 0;
         string playerName = null;
-        string playerSessionId = null;
 
         if (isObserver)
         {
@@ -250,25 +249,10 @@ public class NetworkGameManager : MonoBehaviour
                 characterIndex = 0;
             }
 
-            // 캐릭터 이름과 PlayerSessionId 파싱
+            // 캐릭터 이름 파싱
             if (request.Payload.Length > 1)
             {
-                // null terminator 찾기
-                int nameEnd = 1;
-                while (nameEnd < request.Payload.Length && request.Payload[nameEnd] != 0)
-                    nameEnd++;
-
-                if (nameEnd > 1)
-                {
-                    playerName = System.Text.Encoding.UTF8.GetString(request.Payload, 1, nameEnd - 1);
-                }
-
-                // PlayerSessionId 파싱 (null terminator 이후)
-                int psidStart = nameEnd + 1;
-                if (psidStart < request.Payload.Length)
-                {
-                    playerSessionId = System.Text.Encoding.UTF8.GetString(request.Payload, psidStart, request.Payload.Length - psidStart);
-                }
+                playerName = System.Text.Encoding.UTF8.GetString(request.Payload, 1, request.Payload.Length - 1);
             }
 
             // 빈 문자열 처리
@@ -277,27 +261,12 @@ public class NetworkGameManager : MonoBehaviour
                 playerName = $"Player_{request.ClientNetworkId}";
             }
 
-            Debug.Log($"[Server] Client {request.ClientNetworkId}: Character={characterIndex}, Name={playerName}, PlayerSessionId={playerSessionId}");
+            Debug.Log($"[Server] Client {request.ClientNetworkId}: Character={characterIndex}, Name={playerName}");
 
             //서버 dictionary에 저장
             clientCharacterSelections[request.ClientNetworkId] = characterIndex;
             clientPlayerNames[request.ClientNetworkId] = playerName;
         }
-
-        // #if UNITY_SERVER
-        //         // GameLift 플레이어 세션 수락
-        //         if (!string.IsNullOrEmpty(playerSessionId) && GameLiftServerManager.Instance != null)
-        //         {
-        //             bool accepted = GameLiftServerManager.Instance.AcceptPlayerSession(request.ClientNetworkId, playerSessionId);
-        //             if (!accepted)
-        //             {
-        //                 response.Approved = false;
-        //                 response.Reason = "GameLift AcceptPlayerSession failed";
-        //                 response.CreatePlayerObject = false;
-        //                 return;
-        //             }
-        //         }
-        // #endif
 
         //연결 승인
         response.Approved = true;
