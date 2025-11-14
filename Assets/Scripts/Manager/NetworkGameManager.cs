@@ -17,20 +17,6 @@ public class NetworkGameManager : MonoBehaviour
     [Header("Background Handling")]
     [SerializeField] private float maxBackgroundTime = 30f;
 
-    [Header("Network Optimization")]
-    [Tooltip("Network Visibility 시스템 활성화 (거리 기반 동기화 최적화)")]
-    [SerializeField] private bool enableProximitySystem = true;
-    [Tooltip("Proximity Debug UI 활성화 (서버 전용)")]
-    [SerializeField] private bool enableProximityDebugUI = true;
-    [Tooltip("Connection Health Monitor 활성화 (서버 전용)")]
-    [SerializeField] private bool enableConnectionHealthMonitor = true;
-    [Tooltip("Proximity Manager 컴포넌트 (자동 생성됨)")]
-    private NetworkProximityManager proximityManager;
-    [Tooltip("Proximity Debug UI 컴포넌트 (자동 생성됨)")]
-    private ProximityDebugUI proximityDebugUI;
-    [Tooltip("Connection Health Monitor 컴포넌트 (자동 생성됨)")]
-    private ConnectionHealthMonitor connectionHealthMonitor;
-
     private bool hasInitialized = false;
     private Dictionary<ulong, int> clientCharacterSelections = new Dictionary<ulong, int>();
     private Dictionary<ulong, string> clientPlayerNames = new Dictionary<ulong, string>();
@@ -138,59 +124,6 @@ public class NetworkGameManager : MonoBehaviour
         {
             NetworkManager.Singleton.SceneManager.LoadScene(gameSceneName, LoadSceneMode.Single);
         }
-
-        // Network Proximity System 초기화
-        InitializeProximitySystem();
-    }
-
-    /// <summary>
-    /// Network Proximity Manager 초기화 (서버 전용)
-    /// </summary>
-    private void InitializeProximitySystem()
-    {
-        if (!enableProximitySystem)
-        {
-            Debug.Log("[NetworkGameManager] Proximity system disabled");
-            return;
-        }
-
-        if (!networkManager.IsServer)
-        {
-            Debug.LogWarning("[NetworkGameManager] Proximity system only runs on server");
-            return;
-        }
-
-        // 이미 컴포넌트가 있는지 확인
-        proximityManager = GetComponent<NetworkProximityManager>();
-        if (proximityManager == null)
-        {
-            proximityManager = gameObject.AddComponent<NetworkProximityManager>();
-            Debug.Log("[NetworkGameManager] NetworkProximityManager component added");
-        }
-
-        // Debug UI 초기화 (활성화된 경우)
-        if (enableProximityDebugUI)
-        {
-            proximityDebugUI = GetComponent<ProximityDebugUI>();
-            if (proximityDebugUI == null)
-            {
-                proximityDebugUI = gameObject.AddComponent<ProximityDebugUI>();
-                Debug.Log("[NetworkGameManager] ProximityDebugUI component added");
-            }
-        }
-
-        Debug.Log("[NetworkGameManager] Proximity system initialized");
-
-        // Connection Health Monitor 초기화 (활성화된 경우)
-        if (enableConnectionHealthMonitor)
-        {
-            connectionHealthMonitor = GetComponent<ConnectionHealthMonitor>();
-            if (connectionHealthMonitor == null)
-            {
-                connectionHealthMonitor = gameObject.AddComponent<ConnectionHealthMonitor>();
-                Debug.Log("[NetworkGameManager] ConnectionHealthMonitor component added");
-            }
-        }
     }
 
     private void SpawnPlayerForClient(ulong clientId)
@@ -210,18 +143,8 @@ public class NetworkGameManager : MonoBehaviour
 
         if (networkObject != null)
         {
-            // Proximity 시스템을 위해 SpawnWithObservers = false로 설정
-            networkObject.SpawnWithObservers = false;
-
             //네트워크 오브젝트로 스폰
             networkObject.SpawnAsPlayerObject(clientId, true);
-
-            // 모든 연결된 클라이언트에게 수동으로 보이게 설정
-            // (Proximity Manager가 나중에 거리 기반으로 숨길 것임)
-            foreach (var otherClientId in NetworkManager.Singleton.ConnectedClientsIds)
-            {
-                networkObject.NetworkShow(otherClientId);
-            }
 
             // 이름을 UI text에 설정(스폰 직후)
             PlayerNameSync nameSync = playerInstance.GetComponent<PlayerNameSync>();
@@ -287,12 +210,6 @@ public class NetworkGameManager : MonoBehaviour
             if (clientPlayerNames.ContainsKey(clientId))
             {
                 clientPlayerNames.Remove(clientId);
-            }
-
-            // Proximity Manager 캐시 정리
-            if (proximityManager != null)
-            {
-                proximityManager.OnClientDisconnected(clientId);
             }
         }
 

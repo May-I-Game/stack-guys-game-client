@@ -441,7 +441,6 @@ GameObject:
   - component: {fileID: 4077622070156694686}
   - component: {fileID: 8934479590105298468}
   - component: {fileID: 2437450079300988974}
-  - component: {fileID: 3720880271803913969}
   m_Layer: 3
   m_Name: rotate Unclock
   m_TagString: Ground
@@ -555,10 +554,10 @@ MonoBehaviour:
   SyncRotAngleX: 1
   SyncRotAngleY: 1
   SyncRotAngleZ: 1
-  SyncScaleX: 1
-  SyncScaleY: 1
-  SyncScaleZ: 1
-  PositionThreshold: 0.001
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.01
   RotAngleThreshold: 0.01
   ScaleThreshold: 0.01
   UseQuaternionSynchronization: 0
@@ -568,21 +567,6 @@ MonoBehaviour:
   SwitchTransformSpaceWhenParented: 0
   Interpolate: 1
   SlerpPosition: 0
---- !u!114 &3720880271803913969
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8094176792558754389}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b5cd7f019413a53429138754987568a1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
-  visibleRange: 60
-  hysteresisDistance: 5
 --- !u!1 &8189468164734054717
 GameObject:
   m_ObjectHideFlags: 0
