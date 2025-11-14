@@ -128,36 +128,6 @@ public class ServerNetworkMonitor : MonoBehaviour
 
     private void LogDetailedStats(int clientCount, int networkObjectCount)
     {
-        // ProximityManager 통계
-        var proximityManager = FindAnyObjectByType<NetworkProximityManager>();
-        if (proximityManager != null)
-        {
-            string proximityStats = proximityManager.GetStats();
-            Debug.Log($"[Proximity] {proximityStats}");
-
-            // Proximity 효과 계산
-            if (clientCount > 0)
-            {
-                // 전체 오브젝트 대비 평균 가시 오브젝트 비율로 대역폭 절감 추정
-                float avgVisiblePerClient = 0f;
-                foreach (var id in NetworkManager.Singleton.ConnectedClientsIds)
-                {
-                    avgVisiblePerClient += proximityManager.GetVisibleObjectCount(id);
-                }
-                avgVisiblePerClient /= clientCount;
-
-                float visibilityRatio = networkObjectCount > 0 ? avgVisiblePerClient / networkObjectCount : 1f;
-                float estimatedSavings = (1f - visibilityRatio) * 100f;
-
-                Debug.Log($"[Proximity Effect] Avg Visible: {avgVisiblePerClient:F1}/{networkObjectCount} " +
-                         $"(~{estimatedSavings:F1}% bandwidth saved)");
-            }
-        }
-        else
-        {
-            Debug.Log("[Proximity] NetworkProximityManager not found (disabled or not initialized)");
-        }
-
         // 클라이언트별 추정 대역폭
         if (clientCount > 0)
         {
@@ -179,14 +149,6 @@ public class ServerNetworkMonitor : MonoBehaviour
         Debug.Log($"[Avg Objects]   {totalNetworkObjects / sampleCount:F1} NetworkObjects");
         Debug.Log($"[Avg Clients]   {totalClients / sampleCount:F1} Clients");
         Debug.Log($"[Avg Bandwidth] ~{estimatedTotalBandwidth / sampleCount:F2} KB/s (estimated)");
-
-        // Proximity 최종 통계
-        var proximityManager = FindAnyObjectByType<NetworkProximityManager>();
-        if (proximityManager != null)
-        {
-            string finalStats = proximityManager.GetStats();
-            Debug.Log($"[Final Proximity] {finalStats}");
-        }
 
         Debug.Log("=================================================");
     }
