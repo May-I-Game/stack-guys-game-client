@@ -1,7 +1,9 @@
-using UnityEngine;
-using Unity.Netcode;
+using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using Unity.Netcode.Components;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class BotManager : NetworkBehaviour
 {
@@ -10,12 +12,17 @@ public class BotManager : NetworkBehaviour
     [Header("Bot Prefab")]
     [SerializeField] private GameObject botPrefab;
 
+    [Header("Spawn Settings")]
+    [SerializeField] private int preBotCount = 100;
+    [SerializeField] private PreSpawnManager preSpawnManager;
+
+    private List<GameObject> spawnedBots = new List<GameObject>();
+    private List<GameObject> preSpawndBots = new List<GameObject>();
+    bool hasPreSpawned = false;
+
     //[Header("Bot Settings")]
     //[SerializeField] private int numberOfBots = 3;      // 생성할 봇 수
     //[SerializeField] private Transform[] spawnPoints;
-
-    private List<GameObject> spawnedBots = new List<GameObject>();
-
     //public override void OnNetworkSpawn()
     //{
     //    if (IsServer)
@@ -56,9 +63,80 @@ public class BotManager : NetworkBehaviour
         }
     }
 
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+
+        if (IsServer)
+        {
+            // 버튼 클릭 리스너 등록
+            NetworkManager.Singleton.OnClientConnectedCallback += HandleClientConnected;
+        }
+    }
+
+    private void HandleClientConnected(ulong clientId)
+    {
+        if (!IsServer) return;
+
+        // GameScene에서만, 그리고 아직 Pre-spawn 안했으면 실행
+        if (SceneManager.GetActiveScene().name == "GameScene" && !hasPreSpawned)
+        {
+            if (preSpawnManager != null)
+            {
+                StartCoroutine(PreSpawnBotsDelayed());
+            }
+        }
+    }
+
+    // PreSpawnPointManager가 준비될 때까지 대기 후 봇 미리 생성
+    private IEnumerator PreSpawnBotsDelayed()
+    {
+        // 이전 스폰했는지 체크
+        if (hasPreSpawned)
+        {
+            yield break;
+        }
+
+        // 0.5초 딜레이
+        yield return new WaitForSeconds(0.5f);
+
+        if (preSpawnManager == null)
+        {
+            yield break;
+        }
+
+        Transform[] prePoints = preSpawnManager.GetPreSpawnPoints();
+
+        // Pre 리스폰 포인트 체크
+        if (prePoints == null || prePoints.Length == 0)
+        {
+            yield break;
+        }
+
+        // 현재 spawnedBots 개수 기록 (Pre-spawn 전)
+        int initialBotCount = spawnedBots.Count;
+
+        // 기존 SpawnBotsFromIndex 재활용
+        SpawnBotsFromIndex(0, prePoints);
+
+        // Pre-spawn된 봇들만 따로 리스트에 추가
+        for (int i = initialBotCount; i < spawnedBots.Count; i++)
+        {
+            preSpawndBots.Add(spawnedBots[i]);
+        }
+
+        hasPreSpawned = true;
+    }
+
     public override void OnDestroy()
     {
         base.OnDestroy();
+
+        // 콜백 해제
+        if (IsServer && NetworkManager.Singleton != null)
+        {
+            NetworkManager.Singleton.OnClientConnectedCallback -= HandleClientConnected;
+        }
 
         if (Singleton == this)
         {
