@@ -618,17 +618,15 @@ public class GameManager : NetworkBehaviour
         {
             gameUI.SetActive(false);
         }
+
         //timeline재생
         timeline.Play();
+
         //트랙 bgm on
         trackBGM.Play();
 
         //Timeline종료 대기
         yield return new WaitForSeconds((float)timeline.duration);
-    }
-    private void OnTimelineFinished(PlayableDirector director)
-    {
-        director.stopped -= OnTimelineFinished;
 
         // UI 활성화
         if (Mobile != null)
@@ -651,6 +649,11 @@ public class GameManager : NetworkBehaviour
         {
             gameUI.SetActive(true);
         }
+    }
+
+    private void OnTimelineFinished(PlayableDirector director)
+    {
+        director.stopped -= OnTimelineFinished;
 
         Debug.Log("Timeline 종료, 게임 플레이 시작");
     }
