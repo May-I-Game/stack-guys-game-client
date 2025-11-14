@@ -658,11 +658,11 @@ public class PlayerController : NetworkBehaviour
 
     private void ThrowObject(GrabbableObject target, Vector3 throwDirection)
     {
-        target.netIsGrabbed.Value = false;
-        target.holder = null;
-
         // NEW: GrabbableObject에 던져졌음을 알림 (NetworkTransform 최적화)
         target.OnThrown();
+
+        target.netIsGrabbed.Value = false;
+        target.holder = null;
 
         Rigidbody targetRb = target.GetComponent<Rigidbody>();
         if (targetRb != null)
