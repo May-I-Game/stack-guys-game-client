@@ -260,13 +260,21 @@ public class GameManager : NetworkBehaviour
         var playerObj = NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject;
         if (playerObj == null) return;
 
+        // 중복 체크
+        for (int i = 0; i < rankings.Count; i++)
+        {
+            if (rankings[i].ToString() == playerName)
+            {
+                Debug.Log($"[중복 방지] {playerName}은(는) 이미 도착했습니다!");
+                return;
+            }
+        }
+
         var player = playerObj.GetComponent<PlayerController>();
         if (player != null)
             player.inputEnabled = false;
 
         rankings.Add(playerName);              // NetworkList는 서버에서만 쓰기
-        //TOdo 삭제필요
-        Debug.Log($"도착한 플레이어: {playerName}, 현재 순위: {rankings.Count}등");
 
         if (rankings.Count == 1 && !isCountingDown)
         {
@@ -610,6 +618,7 @@ public class GameManager : NetworkBehaviour
             BotManager.Singleton.EnableAllBots();
         }
     }
+
     private PlayerController GetLocalPlayer()
     {
         foreach (var player in FindObjectsByType<PlayerController>(FindObjectsSortMode.None))
