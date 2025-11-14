@@ -96,6 +96,10 @@ public class PlayerController : NetworkBehaviour
     //시네마틱 동기화를 위한 사용자 입력 무시 변수
     public bool inputEnabled = true;
 
+    // hit 타이머 변수 (관심 영역 밖 봇을 위한 타이머)
+    protected float hitTime = 0f;
+    protected float hitDuration = 1.5f;                           // 애니메이션 길이보다 약간 길게
+
     public override void OnNetworkSpawn()
     {
         // 서버만 물리 활성화 (서버 권위 방식)
@@ -1096,6 +1100,10 @@ public class PlayerController : NetworkBehaviour
 
         // 이동 차단 및 Trigger 실행
         isHit = true;
+
+        // 타이머 시작
+        hitTime = 0f;
+
         SetTriggerClientRpc(triggerName);
     }
 
