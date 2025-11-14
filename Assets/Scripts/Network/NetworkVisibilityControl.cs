@@ -37,8 +37,9 @@ public class NetworkVisibilityControl : NetworkBehaviour
             return false;
 
         // 대상 클라이언트의 캐릭터 확인
+        // 아직 없으면 (로딩 중) 일단 보이도록 함
         var clientPlayer = client.PlayerObject;
-        if (clientPlayer == null) return false;
+        if (clientPlayer == null) return true;
 
         // 자기 자신은 무조건 보여야 함
         if (clientId == OwnerClientId) return true;
