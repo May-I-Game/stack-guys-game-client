@@ -279,115 +279,117 @@ public class NetworkGameManager : MonoBehaviour
         isObserver = true;
     }
 
-    private void OnApplicationPause(bool pauseStatus)
-    {
-        if (NetworkManager.Singleton.IsServer) return;
-        if (pauseStatus)
-        {
-            // 백그라운드로 전환
-            OnEnterBackground();
-        }
-        else
-        {
-            // 포그라운드로 복귀
-            OnReturnForeground();
-        }
-    }
+    #region 백그라운드/포그라운드 처리 (현재 주석처리)
+    //private void OnApplicationPause(bool pauseStatus)
+    //{
+    //    if (NetworkManager.Singleton.IsServer) return;
+    //    if (pauseStatus)
+    //    {
+    //        // 백그라운드로 전환
+    //        OnEnterBackground();
+    //    }
+    //    else
+    //    {
+    //        // 포그라운드로 복귀
+    //        OnReturnForeground();
+    //    }
+    //}
 
-    private void OnApplicationFocus(bool hasFocus)
-    {
-        if (NetworkManager.Singleton.IsServer) return;
-        if (!hasFocus && !isInBackground)
-        {
-            // 포커스 잃음 (Alt+Tab 등)
-            OnEnterBackground();
-        }
-        else if (hasFocus && isInBackground)
-        {
-            // 포커스 복귀
-            OnReturnForeground();
-        }
-    }
+    //private void OnApplicationFocus(bool hasFocus)
+    //{
+    //    if (NetworkManager.Singleton.IsServer) return;
+    //    if (!hasFocus && !isInBackground)
+    //    {
+    //        // 포커스 잃음 (Alt+Tab 등)
+    //        OnEnterBackground();
+    //    }
+    //    else if (hasFocus && isInBackground)
+    //    {
+    //        // 포커스 복귀
+    //        OnReturnForeground();
+    //    }
+    //}
 
-    private void OnEnterBackground()
-    {
-        if (isInBackground) return;
+    //private void OnEnterBackground()
+    //{
+    //    if (isInBackground) return;
 
-        isInBackground = true;
-        backgroundStartTime = Time.realtimeSinceStartup;
+    //    isInBackground = true;
+    //    backgroundStartTime = Time.realtimeSinceStartup;
 
-        Debug.Log("[NetworkGameManager] 백그라운드 전환 감지");
+    //    Debug.Log("[NetworkGameManager] 백그라운드 전환 감지");
 
-        if (networkManager == null) return;
+    //    if (networkManager == null) return;
 
-        // TODO: 서버에 패킷전송 중지요청
+    //    // TODO: 서버에 패킷전송 중지요청
 
-        // Pause 모드
-        Debug.Log("[NetworkGameManager] 백그라운드 일시정지 모드 (연결 유지)");
-        PausePlayer();
-    }
+    //    // Pause 모드
+    //    Debug.Log("[NetworkGameManager] 백그라운드 일시정지 모드 (연결 유지)");
+    //    PausePlayer();
+    //}
 
-    private void OnReturnForeground()
-    {
-        if (!isInBackground) return;
+    //private void OnReturnForeground()
+    //{
+    //    if (!isInBackground) return;
 
-        float backgroundDuration = Time.realtimeSinceStartup - backgroundStartTime;
-        isInBackground = false;
+    //    float backgroundDuration = Time.realtimeSinceStartup - backgroundStartTime;
+    //    isInBackground = false;
 
-        Debug.Log($"[NetworkGameManager] 포그라운드 복귀 (백그라운드 시간: {backgroundDuration:F1}초)");
+    //    Debug.Log($"[NetworkGameManager] 포그라운드 복귀 (백그라운드 시간: {backgroundDuration:F1}초)");
 
-        if (networkManager == null) return;
+    //    if (networkManager == null) return;
 
-        // TODO: 서버에 패킷전송 재개요청
+    //    // TODO: 서버에 패킷전송 재개요청
 
-        // 너무 오래 백그라운드에 있었으면 연결이 끊겼을 수 있음
-        if (backgroundDuration > maxBackgroundTime)
-        {
-            Debug.LogWarning("[NetworkGameManager] 백그라운드 시간 초과 - 연결 확인 필요");
+    //    // 너무 오래 백그라운드에 있었으면 연결이 끊겼을 수 있음
+    //    if (backgroundDuration > maxBackgroundTime)
+    //    {
+    //        Debug.LogWarning("[NetworkGameManager] 백그라운드 시간 초과 - 연결 확인 필요");
 
-            if (!networkManager.IsConnectedClient)
-            {
-                Debug.LogError("[NetworkGameManager] 서버 연결 끊김 - 재연결 필요");
-                return;
-            }
-        }
+    //        if (!networkManager.IsConnectedClient)
+    //        {
+    //            Debug.LogError("[NetworkGameManager] 서버 연결 끊김 - 재연결 필요");
+    //            return;
+    //        }
+    //    }
 
-        // Resume 모드: 플레이어 제어 복원
-        Debug.Log("[NetworkGameManager] 포그라운드 복귀 - 플레이어 제어 재개");
-        ResumePlayer();
-    }
+    //    // Resume 모드: 플레이어 제어 복원
+    //    Debug.Log("[NetworkGameManager] 포그라운드 복귀 - 플레이어 제어 재개");
+    //    ResumePlayer();
+    //}
 
-    private void PausePlayer()
-    {
-        // 로컬 플레이어 찾기
-        if (networkManager.LocalClient != null && networkManager.LocalClient.PlayerObject != null)
-        {
-            GameObject playerObject = networkManager.LocalClient.PlayerObject.gameObject;
-            PlayerController controller = playerObject.GetComponent<PlayerController>();
+    //private void PausePlayer()
+    //{
+    //    // 로컬 플레이어 찾기
+    //    if (networkManager.LocalClient != null && networkManager.LocalClient.PlayerObject != null)
+    //    {
+    //        GameObject playerObject = networkManager.LocalClient.PlayerObject.gameObject;
+    //        PlayerController controller = playerObject.GetComponent<PlayerController>();
 
-            if (controller != null)
-            {
-                // 입력 차단
-                // controller.SetInputEnabled(false);
-                Debug.Log("[NetworkGameManager] 플레이어 입력 차단");
-            }
-        }
-    }
+    //        if (controller != null)
+    //        {
+    //            // 입력 차단
+    //            // controller.SetInputEnabled(false);
+    //            Debug.Log("[NetworkGameManager] 플레이어 입력 차단");
+    //        }
+    //    }
+    //}
 
-    private void ResumePlayer()
-    {
-        // 로컬 플레이어 찾기
-        if (networkManager.LocalClient != null && networkManager.LocalClient.PlayerObject != null)
-        {
-            GameObject playerObject = networkManager.LocalClient.PlayerObject.gameObject;
-            PlayerController controller = playerObject.GetComponent<PlayerController>();
+    //private void ResumePlayer()
+    //{
+    //    // 로컬 플레이어 찾기
+    //    if (networkManager.LocalClient != null && networkManager.LocalClient.PlayerObject != null)
+    //    {
+    //        GameObject playerObject = networkManager.LocalClient.PlayerObject.gameObject;
+    //        PlayerController controller = playerObject.GetComponent<PlayerController>();
 
-            if (controller != null)
-            {
-                // 입력 재개
-                // controller.SetInputEnabled(true);
-                Debug.Log("[NetworkGameManager] 플레이어 입력 재개");
-            }
-        }
-    }
+    //        if (controller != null)
+    //        {
+    //            // 입력 재개
+    //            // controller.SetInputEnabled(true);
+    //            Debug.Log("[NetworkGameManager] 플레이어 입력 재개");
+    //        }
+    //    }
+    //}
+    #endregion
 }
