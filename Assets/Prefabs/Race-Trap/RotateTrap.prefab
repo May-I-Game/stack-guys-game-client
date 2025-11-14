@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: -3010420748556910596}
   - component: {fileID: 7822240412649268509}
   - component: {fileID: 2945019474331822409}
-  - component: {fileID: -4693297957131046655}
+  - component: {fileID: 2497728213748474516}
   m_Layer: 0
   m_Name: RotateTrap
   m_TagString: weakObstacles
@@ -192,15 +192,15 @@ MonoBehaviour:
   AuthorityMode: 0
   TickSyncChildren: 0
   UseUnreliableDeltas: 0
-  SyncPositionX: 1
-  SyncPositionY: 1
-  SyncPositionZ: 1
-  SyncRotAngleX: 1
+  SyncPositionX: 0
+  SyncPositionY: 0
+  SyncPositionZ: 0
+  SyncRotAngleX: 0
   SyncRotAngleY: 1
-  SyncRotAngleZ: 1
-  SyncScaleX: 1
-  SyncScaleY: 1
-  SyncScaleZ: 1
+  SyncRotAngleZ: 0
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
   PositionThreshold: 0.001
   RotAngleThreshold: 0.01
   ScaleThreshold: 0.01
@@ -228,7 +228,7 @@ MonoBehaviour:
   spaceMode: 0
   clockWise: 1
   randomizeStartAngle: 1
---- !u!114 &-4693297957131046655
+--- !u!114 &2497728213748474516
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -241,5 +241,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  visibleRange: 60
+  visibleRange: 30
   hysteresisDistance: 5
+  updateInterval: 0.5
