@@ -15,8 +15,7 @@ public class DummyController : PlayerController
     {
         if (IsOwner)
         {
-            // 입력 허용시만 요청 처리
-            if (inputEnabled)
+            if (inputEnabled.Value)
             {
                 BotAI();
             }

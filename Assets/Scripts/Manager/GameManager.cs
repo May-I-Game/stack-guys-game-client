@@ -272,7 +272,7 @@ public class GameManager : NetworkBehaviour
 
         var player = playerObj.GetComponent<PlayerController>();
         if (player != null)
-            player.inputEnabled = false;
+            player.inputEnabled.Value = false;
 
         rankings.Add(playerName);              // NetworkList는 서버에서만 쓰기
 
@@ -304,7 +304,7 @@ public class GameManager : NetworkBehaviour
             // 텔레포트 전에 1초 전에 입력을 막음 (텔레포트 이후 위치 이동 버그 수정)
             if (remainingTime.Value <= 1 && !inputDisabled)
             {
-                DisableAllPlayerInputClientRpc();
+                DisableAllPlayersInputOnServer();
                 inputDisabled = true;
             }
 
@@ -363,7 +363,8 @@ public class GameManager : NetworkBehaviour
             PlayerController controller = playerObject.GetComponent<PlayerController>();
             if (controller != null)
             {
-                controller.ResetStateServerRpc();
+                controller.inputEnabled.Value = false;
+                controller.ForceClearInputOnServer();
             }
 
             // 해당 플레이어에게 텔레포트 명령
@@ -412,6 +413,9 @@ public class GameManager : NetworkBehaviour
 
         // 시네마틱이 끝나고 봇 활성화
         BotManager.Singleton?.EnableAllBots();
+
+        // 유저 입력 활성화
+        EnableAllPlayersInputOnServer();
     }
 
     [ClientRpc]
@@ -483,16 +487,49 @@ public class GameManager : NetworkBehaviour
 
     }
 
-    // 텔레포트 이전의 입력이 스폰 이후 영향을 막기 위한 Rpc
-    [ClientRpc]
-    private void DisableAllPlayerInputClientRpc()
+    // 서버에서 모든 플레이어의 입력을 차단하고 상태 초기화
+    private void DisableAllPlayersInputOnServer()
     {
-        var localPlayer = GetLocalPlayer();
-        if (localPlayer != null)
+        if (!IsServer) return;
+
+        foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
         {
-            localPlayer.SetInputEnabled(false);
-            localPlayer.ResetStateServerRpc();
+            NetworkObject playerObject = client.PlayerObject;
+            if (playerObject == null) continue;
+
+            PlayerController controller = playerObject.GetComponent<PlayerController>();
+            if (controller != null)
+            {
+                controller.inputEnabled.Value = false;
+                controller.ForceClearInputOnServer();
+            }
         }
+
+        Debug.Log("[GameManager] 모든 플레이어 입력 차단 완료");
+    }
+
+    // 서버에서 모든 플레이어의 입력을 활성화
+    private void EnableAllPlayersInputOnServer()
+    {
+        if (!IsServer) return;
+
+        foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
+        {
+            NetworkObject playerObject = client.PlayerObject;
+            if (playerObject == null) continue;
+
+            // 봇이 아닌 실제 플레이어만 처리
+            NetworkBotIdentity botIdentity = playerObject.GetComponent<NetworkBotIdentity>();
+            if (botIdentity != null && botIdentity.IsBot) continue;
+
+            PlayerController controller = playerObject.GetComponent<PlayerController>();
+            if (controller != null)
+            {
+                controller.inputEnabled.Value = true;
+            }
+        }
+
+        Debug.Log("[GameManager] 모든 플레이어 입력 활성화 완료");
     }
 
     private void UpdateCountDownUI(float prviousValue, float newValue)
@@ -552,9 +589,6 @@ public class GameManager : NetworkBehaviour
     }
     private IEnumerator PlayTimelineAtSyncTime()
     {
-        //입력 차단
-        DisablePlayerInput();
-
         //로비 BGM 아웃
         lobbyBGM.Stop();
 
@@ -563,7 +597,6 @@ public class GameManager : NetworkBehaviour
         {
             yield return null;
         }
-
 
         if (Mobile != null)
         {
@@ -585,42 +618,17 @@ public class GameManager : NetworkBehaviour
         {
             gameUI.SetActive(false);
         }
+
         //timeline재생
         timeline.Play();
+
         //트랙 bgm on
         trackBGM.Play();
 
         //Timeline종료 대기
         yield return new WaitForSeconds((float)timeline.duration);
 
-        //입력 활성화
-        EnablePlayerInput();
-    }
-    private void OnTimelineFinished(PlayableDirector director)
-    {
-        director.stopped -= OnTimelineFinished;
-
-        EnablePlayerInput();
-
-        Debug.Log("Timeline 종료, 게임 플레이 시작");
-    }
-    private void DisablePlayerInput()
-    {
-        var localPlayer = GetLocalPlayer();
-        if (localPlayer != null)
-        {
-            localPlayer.SetInputEnabled(false);
-            localPlayer.ResetStateServerRpc();
-        }
-    }
-    private void EnablePlayerInput()
-    {
-        var localPlayer = GetLocalPlayer();
-        if (localPlayer != null)
-        {
-            localPlayer.SetInputEnabled(true);
-        }
-
+        // UI 활성화
         if (Mobile != null)
         {
             Mobile.SetActive(true);
@@ -642,6 +650,53 @@ public class GameManager : NetworkBehaviour
             gameUI.SetActive(true);
         }
     }
+
+    private void OnTimelineFinished(PlayableDirector director)
+    {
+        director.stopped -= OnTimelineFinished;
+
+        Debug.Log("Timeline 종료, 게임 플레이 시작");
+    }
+
+    // 캐릭터의 입력 온 오프는 서버에서만 가능
+    //private void DisablePlayerInput()
+    //{
+    //    var localPlayer = GetLocalPlayer();
+    //    if (localPlayer != null)
+    //    {
+    //        localPlayer.SetInputEnabled(false);
+    //        localPlayer.ResetStateServerRpc();
+    //    }
+    //}
+    //private void EnablePlayerInput()
+    //{
+    //    var localPlayer = GetLocalPlayer();
+    //    if (localPlayer != null)
+    //    {
+    //        localPlayer.SetInputEnabled(true);
+    //    }
+
+    //    if (Mobile != null)
+    //    {
+    //        Mobile.SetActive(true);
+    //    }
+    //    if (FPSCount != null)
+    //    {
+    //        FPSCount.SetActive(true);
+    //    }
+    //    if (PingCount != null)
+    //    {
+    //        PingCount.SetActive(true);
+    //    }
+    //    if (LobbyUI != null)
+    //    {
+    //        LobbyUI.SetActive(true);
+    //    }
+    //    if (gameUI != null)
+    //    {
+    //        gameUI.SetActive(true);
+    //    }
+    //}
 
     private PlayerController GetLocalPlayer()
     {

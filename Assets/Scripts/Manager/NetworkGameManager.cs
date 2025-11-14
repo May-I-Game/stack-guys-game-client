@@ -368,7 +368,7 @@ public class NetworkGameManager : MonoBehaviour
             if (controller != null)
             {
                 // 입력 차단
-                controller.SetInputEnabled(false);
+                // controller.SetInputEnabled(false);
                 Debug.Log("[NetworkGameManager] 플레이어 입력 차단");
             }
         }
@@ -385,7 +385,7 @@ public class NetworkGameManager : MonoBehaviour
             if (controller != null)
             {
                 // 입력 재개
-                controller.SetInputEnabled(true);
+                // controller.SetInputEnabled(true);
                 Debug.Log("[NetworkGameManager] 플레이어 입력 재개");
             }
         }

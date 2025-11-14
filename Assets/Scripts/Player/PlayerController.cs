@@ -93,8 +93,8 @@ public class PlayerController : NetworkBehaviour
 
     [SerializeField] protected RespawnManager respawnManager;     // 리스폰 리스트를 사용하기 위하여 선언
 
-    //시네마틱 동기화를 위한 사용자 입력 무시 변수
-    public bool inputEnabled = true;
+    // 시네마틱 동기화를 위한 사용자 입력 무시 변수
+    public NetworkVariable<bool> inputEnabled = new NetworkVariable<bool>(true, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     // hit 타이머 변수 (관심 영역 밖 봇을 위한 타이머)
     protected float hitTime = 0f;
@@ -168,7 +168,7 @@ public class PlayerController : NetworkBehaviour
         if (IsServer) return;
 
         //본인이 아닌 캐릭터, 혹은 input이 비활성화 되어있을 때는 애니메이션만 최신화
-        if (!IsOwner || !inputEnabled)
+        if (!IsOwner || !inputEnabled.Value)
         {
             UpdateAnimation();
             return;
@@ -268,7 +268,7 @@ public class PlayerController : NetworkBehaviour
 
     public void SetInputEnabled(bool enabled)
     {
-        inputEnabled = enabled;
+        inputEnabled.Value = enabled;
     }
 
     public string GetPlayerName()
@@ -282,6 +282,8 @@ public class PlayerController : NetworkBehaviour
     [ServerRpc(Delivery = RpcDelivery.Unreliable)]
     protected void MovePlayerServerRpc(Vector2 direction)
     {
+        if (!inputEnabled.Value) return;
+
         // 이동 방향 임계값 체크: 방향 변화가 크거나 멈출 때만 동기화
         Vector2 directionDelta = direction - moveDir;
         if (directionDelta.magnitude >= inputDeltaThreshold || direction == Vector2.zero)
@@ -293,6 +295,8 @@ public class PlayerController : NetworkBehaviour
     [ServerRpc(Delivery = RpcDelivery.Unreliable)]
     protected void JumpPlayerServerRpc()
     {
+        if (!inputEnabled.Value) return;
+
         // 충돌 중이거나 다이브 착지 중이면 입력 무시
         if (isHit || isDiveGrounded)
         {
@@ -305,6 +309,8 @@ public class PlayerController : NetworkBehaviour
     [ServerRpc(Delivery = RpcDelivery.Unreliable)]
     private void GrabPlayerServerRpc()
     {
+        if (!inputEnabled.Value) return;
+
         // 충돌 중이거나 공중에 있거나 다이브 착지 중이거나 잡힌 상태면 입력 무시
         if (isHit || !netIsGrounded.Value || isDiveGrounded || netIsGrabbed.Value)
         {
@@ -917,6 +923,27 @@ public class PlayerController : NetworkBehaviour
 
         // 애니메이터도 각 클라에서 리셋
         ResetAnimClientRpc();
+    }
+
+    // 서버에서 입력 및 물리 상태를 강제로 초기화
+    public void ForceClearInputOnServer()
+    {
+        if (!IsServer) return;
+
+        moveDir = Vector2.zero;
+        lastSentInput = Vector2.zero;
+        isJumpQueued = false;
+        isGrabQueued = false;
+
+        // 물리 속도도 초기화하여 잔여 움직임 제거
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+
+        // 네트워크 플래그 초기화
+        netIsMove.Value = false;
     }
 
     // 오브젝트와 자식들의 레이어를 재귀적으로 설정
