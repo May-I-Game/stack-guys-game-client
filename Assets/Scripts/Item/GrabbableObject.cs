@@ -9,7 +9,6 @@ public class GrabbableObject : NetworkBehaviour
     public NetworkVariable<bool> netIsGrabbed = new NetworkVariable<bool>(false);
     public PlayerController holder = null;
 
-    // 시체 NetworkTransform 최적화 (Inspector에서 disabled 상태로 시작)
     private Rigidbody rb;
 
     private void Start()
