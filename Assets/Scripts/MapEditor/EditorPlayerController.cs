@@ -106,6 +106,7 @@ public class EditorPlayerController : MonoBehaviour
         }
     }
 
+    // 서버에서만 입력 변경 가능
     public void SetInputEnabled(bool enabled)
     {
         inputEnabled = enabled;

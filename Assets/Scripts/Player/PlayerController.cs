@@ -168,7 +168,7 @@ public class PlayerController : NetworkBehaviour
         if (IsServer) return;
 
         //본인이 아닌 캐릭터, 혹은 input이 비활성화 되어있을 때는 애니메이션만 최신화
-        if (!IsOwner || !inputEnabled)
+        if (!IsOwner || !inputEnabled.Value)
         {
             UpdateAnimation();
             return;
@@ -268,7 +268,7 @@ public class PlayerController : NetworkBehaviour
 
     public void SetInputEnabled(bool enabled)
     {
-        inputEnabled = enabled;
+        inputEnabled.Value = enabled;
     }
 
     public string GetPlayerName()
@@ -923,6 +923,27 @@ public class PlayerController : NetworkBehaviour
 
         // 애니메이터도 각 클라에서 리셋
         ResetAnimClientRpc();
+    }
+
+    // 서버에서 입력 및 물리 상태를 강제로 초기화
+    public void ForceClearInputOnServer()
+    {
+        if (!IsServer) return;
+
+        moveDir = Vector2.zero;
+        lastSentInput = Vector2.zero;
+        isJumpQueued = false;
+        isGrabQueued = false;
+
+        // 물리 속도도 초기화하여 잔여 움직임 제거
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+
+        // 네트워크 플래그 초기화
+        netIsMove.Value = false;
     }
 
     // 오브젝트와 자식들의 레이어를 재귀적으로 설정

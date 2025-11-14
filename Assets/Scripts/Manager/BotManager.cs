@@ -127,13 +127,6 @@ public class BotManager : NetworkBehaviour
             botIdentity.IsBot = true;
         }
 
-        // 생성 직후 입력 차단 (시네마틱 끝나면 활성화)
-        var botController = botInstance.GetComponent<PlayerController>();
-        if (botController != null && disableInput)
-        {
-            botController.SetInputEnabled(false);
-        }
-
         // 봇 이름 네트워크 오브젝트로 생성 및 설정 (PlayNameSync 사용)
         NetworkObject networkObject = botInstance.GetComponent<NetworkObject>();
         if (networkObject != null)
@@ -162,6 +155,13 @@ public class BotManager : NetworkBehaviour
             else
             {
                 Debug.LogWarning("[BotManager] PlayerNameSync 컴포넌트가 없음");
+            }
+
+            // 생성 직후 입력 차단(시네마틱 끝나면 활성화)
+            var botController = botInstance.GetComponent<PlayerController>();
+            if (botController != null && disableInput)
+            {
+                botController.SetInputEnabled(false);
             }
 
             // 생성된 봇을 리스트에 추가
@@ -201,7 +201,6 @@ public class BotManager : NetworkBehaviour
 
         Debug.Log($"[BotManager] {spawnedBots.Count}개의 봇 입력 활성화");
     }
-
 
     public void SpawnBotsFromIndex(int startIndex, Transform[] spawnPoints)
     {
