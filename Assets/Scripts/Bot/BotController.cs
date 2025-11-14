@@ -137,6 +137,12 @@ public class BotController : PlayerController
                 UpdateBotAI();
                 ServerPerformanceProfiler.End("BotController.BotUpdate");
             }
+            
+            // NavMeshAgent 위치 동기화 (큰 충돌 후 경로 계산이 망가짐)
+            if (navAgent != null && navAgent.isActiveAndEnabled && navAgent.isOnNavMesh)
+            {
+                navAgent.nextPosition = transform.position;
+            }
         }
 
         // 땅 체크
@@ -385,12 +391,6 @@ public class BotController : PlayerController
     // AI 로직 (우선순위: 열린 문 > 랜덤 웨이포인트 > Goal)
     private void UpdateBotAI()
     {
-        // NavMeshAgent 위치 동기화 (큰 충돌 후 경로 계산이 망가짐)
-        if (navAgent != null && navAgent.isActiveAndEnabled && navAgent.isOnNavMesh)
-        {
-            navAgent.nextPosition = transform.position;
-        }
-
         // NavMesh 감지 및 처리
         if (navAgent != null && navAgent.isOnOffMeshLink && !isTraversingLink)
         {
