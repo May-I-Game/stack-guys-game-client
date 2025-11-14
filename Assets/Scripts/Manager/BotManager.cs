@@ -306,9 +306,6 @@ public class BotManager : NetworkBehaviour
             // i번째 스폰 포인트에 봇 생성하고, 시네마틱 동안 입력 차단
             SpawnBot(i, spawnPoints, disableInput: true);
         }
-
-        // 생성 완료 로그
-        Debug.Log($"[BotManager] {botsToSpawn}개의 봇을 생성");
     }
 
     // 게임 시작할때 미리 생성된 봇들을 텔레포트
@@ -338,14 +335,30 @@ public class BotManager : NetworkBehaviour
             // 스폰 포인트 인덱스 체크
             if (bot != null && spawnIndex < spawnPoints.Length)
             {
-                // 봇의 트랜스폼 가져와서 90도 회전 적용
+                // 90도 회전
+                Vector3 targetPosition = spawnPoints[spawnIndex].position;
+                Quaternion targetRotation = spawnPoints[spawnIndex].rotation * Quaternion.Euler(0, 90, 0);
+
+                // NavMeshAgent 비활성화 후 이동 (NavMesh 문제 방지)
+                UnityEngine.AI.NavMeshAgent navAgent = bot.GetComponent<UnityEngine.AI.NavMeshAgent>();
+                if (navAgent != null)
+                {
+                    navAgent.enabled = false;
+                }
+
+                // 봇의 트랜스폼으로 위치 이동
                 NetworkTransform nt = bot.GetComponent<NetworkTransform>();
                 if (nt != null)
                 {
-                    Quaternion rotation = spawnPoints[spawnIndex].rotation * Quaternion.Euler(0, 90, 0);
-
                     // 위치 이동 (네트워크 동기화)
-                    nt.Teleport(spawnPoints[spawnIndex].position, rotation, bot.transform.localScale);
+                    nt.Teleport(targetPosition, targetRotation, bot.transform.localScale);
+                }
+
+                // NavMeshAgent 재활성화 (새 위치의 NavMesh에 배치)
+                if (navAgent != null)
+                {
+                    navAgent.enabled = true;
+                    navAgent.Warp(targetPosition); // NavAgent 위치 이동
                 }
             }
         }
