@@ -53,12 +53,22 @@ public struct PlayerSnapshot : INetworkSerializable
 
 public class BatchNetworkManager : NetworkBehaviour
 {
-    public static BatchNetworkManager Instance;
+    [SerializeField]
+    private float syncDistance = 30f;
+    private float _sqrSyncDistance;
 
     // 빠른 검색을 위해 로컬 플레이어들을 캐싱해둠
     private Dictionary<ulong, PlayerController> _spawnedPlayers = new Dictionary<ulong, PlayerController>();
+    // [최적화] 재사용할 리스트 (GC 방지) - 미리 넉넉하게 할당
+    private List<PlayerSnapshot> _snapshotBuffer = new List<PlayerSnapshot>(200);
 
-    private void Awake() => Instance = this;
+    public static BatchNetworkManager Instance;
+
+    private void Awake()
+    {
+        Instance = this;
+        _sqrSyncDistance = syncDistance * syncDistance;
+    }
 
     public override void OnNetworkSpawn()
     {
@@ -108,30 +118,76 @@ public class BatchNetworkManager : NetworkBehaviour
 
     private void SendBatchUpdate()
     {
-        // 보낼 데이터 리스트 준비
-        var snapshots = new List<PlayerSnapshot>();
-
-        foreach (var kvp in _spawnedPlayers)
+        // 클라이언트별로 개별 전송 (각자 시야에 보이는 것만)
+        foreach (var clientId in NetworkManager.Singleton.ConnectedClientsIds)
         {
-            var player = kvp.Value;
-            // TODO: 움직임이 있는 애들만 추려서 넣기 (Dirty Check)
-            snapshots.Add(new PlayerSnapshot
-            (
-                kvp.Key,
-                player.transform.position,
-                player.transform.rotation.eulerAngles.y
-            ));
+            var observer = NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject;
+            if (observer == null) continue;
+
+            // 스냅샷 버퍼 초기화
+            _snapshotBuffer.Clear();
+            foreach (var kvp in _spawnedPlayers)
+            {
+                PlayerController other = kvp.Value;
+
+                // 관심영역 체크 (거리 기반)
+                float sqrDistance = (observer.transform.position - other.transform.position).magnitude;
+                if (sqrDistance > _sqrSyncDistance) continue;
+
+                // TODO: Dirty Check (움직임 있는 것만)
+
+                // TODO: 델타 컴프레션?
+
+                // other을 스냅샷에 추가해서 동기화
+                _snapshotBuffer.Add(new PlayerSnapshot(
+                    kvp.Key,
+                    other.transform.position,
+                    other.transform.rotation.eulerAngles.y
+                ));
+            }
+
+            if (_snapshotBuffer.Count == 0) continue;
+
+            // 스냅샷 전송
+            SendSnapshots(clientId, _snapshotBuffer);
         }
+    }
 
-        if (snapshots.Count == 0) return;
+    private void SendSnapshots(ulong clientId, List<PlayerSnapshot> snapshots)
+    {
+        using var writer = new FastBufferWriter(snapshots.Count * 10 + 64, Allocator.Temp);
+        writer.WriteValueSafe(snapshots.ToArray());
 
-        // FastBufferWriter로 직렬화
-        // MaxSize는 대충 (사람수 * 구조체크기) 보다 넉넉하게 잡음
-        using var writer = new FastBufferWriter(snapshots.Count * 10 + 32, Allocator.Temp);
+        NetworkManager.Singleton.CustomMessagingManager.SendNamedMessage(
+            "BatchMove",
+            clientId, // 특정 클라이언트에게만 전송
+            writer,
+            NetworkDelivery.UnreliableSequenced
+        );
 
-        writer.WriteValueSafe(snapshots.ToArray()); // 배열 전체를 한 번에 씀
+        Debug.Log($"[BatchNetworkManager] 전송: {snapshots.Count}명, 크기: {snapshots.Count * 10}바이트");
 
-        NetworkManager.Singleton.CustomMessagingManager.SendNamedMessageToAll("BatchMove", writer, NetworkDelivery.UnreliableSequenced);
+        #region Chunked Sending (Not Used)
+        //const int CHUNK_SIZE = 20;
+
+        //for (int i = 0; i < snapshots.Count; i += CHUNK_SIZE)
+        //{
+        //    int count = Mathf.Min(CHUNK_SIZE, snapshots.Count - i);
+        //    var chunk = snapshots.GetRange(i, count).ToArray();
+
+        //    int bufferSize = count * 20 + 256;
+        //    using var writer = new FastBufferWriter(bufferSize, Allocator.Temp);
+
+        //    writer.WriteValueSafe(chunk);
+
+        //    NetworkManager.Singleton.CustomMessagingManager.SendNamedMessage(
+        //        "BatchMove",
+        //        clientId, // 특정 클라이언트에게만 전송
+        //        writer,
+        //        NetworkDelivery.UnreliableSequenced
+        //    );
+        //}
+        #endregion
     }
 
     // ================= Client Side =================

@@ -209,13 +209,9 @@ public class BotManager : NetworkBehaviour
             // 서버 소유로 스폰
             networkObject.Spawn();
 
-            // 스폰 후 회전값 다시 적용 (네트워크 동기화를 위해)
-            NetworkTransform nt = botInstance.GetComponent<NetworkTransform>();
-            if (nt != null)
-            {
-                // 텔레포트를 사용하여 위치와 회전을 명확히 설정
-                nt.Teleport(spawnPoint.position, spawnRotation, botInstance.transform.localScale);
-            }
+            // 순간이동 처리
+            BotController botController = botInstance.GetComponent<BotController>();
+            botController.DoRespawn(spawnPoint.position, spawnRotation);
 
             PlayerNameSync nameSync = botInstance.GetComponent<PlayerNameSync>();
             if (nameSync != null)
@@ -233,7 +229,6 @@ public class BotManager : NetworkBehaviour
             }
 
             // 생성 직후 입력 차단(시네마틱 끝나면 활성화)
-            var botController = botInstance.GetComponent<PlayerController>();
             if (botController != null && disableInput)
             {
                 botController.SetInputEnabled(false);
