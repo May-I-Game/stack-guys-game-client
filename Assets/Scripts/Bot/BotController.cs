@@ -47,7 +47,7 @@ public class BotController : PlayerController
     private bool isGoingToWaypoint = false;                             // 웨이포인트로 가는 중인가?
     private float nextWaypointSearchTime = 0f;                          // 다음 웨이포인트 재탐색 시간
     private float nextPathUpdateTime = 0f;                              // 다음 업데이트 시간
-    private float nextAIUpdateTIme = 0f;                                // 다음 AI 업데이트 시간
+    private float nextAIUpdateTime = 0f;                                // 다음 AI 업데이트 시간
 
     // NavMeshLink 점프 관련 변수
     private bool isTraversingLink = false;                              // NavMeshLink 통과 중인가?
@@ -155,12 +155,19 @@ public class BotController : PlayerController
             }
 
             // 목표 지점이 있으면 길찾기 로직 (주기적으로만 실행)
-            if (goalTransform != null && Time.time > nextAIUpdateTIme)
+            if (goalTransform != null && Time.time > nextAIUpdateTime)
             {
                 ServerPerformanceProfiler.Start("BotController.BotUpdate");
-                UpdateBotAI();
+                UpdateBotTarget();
                 ServerPerformanceProfiler.End("BotController.BotUpdate");
+
+                nextAIUpdateTime = Time.time + updateAIInterval;  // 다음 AI 업데이트 시간 설정
             }
+
+            // 이동 입력은 매 프레임
+            ServerPerformanceProfiler.Start("BotController.Movement");
+            UpdateBotMovement();
+            ServerPerformanceProfiler.End("BotController.Movement");
 
             // NavMeshAgent 위치 동기화 (큰 충돌 후 경로 계산이 망가짐)
             if (navAgent != null && navAgent.isActiveAndEnabled && navAgent.isOnNavMesh)
@@ -237,7 +244,7 @@ public class BotController : PlayerController
 #endif
             nextPathUpdateTime = 0f;
             nextWaypointSearchTime = 0f;
-            nextAIUpdateTIme = 0f;
+            nextAIUpdateTime = 0f;
 
             // 목표 재탐색
             FindGoal();
@@ -413,23 +420,11 @@ public class BotController : PlayerController
         return true;
     }
 
-    // AI 로직 - 점프 처리, 웨이포인트(문) 우선순위 체크, moveDir 계산 (우선순위: 열린 문 > 랜덤 웨이포인트 > Goal)
-    private void UpdateBotAI()
+    // AI 로직 - 목표 선택 (주기적 실행)
+    private void UpdateBotTarget()
     {
-        // NavMesh 감지 및 처리
-        if (navAgent != null && navAgent.isOnOffMeshLink && !isTraversingLink)
-        {
-            // NavMeshLink를 막 진입한 순간 AI 로직 안돌림 (점프 시작)
-            StartJumpLink();
-            return;
-        }
-
-        // NavMeshLink 통과 중인 경우 - 점프 진행 중
-        if (isTraversingLink)
-        {
-            UpdateJumpLink();
-            return;
-        }
+        // NavMeshLink 통과 중이면 목표 변경 안함
+        if (isTraversingLink) return;
 
         // 열린 문 우선순위 처리: 등록 순서대로, 내 앞쪽이며 도달 가능한 문 먼저
         Transform priorityTarget = GetNextPriorityWaypointAhead();
@@ -451,7 +446,7 @@ public class BotController : PlayerController
             // 도착 시 통과 완료 기록 + 목표 초기화
             if (distToDoor < waypointReachedDistance)
             {
-                passedDoorWaypoints.Add(priorityTarget); // 통과 완료 기록
+                passedDoorWaypoints.Add(priorityTarget);
                 isGoingToWaypoint = false;
                 isGoingToGoal = false;
                 currentWaypoint = null;
@@ -464,72 +459,26 @@ public class BotController : PlayerController
                 SetDestinationIfDue(priorityTarget.position);
             }
 
-            // 이동 입력 (완전 경로일 때만)
-            if (navAgent.hasPath && navAgent.pathStatus == NavMeshPathStatus.PathComplete &&
-                !isHit && !isDiving && !netIsGrabbed.Value)
-            {
-                Vector3 direction = navAgent.desiredVelocity.normalized;
-
-                if (direction.magnitude > 0.1f)
-                {
-                    moveDir = new Vector2(direction.x, direction.z);
-                    navAgent.nextPosition = transform.position;
-                }
-                else
-                {
-                    moveDir = Vector2.zero;
-                }
-            }
-            else
-            {
-                moveDir = Vector2.zero;
-            }
-
             return; // 우선순위 문을 먼저 처리하므로, 랜덤 로직은 스킵
         }
 
         // Goal 직행 모드 처리 (마지막 웨이포인트 도달 후)
         if (isGoingToGoal)
         {
-            // 경로 완전성 체크 없이 무조건 Goal로 이동
             SetDestinationToGoalForced();
-
-            // NavMesh 경로를 moveDir으로 변환 (부분 경로여도 허용)
-            if (navAgent.hasPath && !isHit && !isDiving && !netIsGrabbed.Value)
-            {
-                Vector3 direction = navAgent.desiredVelocity.normalized;
-
-                if (direction.magnitude > 0.1f)
-                {
-                    moveDir = new Vector2(direction.x, direction.z);
-                    navAgent.nextPosition = transform.position;
-                }
-                else
-                {
-                    moveDir = Vector2.zero;
-                }
-            }
-            else
-            {
-                moveDir = Vector2.zero;
-            }
-
-            return; // Goal 직행 모드에서는 아래 로직 건너뜀
+            return;
         }
 
-        // 일반 웨이포인트 / Goal 경로 로직 (열린 문이 없거나 모두 통과한 경우)
+        // 일반 웨이포인트 / Goal 경로 로직
         if (useRandomWaypoint && waypoints != null && waypoints.Length > 0)
         {
-            // 웨이포인트로 가는 중
             if (isGoingToWaypoint && currentWaypoint != null)
             {
-                // 웨이포인트에 도착했는지 체크
                 float distanceToWaypoint = Vector3.Distance(transform.position, currentWaypoint.position);
 
-                // 도달 -> 다음 앞쪽 웨이포인트 시도, 실패하면 Goal로 폴백
+                // 웨이포인트 도착
                 if (distanceToWaypoint < waypointReachedDistance)
                 {
-                    // 다음 앞쪽 웨이포인트 선택 실패 시 Goal 진행
                     if (!TrySelectForwardWaypoint())
                     {
                         isGoingToGoal = true;
@@ -542,12 +491,11 @@ public class BotController : PlayerController
                 }
                 else
                 {
-                    // 아직 도달 전이면 현재 웨이포인트로 진행 (완전 경로일 때만)
+                    // 아직 도달 전
                     if (!requireReachableWaypoint || IsReachable(currentWaypoint.position))
                         SetDestinationIfDue(currentWaypoint.position);
                     else
                     {
-                        // 현재 웨이포인트가 막혀 있으면 다른 앞쪽 웨이포인트 재선택, 실패하면 Goal로 (경로 체크 안함)
                         if (!TrySelectForwardWaypoint())
                         {
                             isGoingToGoal = true;
@@ -556,14 +504,12 @@ public class BotController : PlayerController
 #if UNITY_EDITOR
                             currentWaypointIndex.Value = -1;
 #endif
-
                         }
                     }
                 }
             }
             else
             {
-                // 현재 웨이포인트가 없으면 다시 시도, 실패하면 Goal로 (경로 체크 안함)
                 if (!TrySelectForwardWaypoint())
                 {
                     isGoingToGoal = true;
@@ -572,23 +518,38 @@ public class BotController : PlayerController
         }
         else
         {
-            // 랜덤 웨이포인트 비활성화 또는 웨이포인트 없음 -> Goal로 직행 (경로 체크 안함)
             isGoingToGoal = true;
         }
+    }
 
-        // NavMesh 경로를 moveDir으로 변환하여 PlayerMove()가 실제 이동 처리
-        // 유효한 경로가 있고 피격/다이브/잡힘 상태가 아닐 때만 이동
+    private void UpdateBotMovement()
+    {
+        // NavMeshLink 감지 및 점프 시작
+        if (navAgent != null && navAgent.isOnOffMeshLink && !isTraversingLink)
+        {
+            StartJumpLink();
+            moveDir = Vector2.zero;
+            return;
+        }
+
+        // 점프 진행중
+        if (isTraversingLink)
+        {
+            UpdateJumpLink();
+            moveDir = Vector2.zero;
+            return;
+        }
+
+        // NavMesh 경로를 moveDir으로 변환, moveDir은 방향 벡터
         if (navAgent.hasPath && navAgent.pathStatus == NavMeshPathStatus.PathComplete &&
             !isHit && !isDiving && !netIsGrabbed.Value)
         {
             Vector3 direction = navAgent.desiredVelocity.normalized;
 
+            // 움직이는 의도가 있다면
             if (direction.magnitude > 0.1f)
             {
-                // 캐릭터 이동 입력
-                Vector2 moveInput = new Vector2(direction.x, direction.z);
-
-                moveDir = moveInput; // 이번 프레임 이동 방향
+                moveDir = new Vector2(direction.x, direction.z);
                 navAgent.nextPosition = transform.position;
             }
             else
