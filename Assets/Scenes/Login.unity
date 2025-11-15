@@ -5595,7 +5595,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   serverAddress: 127.0.0.1
   serverPort: 7779
-  productionServerAddress: 3.37.88.2
+  productionServerAddress: 127.0.0.1
   productionServerPort: 7779
   nameInput: {fileID: 912574218}
   characterSelectCamera: {fileID: 142083412}
