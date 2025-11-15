@@ -532,4 +532,38 @@ public class NetworkGameManager : MonoBehaviour
             }
         }
     }
+
+    // 게임 종료 신호를 매치메이킹 서버에 전송
+    public void NotifyGameEnded()
+    {
+        StartCoroutine(SendGameEndedSignal());
+    }
+
+    private IEnumerator SendGameEndedSignal()
+    {
+        var transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
+        int port = transport != null ? transport.ConnectionData.Port : 7779;
+        string serverId = $"game-server-{port}";
+
+        string jsonData = $"{{\"server_id\":\"{serverId}\",\"port\":{port}}}";
+
+        using (UnityWebRequest www = new UnityWebRequest($"{matchmakingServerUrl}/api/server/game-ended", "POST"))
+        {
+            byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonData);
+            www.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            www.downloadHandler = new DownloadHandlerBuffer();
+            www.SetRequestHeader("Content-Type", "application/json");
+
+            yield return www.SendWebRequest();
+
+            if (www.result == UnityWebRequest.Result.Success)
+            {
+                Debug.Log($"✅ 게임 종료 신호 전송 완료: {serverId}");
+            }
+            else
+            {
+                Debug.LogWarning($"⚠️ 게임 종료 신호 전송 실패: {www.error}");
+            }
+        }
+    }
 }
