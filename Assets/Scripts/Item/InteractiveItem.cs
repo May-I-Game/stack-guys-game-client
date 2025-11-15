@@ -10,14 +10,14 @@ public enum ItemTriggerType
 public abstract class InteractiveItem : GrabbableObject
 {
     [Header("Item Settings")]
-    public ItemTriggerType triggerType;
+    [SerializeField] private ItemTriggerType triggerType;
 
     private bool wasThrown = false;
     private PlayerController thrower;
 
-    public new void OnGrabbed()
+    public new void OnGrabbed(PlayerController player)
     {
-        base.OnGrabbed();
+        base.OnGrabbed(player);
         wasThrown = false;
         thrower = null;
 
@@ -32,12 +32,12 @@ public abstract class InteractiveItem : GrabbableObject
     {
         base.OnThrown();
         wasThrown = true;
-        thrower = holder;
+        thrower = Holder;
     }
 
     protected virtual void OnCollisionEnter(Collision collision)
     {
-        if (!IsServer) return;
+        if (!NetworkManager.Singleton.IsServer) return;
 
         // 던져진 상태이고 + 충돌형 아이템이라면
         if (triggerType == ItemTriggerType.UseOnImpact && wasThrown)

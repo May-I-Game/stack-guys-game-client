@@ -105,3 +105,4 @@ InitTestScene*.unity*
 /[Aa]ssets/Puzzle3DassetPack.meta
 /[Aa]ssets/Editor/BotLauncher.cs
 *.md
+Assets/Editor/BotLauncher.cs.meta
