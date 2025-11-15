@@ -32,6 +32,12 @@ public class PlayerController : NetworkBehaviour
     [Header("Animation")]
     public Animator animator;
 
+    [Header("Particle Effects")]
+    public ParticleSystem walkParticle; // 걷기 파티클
+    public ParticleSystem jumpParticle; // 점프 파티클
+    public ParticleSystem diveLandParticle; // 다이브 착지 파티클
+    public ParticleSystem respawnParticle; // 리스폰 파티클
+
     [Header("Network Optimization")]
     [Tooltip("입력 전송 최소 간격 (초). 모바일 조이스틱 떨림 방지. 권장: 0.033~0.05")]
     public float inputSendInterval = 0.05f;  // 50ms = 20Hz
@@ -418,6 +424,8 @@ public class PlayerController : NetworkBehaviour
                 {
                     rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
                 }
+                // 점프 파티클 재생
+                PlayJumpParticle();
 
                 netIsGrounded.Value = false; // 점프 시 강제로 false 설정
                 canDive = true; // 점프 후 다이브 가능
@@ -453,6 +461,8 @@ public class PlayerController : NetworkBehaviour
 
         isDiving = false;
         isDiveGrounded = true;
+        // 다이브 착지 파티클 재생
+        PlayDiveLandParticle();
 
         Debug.Log("[다이브 착지] 착지 애니메이션 재생, 조작 불가");
         SetTriggerClientRpc("DiveLand");
@@ -874,6 +884,9 @@ public class PlayerController : NetworkBehaviour
             nt.Teleport(dest.position, dest.rotation, transform.localScale);
         }
 
+        // 리스폰 파티클 재생
+        PlayRespawnParticle();
+
         ResetPlayerState();
     }
 
@@ -944,6 +957,58 @@ public class PlayerController : NetworkBehaviour
         foreach (Transform child in obj.transform)
         {
             SetLayerRecursively(child.gameObject, layer);
+        }
+    }
+    // 점프 파티클 재생 (서버에서 호출, 모든 클라이언트에서 재생)
+    private void PlayJumpParticle()
+    {
+        if (jumpParticle != null)
+        {
+            PlayJumpParticleClientRpc();
+        }
+    }
+
+    [ClientRpc]
+    private void PlayJumpParticleClientRpc()
+    {
+        if (jumpParticle != null)
+        {
+            jumpParticle.Play();
+        }
+    }
+    // 다이브 착지 파티클 재생 (서버에서 호출, 모든 클라이언트에서 재생)
+    private void PlayDiveLandParticle()
+    {
+        if (diveLandParticle != null)
+        {
+            PlayDiveLandParticleClientRpc();
+        }
+    }
+
+    [ClientRpc]
+    private void PlayDiveLandParticleClientRpc()
+    {
+        if (diveLandParticle != null)
+        {
+            diveLandParticle.Play();
+        }
+    }
+
+    // 리스폰 파티클 재생 (서버에서 호출, 모든 클라이언트에서 재생)
+    private void PlayRespawnParticle()
+    {
+        if (respawnParticle != null)
+        {
+            PlayRespawnParticleClientRpc();
+        }
+    }
+
+    [ClientRpc]
+    private void PlayRespawnParticleClientRpc()
+    {
+        if (respawnParticle != null)
+        {
+            respawnParticle.Play();
         }
     }
     #endregion
@@ -1135,6 +1200,20 @@ public class PlayerController : NetworkBehaviour
             animator.SetBool("IsGrounded", netIsGrounded.Value);
             // 잡힌 상태를 애니메이터에 전달
             animator.SetBool("IsGrabbed", netIsGrabbed.Value);
+        }
+        // 파티클 제어: 땅에서 걷고 있을 때만 재생
+        if (walkParticle != null)
+        {
+            bool shouldPlayParticle = netIsMove.Value && netIsGrounded.Value && !netIsDeath.Value;
+
+            if (shouldPlayParticle && !walkParticle.isPlaying)
+            {
+                walkParticle.Play();
+            }
+            else if (!shouldPlayParticle && walkParticle.isPlaying)
+            {
+                walkParticle.Stop();
+            }
         }
     }
     #endregion
