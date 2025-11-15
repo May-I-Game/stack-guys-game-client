@@ -194,13 +194,6 @@ public class BotManager : NetworkBehaviour
             spawnRotation
         );
 
-        // 봇 식별자 설정
-        NetworkBotIdentity botIdentity = botInstance.GetComponent<NetworkBotIdentity>();
-        if (botIdentity != null)
-        {
-            // 이 캐릭터가 봇임을 표시
-            botIdentity.IsBot = true;
-        }
 
         // 봇 이름 네트워크 오브젝트로 생성 및 설정 (PlayNameSync 사용)
         NetworkObject networkObject = botInstance.GetComponent<NetworkObject>();
@@ -255,11 +248,6 @@ public class BotManager : NetworkBehaviour
         {
             if (bot == null) continue;
 
-            NetworkBotIdentity botIdentity = bot.GetComponent<NetworkBotIdentity>();
-            if (botIdentity == null || !botIdentity.IsBot)
-            {
-                continue;
-            }
 
             PlayerController botController = bot.GetComponent<PlayerController>();
             if (botController != null)
