@@ -34,13 +34,15 @@ public class GrabbableObject : NetworkBehaviour, IGrabbable
     }
 
     // 던졌을 때 호출 (PlayerController에서 호출)
-    public void OnThrown()
+    public virtual void OnThrown()
     {
+        //Debug.Log($"[GrabbableObject] OnThrown 호출됨! IsServer: {IsServer}, IsGrabbed: {IsGrabbed}");
+
         if (!IsServer) return;
 
         if (!IsGrabbed)
         {
-            Debug.LogWarning($"[GrabbableObject] {gameObject.name}은(는) 잡혀있지 않습니다!");
+            //Debug.LogWarning($"[GrabbableObject] {gameObject.name}은(는) 잡혀있지 않습니다!");
             return;
         }
 
