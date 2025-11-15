@@ -1,7 +1,9 @@
-using UnityEngine;
-using Unity.Netcode;
+using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using Unity.Netcode.Components;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class BotManager : NetworkBehaviour
 {
@@ -10,12 +12,16 @@ public class BotManager : NetworkBehaviour
     [Header("Bot Prefab")]
     [SerializeField] private GameObject botPrefab;
 
+    [Header("Spawn Settings")]
+    [SerializeField] private int preBotCount = 100;
+    [SerializeField] private PreSpawnManager preSpawnManager;
+
+    private List<GameObject> spawnedBots = new List<GameObject>();
+    bool hasPreSpawned = false;
+
     //[Header("Bot Settings")]
     //[SerializeField] private int numberOfBots = 3;      // 생성할 봇 수
     //[SerializeField] private Transform[] spawnPoints;
-
-    private List<GameObject> spawnedBots = new List<GameObject>();
-
     //public override void OnNetworkSpawn()
     //{
     //    if (IsServer)
@@ -54,6 +60,50 @@ public class BotManager : NetworkBehaviour
             Destroy(gameObject);                                // 중복된 Bot 매니저 삭제
             return;
         }
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+
+        if (IsServer)
+        {
+            if (preSpawnManager != null && !hasPreSpawned)
+            {
+                StartCoroutine(PreSpawnBotsDelayed());
+            }
+        }
+    }
+
+    // PreSpawnPointManager가 준비될 때까지 대기 후 봇 미리 생성
+    private IEnumerator PreSpawnBotsDelayed()
+    {
+        // 이전 스폰했는지 체크
+        if (hasPreSpawned)
+        {
+            yield break;
+        }
+
+        // 0.5초 딜레이
+        yield return new WaitForSeconds(0.5f);
+
+        if (preSpawnManager == null)
+        {
+            yield break;
+        }
+
+        Transform[] prePoints = preSpawnManager.GetPreSpawnPoints();
+
+        // Pre 리스폰 포인트 체크
+        if (prePoints == null || prePoints.Length == 0)
+        {
+            yield break;
+        }
+
+        // 기존 SpawnBotsFromIndex 재활용하여 Pre-spawn 영역에 봇 생성
+        SpawnBotsFromIndex(0, prePoints);
+
+        hasPreSpawned = true;
     }
 
     public override void OnDestroy()
@@ -224,15 +274,76 @@ public class BotManager : NetworkBehaviour
             return;
         }
 
+        // 이미 생성한 봇이 있으면 이동만 수행
+        if (hasPreSpawned && spawnedBots.Count > 0)
+        {
+            Debug.Log($"[BotManager] Pre-spawn된 봇 사용 - {botsToSpawn}개 이동");
+            MovePreSpawnedBotsToGameStart(startIndex, spawnPoints);
+            return; // 새로 생성하지 않고 종료
+        }
+
         // startIndex부터 끝까지 반복하면서 각 스폰 포인트에 봇 생성
         for (int i = startIndex; i < spawnPoints.Length; i++)
         {
             // i번째 스폰 포인트에 봇 생성하고, 시네마틱 동안 입력 차단
             SpawnBot(i, spawnPoints, disableInput: true);
         }
+    }
 
-        // 생성 완료 로그
-        Debug.Log($"[BotManager] {botsToSpawn}개의 봇을 생성");
+    // 게임 시작할때 미리 생성된 봇들을 텔레포트
+    private void MovePreSpawnedBotsToGameStart(int startIndex, Transform[] spawnPoints)
+    {
+        if (!IsServer) return;
+
+        // 이동할 봇 개수 계산 (스폰 포인트 - 플레이어 수)
+        int botsToMove = spawnPoints.Length - startIndex;
+
+        // spawnedBots 개수가 더 적다면 spawnedBots 개수 선택
+        botsToMove = Mathf.Min(botsToMove, spawnedBots.Count);
+
+        // 이동할 봇이 없으면 종료
+        if (botsToMove <= 0)
+        {
+            Debug.Log("[BotManager] 이동할 봇 없음");
+            return;
+        }
+
+        // spawnedBots 봇들을 순서대로 텔레포트
+        for (int i = 0; i < botsToMove; i++)
+        {
+            int spawnIndex = startIndex + i;
+            GameObject bot = spawnedBots[i];
+
+            // 스폰 포인트 인덱스 체크
+            if (bot != null && spawnIndex < spawnPoints.Length)
+            {
+                // 90도 회전
+                Vector3 targetPosition = spawnPoints[spawnIndex].position;
+                Quaternion targetRotation = spawnPoints[spawnIndex].rotation * Quaternion.Euler(0, 90, 0);
+
+                // NavMeshAgent 비활성화 후 이동 (NavMesh 문제 방지)
+                UnityEngine.AI.NavMeshAgent navAgent = bot.GetComponent<UnityEngine.AI.NavMeshAgent>();
+                if (navAgent != null)
+                {
+                    navAgent.enabled = false;
+                }
+
+                // 봇의 트랜스폼으로 위치 이동
+                NetworkTransform nt = bot.GetComponent<NetworkTransform>();
+                if (nt != null)
+                {
+                    // 위치 이동 (네트워크 동기화)
+                    nt.Teleport(targetPosition, targetRotation, bot.transform.localScale);
+                }
+
+                // NavMeshAgent 재활성화 (새 위치의 NavMesh에 배치)
+                if (navAgent != null)
+                {
+                    navAgent.enabled = true;
+                    navAgent.Warp(targetPosition); // NavAgent 위치 이동
+                }
+            }
+        }
     }
 
     // 생성된 모든 봇 정리
