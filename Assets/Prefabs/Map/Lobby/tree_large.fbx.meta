@@ -8,7 +8,7 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: tiny_treats_1
-    second: {fileID: -876546973899608171, guid: 2288cc5a627727544909acda935dbc1a, type: 3}
+    second: {fileID: 2100000, guid: 62a86e7ca5090074abca0696884cb726, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
