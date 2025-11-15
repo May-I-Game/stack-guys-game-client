@@ -962,6 +962,14 @@ public class BotController : PlayerController
         // 봇은 카메라 설정 안함
     }
 
+    public override void OnNetworkDespawn()
+    {
+        if (BatchNetworkManager.Instance != null)
+        {
+            BatchNetworkManager.Instance.UnregisterPlayer(NetworkObjectId);
+        }
+    }
+
     public override void OnDestroy()
     {
         if (netIsDeath != null)

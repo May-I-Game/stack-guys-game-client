@@ -60,6 +60,32 @@ public class BatchNetworkManager : NetworkBehaviour
 
     private void Awake() => Instance = this;
 
+    public override void OnNetworkSpawn()
+    {
+        if (IsServer)
+        {
+            NetworkManager.Singleton.NetworkTickSystem.Tick += OnNetworkTick;
+        }
+
+        if (IsClient)
+        {
+            NetworkManager.Singleton.CustomMessagingManager.RegisterNamedMessageHandler("BatchMove", ReceiveBatchUpdate);
+        }
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        if (IsServer)
+        {
+            NetworkManager.Singleton.NetworkTickSystem.Tick -= OnNetworkTick;
+        }
+
+        if (IsClient)
+        {
+            NetworkManager.Singleton.CustomMessagingManager.UnregisterNamedMessageHandler("BatchMove");
+        }
+    }
+
     public void RegisterPlayer(ulong netId, PlayerController player)
     {
         if (!_spawnedPlayers.ContainsKey(netId)) _spawnedPlayers.Add(netId, player);
@@ -71,16 +97,11 @@ public class BatchNetworkManager : NetworkBehaviour
     }
 
     // ================= Server Side =================
-    // 서버가 매 틱마다 모든 플레이어 위치를 긁어모아서 한 방에 쏨
-    private void FixedUpdate()
+    // 서버가 매 틱마다 모든 플레이어 위치를 한번에 전송
+    private void OnNetworkTick()
     {
-        if (!IsServer) return;
-
         // 리스너 없으면 보낼 필요 없음
-        if (NetworkManager.Singleton.ConnectedClientsIds.Count == 0)
-        {
-            return;
-        }
+        if (NetworkManager.Singleton.ConnectedClientsIds.Count == 0) return;
 
         SendBatchUpdate();
     }
@@ -114,14 +135,6 @@ public class BatchNetworkManager : NetworkBehaviour
     }
 
     // ================= Client Side =================
-    public override void OnNetworkSpawn()
-    {
-        if (IsClient)
-        {
-            NetworkManager.Singleton.CustomMessagingManager.RegisterNamedMessageHandler("BatchMove", ReceiveBatchUpdate);
-        }
-    }
-
     private void ReceiveBatchUpdate(ulong senderId, FastBufferReader reader)
     {
         // 1. 배열 전체를 한 번에 읽음
