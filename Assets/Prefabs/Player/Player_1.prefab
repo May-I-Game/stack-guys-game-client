@@ -1685,18 +1685,16 @@ MonoBehaviour:
     m_Bits: 1096
   bounceForce: 5
   animator: {fileID: 964459002660691872}
-  walkEffectPrefab: {fileID: 1170950940917072378, guid: 13b6dde41ff1f554faf05b23415f615c, type: 3}
-  leftFootSpawnPoint: {fileID: 0}
-  rightFootSpawnPoint: {fileID: 0}
   inputSendInterval: 0.05
   inputDeltaThreshold: 0.1
   speedThreshold: 0.5
   groundCheckInterval: 2
-  bodyPrefab: {fileID: 6666310234280264781, guid: 0708bba17fbec6249998b48e1a436e2b, type: 3}
+  bodyPrefab: {fileID: 2354954351810252770, guid: 0708bba17fbec6249998b48e1a436e2b, type: 3}
   RespawnId:
     m_InternalValue: 0
   respawnManager: {fileID: 0}
-  inputEnabled: 1
+  inputEnabled:
+    m_InternalValue: 1
 --- !u!114 &2593437910564063128
 MonoBehaviour:
   m_ObjectHideFlags: 0
