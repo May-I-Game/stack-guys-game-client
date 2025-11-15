@@ -144,7 +144,7 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
-    // 파괴될 때 등록 해제 (안 하면 에러 남)
+    // 디스폰 때 등록 해제 (안 하면 에러 남)
     public override void OnNetworkDespawn()
     {
         if (BatchNetworkManager.Instance != null)
