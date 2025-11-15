@@ -131,11 +131,6 @@ public class PlayerController : NetworkBehaviour
 
             string savedName = PlayerPrefs.GetString("player_name", ""); // 소문자!
 
-            if (string.IsNullOrEmpty(savedName))
-            {
-                savedName = $"Player{OwnerClientId}";
-                Debug.LogWarning($"PlayerPrefs에 이름 없음! 기본 이름: {savedName}");
-            }//todo 삭제
             playerName.Value = savedName;
             Debug.Log($"플레이어 이름 설정: {savedName}");
         }

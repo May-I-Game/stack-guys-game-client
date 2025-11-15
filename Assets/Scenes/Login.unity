@@ -5216,7 +5216,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 770, y: 450}
+  m_AnchoredPosition: {x: 762.4, y: 5.7}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1563087656
@@ -7583,11 +7583,11 @@ MonoBehaviour:
   m_UseWebSockets: 1
   m_UseEncryption: 0
   m_MaxPacketQueueSize: 32768
-  m_MaxPayloadSize: 12288
-  m_HeartbeatTimeoutMS: 500
+  m_MaxPayloadSize: 32768
+  m_HeartbeatTimeoutMS: 506
   m_ConnectTimeoutMS: 3000
   m_MaxConnectAttempts: 10
-  m_DisconnectTimeoutMS: 10000
+  m_DisconnectTimeoutMS: 2147483647
   ConnectionData:
     Address: 127.0.0.1
     Port: 7779
@@ -7629,7 +7629,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 18b8a20568e1f0b4fb3fb1cea7d973ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isServerMod: 1
+  isServerMod: 0
   gameSceneName: GameScene
   characterPrefabs:
   - {fileID: 5785324236016558479, guid: a43ef8e1e961de34fb719499a2851b9a, type: 3}
@@ -7968,13 +7968,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1038098876669395663}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: afe731e937730074da44d76e6c8597b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   logInterval: 5
-  detailedLog: 1
+  detailedLog: 0
   estimatedBytesPerObject: 100
   estimatedBytesPerClient: 50
 --- !u!1001 &6375971551843311023
@@ -8294,7 +8294,7 @@ SceneRoots:
   - {fileID: 1797907442}
   - {fileID: 1206528543}
   - {fileID: 1715763403}
-  - {fileID: 1233099839}
   - {fileID: 632846594}
   - {fileID: 287319341}
+  - {fileID: 1233099839}
   - {fileID: 1789180671}

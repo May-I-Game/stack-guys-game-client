@@ -16,6 +16,9 @@ public class BotManager : NetworkBehaviour
     [SerializeField] private int preBotCount = 100;
     [SerializeField] private PreSpawnManager preSpawnManager;
 
+    [Header("Debug Spawn Points")]
+    [SerializeField] private Transform[] debugSpawnPoints;
+
     private List<GameObject> spawnedBots = new List<GameObject>();
     bool hasPreSpawned = false;
 
@@ -68,6 +71,13 @@ public class BotManager : NetworkBehaviour
 
         if (IsServer)
         {
+            // 디버그 스폰 포인트가 있으면 먼저 생성
+            if (debugSpawnPoints != null && debugSpawnPoints.Length > 0)
+            {
+                StartCoroutine(SpawnDebugBotsDelayed());
+            }
+
+            // 서버 시작할때 봇 미리 생성
             if (preSpawnManager != null && !hasPreSpawned)
             {
                 StartCoroutine(PreSpawnBotsDelayed());
@@ -104,6 +114,21 @@ public class BotManager : NetworkBehaviour
         SpawnBotsFromIndex(0, prePoints);
 
         hasPreSpawned = true;
+    }
+
+    // 디버깅용 봇 스폰
+    private IEnumerator SpawnDebugBotsDelayed()
+    {
+        // 0.5초 대기
+        yield return new WaitForSeconds(0.5f);
+
+        for (int i = 0; i < debugSpawnPoints.Length; i++)
+        {
+            if (debugSpawnPoints[i] != null)
+            {
+                SpawnBot(i, debugSpawnPoints, disableInput: true);
+            }
+        }
     }
 
     public override void OnDestroy()

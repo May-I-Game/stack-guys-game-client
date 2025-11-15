@@ -103,8 +103,6 @@ public class NetworkGameManager : MonoBehaviour
         Debug.Log("--- SERVER BUILD DETECTED ---");
         Debug.Log("-----  SERVER START  -----");
 
-        NetworkManager.Singleton.StartServer();
-
         // 현재 씬이 이미 GameScene이 아닐 때만 로드
         //if (SceneManager.GetActiveScene().name != gameSceneName)
         //{
