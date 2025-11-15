@@ -7583,11 +7583,11 @@ MonoBehaviour:
   m_UseWebSockets: 1
   m_UseEncryption: 0
   m_MaxPacketQueueSize: 32768
-  m_MaxPayloadSize: 12288
+  m_MaxPayloadSize: 32768
   m_HeartbeatTimeoutMS: 506
   m_ConnectTimeoutMS: 3000
   m_MaxConnectAttempts: 10
-  m_DisconnectTimeoutMS: 10000
+  m_DisconnectTimeoutMS: 2147483647
   ConnectionData:
     Address: 172.21.102.99
     Port: 7779
@@ -7788,7 +7788,7 @@ MonoBehaviour:
     Prefabs:
       NetworkPrefabsLists:
       - {fileID: 11400000, guid: 5343cf97fe7dbc04a98e22b75d38f099, type: 2}
-    TickRate: 25
+    TickRate: 20
     ClientConnectionBufferTimeout: 10
     ConnectionApproval: 0
     ConnectionData: 
@@ -7968,13 +7968,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1038098876669395663}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: afe731e937730074da44d76e6c8597b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   logInterval: 5
-  detailedLog: 1
+  detailedLog: 0
   estimatedBytesPerObject: 100
   estimatedBytesPerClient: 50
 --- !u!1001 &6375971551843311023

@@ -122,7 +122,7 @@ public class BotController : PlayerController
         ServerPerformanceProfiler.Start("BotController.FixedUpdate");
 
         // 봇 디버깅
-        DebugBotState();
+        // DebugBotState();
 
         // 관심 영역 밖 봇들의 Hit 상태 초기화 타이머
         if (isHit)
