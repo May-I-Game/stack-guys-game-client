@@ -209,9 +209,6 @@ public class GameManager : NetworkBehaviour
 
     private void CheckPlayerCount()
     {
-        // 로비에서만 실행
-        if (currentGameState.Value != GameState.Lobby) return;
-
         int playerCount = NetworkManager.Singleton.ConnectedClientsList.Count;
         currentPlayerCount.Value = playerCount;
     }
