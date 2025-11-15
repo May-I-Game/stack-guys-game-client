@@ -199,12 +199,9 @@ public class GameManager : NetworkBehaviour
         NetworkObject playerObject = NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject;
         if (playerObject == null) return;
 
-        NetworkTransform nt = playerObject.GetComponent<NetworkTransform>();
-        if (nt != null)
-        {
-            Transform randomSpawnPoint = lobbySpawnPoints[Random.Range(0, lobbySpawnPoints.Length)];
-            nt.Teleport(randomSpawnPoint.position, Quaternion.identity, playerObject.transform.localScale);
-        }
+        Transform randomSpawnPoint = lobbySpawnPoints[Random.Range(0, lobbySpawnPoints.Length)];
+        PlayerController player = playerObject.GetComponent<PlayerController>();
+        player.DoRespawn(randomSpawnPoint.position, randomSpawnPoint.rotation);
     }
 
     private void CheckPlayerCount()
@@ -368,7 +365,7 @@ public class GameManager : NetworkBehaviour
             }
 
             // 해당 플레이어에게 텔레포트 명령
-            nt.Teleport(spawnPos, Quaternion.identity, playerObject.transform.localScale);
+            controller.DoRespawn(spawnPos, Quaternion.identity);
 
             i++;
         }

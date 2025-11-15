@@ -70,6 +70,7 @@ public class BotController : PlayerController
         // 서버는 애니메이션 업데이트할 필요 없음
         if (!IsServer)
         {
+            InterpolateMovement();
             UpdateAnimation();
         }
     }
@@ -985,10 +986,19 @@ public class BotController : PlayerController
             EnablePhysics(false);
         }
 
+        if (BatchNetworkManager.Instance != null)
+        {
+            BatchNetworkManager.Instance.RegisterPlayer(NetworkObjectId, this);
+        }
+
+        // 초기 위치 동기화
+        _targetPos = transform.position;
+        _targetRotY = transform.rotation.eulerAngles.y;
+
         // 봇은 카메라 설정 안함
     }
 
-    private void OnDestroy()
+    public override void OnDestroy()
     {
         if (netIsDeath != null)
         {

@@ -118,8 +118,6 @@ public class NetworkGameManager : MonoBehaviour
             Debug.Log("[Server] WebSocket mode enabled for WebGL clients");
         }
 
-        NetworkManager.Singleton.StartServer();
-
         if (SceneManager.GetActiveScene().name != gameSceneName)
         {
             NetworkManager.Singleton.SceneManager.LoadScene(gameSceneName, LoadSceneMode.Single);
