@@ -5593,9 +5593,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01e3e5f34683dc34b925cffa242a807d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serverAddress: 127.0.0.1
+  serverAddress: 172.21.102.99
   serverPort: 7779
-  productionServerAddress: 3.37.88.2
+  productionServerAddress: 172.21.102.99
   productionServerPort: 7779
   nameInput: {fileID: 912574218}
   characterSelectCamera: {fileID: 142083412}
@@ -7584,12 +7584,12 @@ MonoBehaviour:
   m_UseEncryption: 0
   m_MaxPacketQueueSize: 32768
   m_MaxPayloadSize: 12288
-  m_HeartbeatTimeoutMS: 500
+  m_HeartbeatTimeoutMS: 506
   m_ConnectTimeoutMS: 3000
   m_MaxConnectAttempts: 10
   m_DisconnectTimeoutMS: 10000
   ConnectionData:
-    Address: 127.0.0.1
+    Address: 172.21.102.99
     Port: 7779
     ServerListenAddress: 0.0.0.0
   DebugSimulator:
@@ -7788,7 +7788,7 @@ MonoBehaviour:
     Prefabs:
       NetworkPrefabsLists:
       - {fileID: 11400000, guid: 5343cf97fe7dbc04a98e22b75d38f099, type: 2}
-    TickRate: 20
+    TickRate: 25
     ClientConnectionBufferTimeout: 10
     ConnectionApproval: 0
     ConnectionData: 
@@ -8294,7 +8294,7 @@ SceneRoots:
   - {fileID: 1797907442}
   - {fileID: 1206528543}
   - {fileID: 1715763403}
-  - {fileID: 1233099839}
   - {fileID: 632846594}
   - {fileID: 287319341}
+  - {fileID: 1233099839}
   - {fileID: 1789180671}
