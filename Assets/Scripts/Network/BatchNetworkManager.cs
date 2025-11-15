@@ -3,7 +3,7 @@ using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
-public struct PlayerSnapshot : INetworkSerializable
+public struct PlayerSnapshot : INetworkSerializeByMemcpy
 {
     public ushort NetworkObjectId; // 누가 주인인가? (2 Byte)
     public short X, Y, Z;         // 위치 (6 Byte)
@@ -39,15 +39,6 @@ public struct PlayerSnapshot : INetworkSerializable
         );
 
         rotY = (float)YRotation / 65535f * 360f;
-    }
-
-    public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
-    {
-        serializer.SerializeValue(ref NetworkObjectId);
-        serializer.SerializeValue(ref X);
-        serializer.SerializeValue(ref Y);
-        serializer.SerializeValue(ref Z);
-        serializer.SerializeValue(ref YRotation);
     }
 }
 
@@ -131,7 +122,7 @@ public class BatchNetworkManager : NetworkBehaviour
                 PlayerController other = kvp.Value;
 
                 // 관심영역 체크 (거리 기반)
-                float sqrDistance = (observer.transform.position - other.transform.position).magnitude;
+                float sqrDistance = (observer.transform.position - other.transform.position).sqrMagnitude;
                 if (sqrDistance > _sqrSyncDistance) continue;
 
                 // TODO: Dirty Check (움직임 있는 것만)
