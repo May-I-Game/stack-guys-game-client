@@ -6,8 +6,8 @@ using UnityEngine;
 public class NetworkBotIdentity : NetworkBehaviour
 {
     // 캐릭터가 봇인지 여부
-    [Header("Bot Settings")]
-    public bool IsBot = false;
+    //[Header("Bot Settings")]
+    //public bool IsBot = false;
 
     // 모든 인스턴스가 공유하는 카운터
     private static int botCounter = 0;
@@ -27,11 +27,11 @@ public class NetworkBotIdentity : NetworkBehaviour
     }
 
     // 다른 스크립트에서 봇 여부를 확인하는 헬퍼 함수
-    public static bool IsPlayerBot(GameObject player)
-    {
-        if (player == null) return false;
+    //public static bool IsPlayerBot(GameObject player)
+    //{
+    //    if (player == null) return false;
 
-        var botIdentity = player.GetComponent<NetworkBotIdentity>();
-        return botIdentity != null && botIdentity.IsBot;
-    }
+    //    var botIdentity = player.GetComponent<NetworkBotIdentity>();
+    //    return botIdentity != null && botIdentity.IsBot;
+    //}
 }

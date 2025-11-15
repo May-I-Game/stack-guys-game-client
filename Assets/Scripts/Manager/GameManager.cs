@@ -344,8 +344,8 @@ public class GameManager : NetworkBehaviour
             if (playerObject == null) continue;
 
             // 봇이 아닌 실제 플레이어만 처리
-            NetworkBotIdentity botIdentity = playerObject.GetComponent<NetworkBotIdentity>();
-            if (botIdentity != null && botIdentity.IsBot) continue;
+            BotController botController = playerObject.GetComponent<BotController>();
+            if (botController != null) continue;
 
             // 순환하면서 스폰 위치 지정
             Vector3 spawnPos = gameSpawnPoints[i % gameSpawnPoints.Length].position;
@@ -520,8 +520,8 @@ public class GameManager : NetworkBehaviour
             if (playerObject == null) continue;
 
             // 봇이 아닌 실제 플레이어만 처리
-            NetworkBotIdentity botIdentity = playerObject.GetComponent<NetworkBotIdentity>();
-            if (botIdentity != null && botIdentity.IsBot) continue;
+            BotController botController = playerObject.GetComponent<BotController>();
+            if (botController != null) continue;
 
             PlayerController controller = playerObject.GetComponent<PlayerController>();
             if (controller != null)
