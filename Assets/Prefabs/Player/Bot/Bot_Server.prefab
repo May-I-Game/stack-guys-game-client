@@ -1490,11 +1490,12 @@ MonoBehaviour:
   inputDeltaThreshold: 0.1
   speedThreshold: 0.5
   groundCheckInterval: 2
-  bodyPrefab: {fileID: 3584532267402211322, guid: f4bddefb32d45c84db34f90b7c4cca64, type: 3}
+  bodyPrefab: {fileID: 4744145769258795272, guid: f4bddefb32d45c84db34f90b7c4cca64, type: 3}
   RespawnId:
     m_InternalValue: 0
   respawnManager: {fileID: 0}
-  inputEnabled: 1
+  inputEnabled:
+    m_InternalValue: 1
   updatePathInterval: 0.5
   waypointSearchInterval: 2
   forwardThreshold: 1

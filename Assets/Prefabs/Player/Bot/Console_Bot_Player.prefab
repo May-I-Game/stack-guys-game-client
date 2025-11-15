@@ -1688,11 +1688,12 @@ MonoBehaviour:
   inputDeltaThreshold: 0.1
   speedThreshold: 0.5
   groundCheckInterval: 2
-  bodyPrefab: {fileID: 6298111032776551706, guid: fa07a6d37dbbb2742b1571d531f8ba7c, type: 3}
+  bodyPrefab: {fileID: -6685113623952814118, guid: fa07a6d37dbbb2742b1571d531f8ba7c, type: 3}
   RespawnId:
     m_InternalValue: 0
   respawnManager: {fileID: 0}
-  inputEnabled: 1
+  inputEnabled:
+    m_InternalValue: 1
 --- !u!114 &2593437910564063128
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1722,6 +1723,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   visibleRange: 60
   hysteresisDistance: 5
+  updateInterval: 0.5
 --- !u!1 &5873298213058847420
 GameObject:
   m_ObjectHideFlags: 0

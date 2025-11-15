@@ -1034,11 +1034,12 @@ MonoBehaviour:
   inputDeltaThreshold: 0.1
   speedThreshold: 0.5
   groundCheckInterval: 2
-  bodyPrefab: {fileID: 5354085143282025273, guid: 7d37a12a75157724d9ec53117425c635, type: 3}
+  bodyPrefab: {fileID: 4283250289369626534, guid: 34c3f7d357875c94d8aa928b30a8b163, type: 3}
   RespawnId:
     m_InternalValue: 0
   respawnManager: {fileID: 0}
-  inputEnabled: 1
+  inputEnabled:
+    m_InternalValue: 1
 --- !u!114 &-1114502525407769957
 MonoBehaviour:
   m_ObjectHideFlags: 0

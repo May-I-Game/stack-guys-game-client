@@ -31,7 +31,7 @@ public class NetworkPoolManager : NetworkBehaviour, INetworkPrefabInstanceHandle
             {
                 CreateNewInstance();
             }
-            Debug.Log($"[Server] {InitialPoolSize}개 시체 풀링 완료");
+            Debug.Log($"[NetworkPoolManager] {InitialPoolSize}개 시체 풀링 완료");
         }
     }
 
@@ -72,6 +72,10 @@ public class NetworkPoolManager : NetworkBehaviour, INetworkPrefabInstanceHandle
             netObj.transform.position = position;
             netObj.transform.rotation = rotation;
             netObj.gameObject.SetActive(true);
+
+            Debug.Log($"[NetworkPoolManager] 시체 1개 풀에서 사용 완료!");
+            Debug.Log($"[NetworkPoolManager] 풀에 {pool.Count}개 시체 남음!");
+
             return netObj;
         }
 
