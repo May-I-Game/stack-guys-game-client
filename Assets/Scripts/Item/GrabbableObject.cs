@@ -1,31 +1,36 @@
 using Unity.Netcode;
-using Unity.Netcode.Components;
 using UnityEngine;
 
-
 // 잡을 수 있는 오브젝트에 붙이는 컴포넌트
-public class GrabbableObject : NetworkBehaviour
+public class GrabbableObject : NetworkBehaviour, IGrabbable
 {
-    public NetworkVariable<bool> netIsGrabbed = new NetworkVariable<bool>(false);
-    public PlayerController holder = null;
+    public bool IsGrabbed { get; private set; } = false;
+    public PlayerController Holder { get; private set; } = null;
+    public ulong NetId { get { return NetworkObjectId; } }
+    public GameObject GameObj { get { return gameObject; } }
+    public Rigidbody Rb { get; private set; }
 
-    private Rigidbody rb;
-
-    private void Start()
+    private void Awake()
     {
-        rb = GetComponent<Rigidbody>();
+        Rb = GetComponent<Rigidbody>();
+
+        if (Rb == null)
+        {
+            Debug.LogError($"[GrabbableObject] Rigidbody 컴포넌트가 없습니다: {gameObject.name}");
+            enabled = false;
+        }
     }
 
     // 잡았을 때 호출 (PlayerController에서 호출)
-    public void OnGrabbed()
+    public void OnGrabbed(PlayerController player)
     {
-        if (!IsServer) return;
+        if (!NetworkManager.Singleton.IsServer) return;
 
         // Rigidbody Kinematic으로 (잡혀있는 동안은 물리 정지)
-        if (rb != null)
-        {
-            rb.isKinematic = true;
-        }
+        Rb.isKinematic = true;
+
+        IsGrabbed = true;
+        Holder = player;
     }
 
     // 던졌을 때 호출 (PlayerController에서 호출)
@@ -33,24 +38,23 @@ public class GrabbableObject : NetworkBehaviour
     {
         if (!IsServer) return;
 
-        // Rigidbody 물리 활성화 (던져진 후 날아감)
-        if (rb != null)
+        if (!IsGrabbed)
         {
-            rb.isKinematic = false;
+            Debug.LogWarning($"[GrabbableObject] {gameObject.name}은(는) 잡혀있지 않습니다!");
+            return;
         }
+
+        OnReleased();
     }
 
-    // 강제로 놓기 (연결해제등)
-    public void ForceRelease()
+    // 놓았을 때 호출 (PlayerController에서 호출)
+    public void OnReleased()
     {
         if (!IsServer) return;
 
-        if (holder != null && netIsGrabbed.Value)
-        {
-            // 홀더에게 놓으라고 알림
-            // holder의 ThrowObjectServerRpc 호출 또는 직접 해제
-            netIsGrabbed.Value = false;
-            holder = null;
-        }
+        Rb.isKinematic = false;
+
+        IsGrabbed = false;
+        Holder = null;
     }
 }

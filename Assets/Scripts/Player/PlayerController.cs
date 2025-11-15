@@ -510,8 +510,8 @@ public class PlayerController : NetworkBehaviour
             }
 
             // 오브젝트 체크
-            GrabbableObject grabbable = col.GetComponent<GrabbableObject>();
-            if (grabbable != null && !grabbable.netIsGrabbed.Value)
+            IGrabbable grabbable = col.GetComponent<IGrabbable>();
+            if (grabbable != null && !grabbable.IsGrabbed)
             {
                 GrabObject(grabbable);
                 return;
@@ -572,36 +572,26 @@ public class PlayerController : NetworkBehaviour
         // 레이어 저장 및 비활성화 (충돌 무시용)
         heldObjectOriginLayer = otherPlayer.gameObject.layer;
         otherPlayer.gameObject.layer = LayerMask.NameToLayer("HeldObject");
-        Debug.Log($"[잡기] 오브젝트 레이어 변환: {otherPlayer.gameObject.layer}");
 
-        Debug.Log($"[잡기] 플레이어를 잡았습니다: {otherPlayer.gameObject.name}");
+        //Debug.Log($"[잡기] 오브젝트 레이어 변환: {otherPlayer.gameObject.layer}");
+        //Debug.Log($"[잡기] 플레이어를 잡았습니다: {otherPlayer.gameObject.name}");
     }
 
-    private void GrabObject(GrabbableObject grabbable)
+    private void GrabObject(IGrabbable grabbable)
     {
-        holdingObject = grabbable.gameObject;
+        holdingObject = grabbable.GameObj;
         isHolding = true;
-        holdingTargetId = grabbable.NetworkObjectId;
-
-        // 오브젝트 상태 변경
-        grabbable.netIsGrabbed.Value = true;
-        grabbable.holder = this;
+        holdingTargetId = grabbable.NetId;
 
         // NEW: GrabbableObject에 잡혔음을 알림 (NetworkTransform 최적화)
-        grabbable.OnGrabbed();
+        grabbable.OnGrabbed(this);
 
-        // 오브젝트 물리 비활성화
-        Rigidbody targetRb = grabbable.GetComponent<Rigidbody>();
-        if (targetRb != null)
-        {
-            targetRb.isKinematic = true;
-        }
         // 레이어 저장 및 비활성화 (충돌 무시용)
-        heldObjectOriginLayer = grabbable.gameObject.layer;
-        grabbable.gameObject.layer = LayerMask.NameToLayer("HeldObject");
-        Debug.Log($"[잡기] 오브젝트 레이어 변환: {grabbable.gameObject.layer}");
+        heldObjectOriginLayer = grabbable.GameObj.layer;
+        grabbable.GameObj.layer = LayerMask.NameToLayer("HeldObject");
 
-        Debug.Log($"[잡기] 오브젝트를 잡았습니다: {grabbable.name}");
+        //Debug.Log($"[잡기] 오브젝트 레이어 변환: {grabbable.gameObject.layer}");
+        //Debug.Log($"[잡기] 오브젝트를 잡았습니다: {grabbable.name}");
     }
 
     private void TryThrow()
@@ -650,32 +640,24 @@ public class PlayerController : NetworkBehaviour
         }
         // 충돌 재활성화
         target.gameObject.layer = heldObjectOriginLayer;
-        Debug.Log($"[잡기] 오브젝트 레이어 변환: {target.gameObject.layer}");
-
         SetTriggerClientRpc("Throw");
-        Debug.Log("[잡기] 오브젝트를 던졌습니다");
+
+        //Debug.Log($"[잡기] 오브젝트 레이어 변환: {target.gameObject.layer}");
+        //Debug.Log("[잡기] 오브젝트를 던졌습니다");
     }
 
-    private void ThrowObject(GrabbableObject target, Vector3 throwDirection)
+    private void ThrowObject(IGrabbable target, Vector3 throwDirection)
     {
         // NEW: GrabbableObject에 던져졌음을 알림 (NetworkTransform 최적화)
         target.OnThrown();
+        target.Rb.AddForce(throwDirection * throwForce, ForceMode.Impulse);
 
-        target.netIsGrabbed.Value = false;
-        target.holder = null;
-
-        Rigidbody targetRb = target.GetComponent<Rigidbody>();
-        if (targetRb != null)
-        {
-            targetRb.isKinematic = false;
-            targetRb.AddForce(throwDirection * throwForce, ForceMode.Impulse);
-        }
         // 충돌 재활성화
-        target.gameObject.layer = heldObjectOriginLayer;
-        Debug.Log($"[잡기] 오브젝트 레이어 변환: {target.gameObject.layer}");
-
+        target.GameObj.layer = heldObjectOriginLayer;
         SetTriggerClientRpc("Throw");
-        Debug.Log("[잡기] 오브젝트를 던졌습니다");
+
+        //Debug.Log($"[잡기] 오브젝트 레이어 변환: {target.gameObject.layer}");
+        //Debug.Log("[잡기] 오브젝트를 던졌습니다");
     }
 
     protected void PlayerHeld()
@@ -762,8 +744,7 @@ public class PlayerController : NetworkBehaviour
                 GrabbableObject grabbable = holdingObject.GetComponent<GrabbableObject>();
                 if (grabbable != null)
                 {
-                    grabbable.netIsGrabbed.Value = false;
-                    grabbable.holder = null;
+                    grabbable.OnReleased();
 
                     Rigidbody targetRb = grabbable.GetComponent<Rigidbody>();
                     if (targetRb != null)
