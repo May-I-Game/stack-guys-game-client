@@ -10,14 +10,16 @@ public enum ItemTriggerType
 public abstract class InteractiveItem : GrabbableObject
 {
     [Header("Item Settings")]
-    public ItemTriggerType triggerType;
+    [SerializeField] private ItemTriggerType triggerType;
 
     private bool wasThrown = false;
-    private PlayerController thrower;
+    protected PlayerController thrower;
 
-    public new void OnGrabbed()
+    public new void OnGrabbed(PlayerController player)
     {
-        base.OnGrabbed();
+        base.OnGrabbed(player);
+
+        if (!NetworkManager.Singleton.IsServer) return;
         wasThrown = false;
         thrower = null;
 
@@ -28,24 +30,36 @@ public abstract class InteractiveItem : GrabbableObject
         }
     }
 
-    public new void OnThrown()
+    public override void OnThrown()
     {
-        base.OnThrown();
+        // 들고 있는 사람을 던진 사람으로 저장
+        thrower = Holder;
         wasThrown = true;
-        thrower = holder;
+
+        base.OnThrown();
+
+        //Debug.Log($"[InteractiveItem] OnThrown 호출됨! wasThrown: {wasThrown}, thrower: {(thrower != null ? thrower.gameObject.name : "null")}");
     }
 
     protected virtual void OnCollisionEnter(Collision collision)
     {
-        if (!IsServer) return;
+        if (!NetworkManager.Singleton.IsServer) return;
+
+        //Debug.Log($"[InteractiveItem] triggerType: {triggerType}, wasThrown: {wasThrown}");
 
         // 던져진 상태이고 + 충돌형 아이템이라면
         if (triggerType == ItemTriggerType.UseOnImpact && wasThrown)
         {
+            // Debug.Log("[InteractiveItem] 조건 통과! ActivateItem 호출");
+
             // 던진 사람은 영향 x
             if (thrower != null && collision.gameObject == thrower.gameObject) return;
 
             ActivateItem();
+        }
+        else
+        {
+            //Debug.Log($"[InteractiveItem] 조건 실패 - triggerType: {triggerType}, wasThrown: {wasThrown}");
         }
     }
 
@@ -53,7 +67,7 @@ public abstract class InteractiveItem : GrabbableObject
     protected virtual void ActivateItem()
     {
         if (!IsSpawned) return;
-        Debug.Log($"[Item] {gameObject.name} 사용됨!");
+        //Debug.Log($"[Item] {gameObject.name} 사용됨!");
         GetComponent<NetworkObject>().Despawn();
     }
 }

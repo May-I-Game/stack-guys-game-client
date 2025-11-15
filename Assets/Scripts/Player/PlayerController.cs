@@ -32,6 +32,12 @@ public class PlayerController : NetworkBehaviour
     [Header("Animation")]
     public Animator animator;
 
+    [Header("Particle Effects")]
+    public ParticleSystem walkParticle; // 걷기 파티클
+    public ParticleSystem jumpParticle; // 점프 파티클
+    public ParticleSystem diveLandParticle; // 다이브 착지 파티클
+    public ParticleSystem respawnParticle; // 리스폰 파티클
+
     [Header("Network Optimization")]
     [Tooltip("입력 전송 최소 간격 (초). 모바일 조이스틱 떨림 방지. 권장: 0.033~0.05")]
     public float inputSendInterval = 0.05f;  // 50ms = 20Hz
@@ -475,6 +481,8 @@ public class PlayerController : NetworkBehaviour
                 {
                     rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
                 }
+                // 점프 파티클 재생
+                PlayJumpParticle();
 
                 netIsGrounded.Value = false; // 점프 시 강제로 false 설정
                 canDive = true; // 점프 후 다이브 가능
@@ -510,6 +518,8 @@ public class PlayerController : NetworkBehaviour
 
         isDiving = false;
         isDiveGrounded = true;
+        // 다이브 착지 파티클 재생
+        PlayDiveLandParticle();
 
         Debug.Log("[다이브 착지] 착지 애니메이션 재생, 조작 불가");
         SetTriggerClientRpc("DiveLand");
@@ -562,8 +572,8 @@ public class PlayerController : NetworkBehaviour
             }
 
             // 오브젝트 체크
-            GrabbableObject grabbable = col.GetComponent<GrabbableObject>();
-            if (grabbable != null && !grabbable.netIsGrabbed.Value)
+            IGrabbable grabbable = col.GetComponent<IGrabbable>();
+            if (grabbable != null && !grabbable.IsGrabbed)
             {
                 GrabObject(grabbable);
                 return;
@@ -624,36 +634,26 @@ public class PlayerController : NetworkBehaviour
         // 레이어 저장 및 비활성화 (충돌 무시용)
         heldObjectOriginLayer = otherPlayer.gameObject.layer;
         otherPlayer.gameObject.layer = LayerMask.NameToLayer("HeldObject");
-        Debug.Log($"[잡기] 오브젝트 레이어 변환: {otherPlayer.gameObject.layer}");
 
-        Debug.Log($"[잡기] 플레이어를 잡았습니다: {otherPlayer.gameObject.name}");
+        //Debug.Log($"[잡기] 오브젝트 레이어 변환: {otherPlayer.gameObject.layer}");
+        //Debug.Log($"[잡기] 플레이어를 잡았습니다: {otherPlayer.gameObject.name}");
     }
 
-    private void GrabObject(GrabbableObject grabbable)
+    private void GrabObject(IGrabbable grabbable)
     {
-        holdingObject = grabbable.gameObject;
+        holdingObject = grabbable.GameObj;
         isHolding = true;
-        holdingTargetId = grabbable.NetworkObjectId;
-
-        // 오브젝트 상태 변경
-        grabbable.netIsGrabbed.Value = true;
-        grabbable.holder = this;
+        holdingTargetId = grabbable.NetId;
 
         // NEW: GrabbableObject에 잡혔음을 알림 (NetworkTransform 최적화)
-        grabbable.OnGrabbed();
+        grabbable.OnGrabbed(this);
 
-        // 오브젝트 물리 비활성화
-        Rigidbody targetRb = grabbable.GetComponent<Rigidbody>();
-        if (targetRb != null)
-        {
-            targetRb.isKinematic = true;
-        }
         // 레이어 저장 및 비활성화 (충돌 무시용)
-        heldObjectOriginLayer = grabbable.gameObject.layer;
-        grabbable.gameObject.layer = LayerMask.NameToLayer("HeldObject");
-        Debug.Log($"[잡기] 오브젝트 레이어 변환: {grabbable.gameObject.layer}");
+        heldObjectOriginLayer = grabbable.GameObj.layer;
+        grabbable.GameObj.layer = LayerMask.NameToLayer("HeldObject");
 
-        Debug.Log($"[잡기] 오브젝트를 잡았습니다: {grabbable.name}");
+        //Debug.Log($"[잡기] 오브젝트 레이어 변환: {grabbable.gameObject.layer}");
+        //Debug.Log($"[잡기] 오브젝트를 잡았습니다: {grabbable.name}");
     }
 
     private void TryThrow()
@@ -702,32 +702,24 @@ public class PlayerController : NetworkBehaviour
         }
         // 충돌 재활성화
         target.gameObject.layer = heldObjectOriginLayer;
-        Debug.Log($"[잡기] 오브젝트 레이어 변환: {target.gameObject.layer}");
-
         SetTriggerClientRpc("Throw");
-        Debug.Log("[잡기] 오브젝트를 던졌습니다");
+
+        //Debug.Log($"[잡기] 오브젝트 레이어 변환: {target.gameObject.layer}");
+        //Debug.Log("[잡기] 오브젝트를 던졌습니다");
     }
 
-    private void ThrowObject(GrabbableObject target, Vector3 throwDirection)
+    private void ThrowObject(IGrabbable target, Vector3 throwDirection)
     {
         // NEW: GrabbableObject에 던져졌음을 알림 (NetworkTransform 최적화)
         target.OnThrown();
+        target.Rb.AddForce(throwDirection * throwForce, ForceMode.Impulse);
 
-        target.netIsGrabbed.Value = false;
-        target.holder = null;
-
-        Rigidbody targetRb = target.GetComponent<Rigidbody>();
-        if (targetRb != null)
-        {
-            targetRb.isKinematic = false;
-            targetRb.AddForce(throwDirection * throwForce, ForceMode.Impulse);
-        }
         // 충돌 재활성화
-        target.gameObject.layer = heldObjectOriginLayer;
-        Debug.Log($"[잡기] 오브젝트 레이어 변환: {target.gameObject.layer}");
-
+        target.GameObj.layer = heldObjectOriginLayer;
         SetTriggerClientRpc("Throw");
-        Debug.Log("[잡기] 오브젝트를 던졌습니다");
+
+        //Debug.Log($"[잡기] 오브젝트 레이어 변환: {target.gameObject.layer}");
+        //Debug.Log("[잡기] 오브젝트를 던졌습니다");
     }
 
     protected void PlayerHeld()
@@ -814,8 +806,7 @@ public class PlayerController : NetworkBehaviour
                 GrabbableObject grabbable = holdingObject.GetComponent<GrabbableObject>();
                 if (grabbable != null)
                 {
-                    grabbable.netIsGrabbed.Value = false;
-                    grabbable.holder = null;
+                    grabbable.OnReleased();
 
                     Rigidbody targetRb = grabbable.GetComponent<Rigidbody>();
                     if (targetRb != null)
@@ -928,6 +919,9 @@ public class PlayerController : NetworkBehaviour
         transform.position = dest.position;
         transform.rotation = dest.rotation;
 
+        // 리스폰 파티클 재생
+        PlayRespawnParticle();
+
         ResetPlayerState();
     }
 
@@ -995,6 +989,58 @@ public class PlayerController : NetworkBehaviour
         foreach (Transform child in obj.transform)
         {
             SetLayerRecursively(child.gameObject, layer);
+        }
+    }
+    // 점프 파티클 재생 (서버에서 호출, 모든 클라이언트에서 재생)
+    private void PlayJumpParticle()
+    {
+        if (jumpParticle != null)
+        {
+            PlayJumpParticleClientRpc();
+        }
+    }
+
+    [ClientRpc]
+    private void PlayJumpParticleClientRpc()
+    {
+        if (jumpParticle != null)
+        {
+            jumpParticle.Play();
+        }
+    }
+    // 다이브 착지 파티클 재생 (서버에서 호출, 모든 클라이언트에서 재생)
+    private void PlayDiveLandParticle()
+    {
+        if (diveLandParticle != null)
+        {
+            PlayDiveLandParticleClientRpc();
+        }
+    }
+
+    [ClientRpc]
+    private void PlayDiveLandParticleClientRpc()
+    {
+        if (diveLandParticle != null)
+        {
+            diveLandParticle.Play();
+        }
+    }
+
+    // 리스폰 파티클 재생 (서버에서 호출, 모든 클라이언트에서 재생)
+    private void PlayRespawnParticle()
+    {
+        if (respawnParticle != null)
+        {
+            PlayRespawnParticleClientRpc();
+        }
+    }
+
+    [ClientRpc]
+    private void PlayRespawnParticleClientRpc()
+    {
+        if (respawnParticle != null)
+        {
+            respawnParticle.Play();
         }
     }
     #endregion
@@ -1185,6 +1231,20 @@ public class PlayerController : NetworkBehaviour
             animator.SetBool("IsGrounded", netIsGrounded.Value);
             // 잡힌 상태를 애니메이터에 전달
             animator.SetBool("IsGrabbed", netIsGrabbed.Value);
+        }
+        // 파티클 제어: 땅에서 걷고 있을 때만 재생
+        if (walkParticle != null)
+        {
+            bool shouldPlayParticle = netIsMove.Value && netIsGrounded.Value && !netIsDeath.Value;
+
+            if (shouldPlayParticle && !walkParticle.isPlaying)
+            {
+                walkParticle.Play();
+            }
+            else if (!shouldPlayParticle && walkParticle.isPlaying)
+            {
+                walkParticle.Stop();
+            }
         }
     }
     #endregion

@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &3226839849796628252
+--- !u!1001 &7755210809956473041
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -10,27 +10,27 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: b71f4aaf5f9d8b54bbd2d780318aad6d, type: 3}
       propertyPath: m_LocalScale.x
-      value: 10
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b71f4aaf5f9d8b54bbd2d780318aad6d, type: 3}
       propertyPath: m_LocalScale.y
-      value: 10
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b71f4aaf5f9d8b54bbd2d780318aad6d, type: 3}
       propertyPath: m_LocalScale.z
-      value: 10
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b71f4aaf5f9d8b54bbd2d780318aad6d, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: -6.6000023
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b71f4aaf5f9d8b54bbd2d780318aad6d, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 6.3315935
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b71f4aaf5f9d8b54bbd2d780318aad6d, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: -2.6712978
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b71f4aaf5f9d8b54bbd2d780318aad6d, type: 3}
       propertyPath: m_LocalRotation.w
@@ -46,11 +46,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b71f4aaf5f9d8b54bbd2d780318aad6d, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b71f4aaf5f9d8b54bbd2d780318aad6d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
-      value: -90
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b71f4aaf5f9d8b54bbd2d780318aad6d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
@@ -67,5 +67,58 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b71f4aaf5f9d8b54bbd2d780318aad6d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8508335998800669964}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b71f4aaf5f9d8b54bbd2d780318aad6d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1082050573110259846}
   m_SourcePrefab: {fileID: 100100000, guid: b71f4aaf5f9d8b54bbd2d780318aad6d, type: 3}
+--- !u!1 &7449344064827467136 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: b71f4aaf5f9d8b54bbd2d780318aad6d, type: 3}
+  m_PrefabInstance: {fileID: 7755210809956473041}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &8508335998800669964
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7449344064827467136}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 2895594120
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
+--- !u!114 &1082050573110259846
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7449344064827467136}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19046e63f7cc77249b837fcd23cd7ba0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  triggerType: 1
+  explosionRadius: 3
+  explosionForce: 10
+  explosionEffectPrefab: {fileID: 0}
