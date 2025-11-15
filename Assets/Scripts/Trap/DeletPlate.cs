@@ -15,6 +15,8 @@ public class DeletPlate : NetworkBehaviour
     private int objectsOnPlate = 0;
     private bool isPressed = false;
 
+    private bool hasActivated = false; // 이미 한번 눌려서 작동했는지
+
     private Vector3 originalPosition;  // 버튼의 원래 위치
     private Vector3 targetPosition;    // 버튼의 목표 위치
 
@@ -68,53 +70,25 @@ public class DeletPlate : NetworkBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        // 서버에서만 실행
         if (!IsServer) return;
 
         if (other.GetComponent<Rigidbody>() != null)
         {
-            objectsOnPlate++;
+            // 이미 작동했다면 무시
+            if (hasActivated) return;
 
-            if (objectsOnPlate == 1 && !isPressed)
+            hasActivated = true;
+            isPressed = true;
+            Debug.Log("버튼 눌림! (1회성)");
+
+            // 버튼 내려가기
+            if (buttonTransform != null)
             {
-                isPressed = true;
-                Debug.Log("버튼 눌림!");
-
-                // 버튼을 아래로 내림
-                if (buttonTransform != null)
-                {
-                    targetPosition = originalPosition + Vector3.down * pressDepth;
-                }
-
-                // NetworkVariable 값 변경 -> 모든 클라이언트에 자동 동기화
-                isWallActive.Value = true;
+                targetPosition = originalPosition + Vector3.down * pressDepth;
             }
-        }
-    }
 
-    private void OnTriggerExit(Collider other)
-    {
-        // 서버에서만 실행
-        if (!IsServer) return;
-
-        if (other.GetComponent<Rigidbody>() != null)
-        {
-            objectsOnPlate--;
-
-            if (objectsOnPlate == 0 && isPressed)
-            {
-                isPressed = false;
-                Debug.Log("버튼 해제됨!");
-
-                // 버튼을 원래 위치로 올림
-                if (buttonTransform != null)
-                {
-                    targetPosition = originalPosition;
-                }
-
-                // NetworkVariable 값 변경 -> 모든 클라이언트에 자동 동기화
-                isWallActive.Value = false;
-            }
+            // 벽 비활성화 (한 번만 실행)
+            isWallActive.Value = false;
         }
     }
 
