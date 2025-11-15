@@ -1,8 +1,15 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:Assets/Settings/Build Profiles/Web Profile for Editor.asset.meta
+guid: 9bf9eab973c540d4abb74c2215613525
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+========
 guid: bd9d1d014bf0b14428db03b2527d2d93
 folderAsset: yes
 DefaultImporter:
   externalObjects: {}
+>>>>>>>> dev:Assets/JMO Assets/Cartoon FX Remaster/CFXR Assets.meta
   userData: 
   assetBundleName: 
   assetBundleVariant: 

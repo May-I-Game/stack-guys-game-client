@@ -337,29 +337,24 @@ public class BotManager : NetworkBehaviour
         for (int i = 0; i < botsToMove; i++)
         {
             int spawnIndex = startIndex + i;
-            GameObject bot = spawnedBots[i];
+            GameObject botObj = spawnedBots[i];
 
             // 스폰 포인트 인덱스 체크
-            if (bot != null && spawnIndex < spawnPoints.Length)
+            if (botObj != null && spawnIndex < spawnPoints.Length)
             {
                 // 90도 회전
                 Vector3 targetPosition = spawnPoints[spawnIndex].position;
                 Quaternion targetRotation = spawnPoints[spawnIndex].rotation * Quaternion.Euler(0, 90, 0);
 
                 // NavMeshAgent 비활성화 후 이동 (NavMesh 문제 방지)
-                UnityEngine.AI.NavMeshAgent navAgent = bot.GetComponent<UnityEngine.AI.NavMeshAgent>();
+                UnityEngine.AI.NavMeshAgent navAgent = botObj.GetComponent<UnityEngine.AI.NavMeshAgent>();
                 if (navAgent != null)
                 {
                     navAgent.enabled = false;
                 }
 
-                // 봇의 트랜스폼으로 위치 이동
-                NetworkTransform nt = bot.GetComponent<NetworkTransform>();
-                if (nt != null)
-                {
-                    // 위치 이동 (네트워크 동기화)
-                    nt.Teleport(targetPosition, targetRotation, bot.transform.localScale);
-                }
+                BotController bot = botObj.GetComponent<BotController>();
+                bot.DoRespawn(targetPosition, targetRotation);
 
                 // NavMeshAgent 재활성화 (새 위치의 NavMesh에 배치)
                 if (navAgent != null)

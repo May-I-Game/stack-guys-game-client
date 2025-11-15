@@ -110,7 +110,6 @@ public class NetworkGameManager : MonoBehaviour
         Debug.Log("--- SERVER BUILD DETECTED ---");
         Debug.Log("-----  SERVER START  -----");
 
-        // WebSocket 설정 (서버 시작 전에)
         var transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
         if (transport != null)
         {

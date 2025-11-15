@@ -1,8 +1,8 @@
+using NUnit.Framework.Internal;
 using Unity.Collections;
 using Unity.Netcode;
 using Unity.Netcode.Components;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class PlayerController : NetworkBehaviour
 {
@@ -48,11 +48,14 @@ public class PlayerController : NetworkBehaviour
     [Tooltip("땅 체크 간격 (프레임). 1=매프레임, 2=2프레임마다. 권장: 2")]
     public int groundCheckInterval = 2;  // 2프레임마다 체크 (50Hz → 25Hz)
 
+    public float lerpSpeed = 15f;
+    public float smoothTime = 0.1f;
+
     [Header("Player Info")]
     private NetworkVariable<FixedString32Bytes> playerName = new NetworkVariable<FixedString32Bytes>(
-    "",
-    NetworkVariableReadPermission.Everyone,
-    NetworkVariableWritePermission.Owner
+        "",
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Owner
     );
 
     protected Rigidbody rb;
@@ -91,7 +94,9 @@ public class PlayerController : NetworkBehaviour
     private int heldObjectOriginLayer;
     private int escapeJumpCount = 0; // 탈출 시도 횟수
 
-    protected NetworkTransform nt;
+    protected Vector3 _targetPos;
+    protected float _targetRotY;
+    private Vector3 _currentVelocity;
 
     // 리스폰 구역 Index 값
     public NetworkVariable<int> RespawnId = new(
@@ -119,6 +124,15 @@ public class PlayerController : NetworkBehaviour
             EnablePhysics(false);
         }
 
+        if (BatchNetworkManager.Instance != null)
+        {
+            BatchNetworkManager.Instance.RegisterPlayer(NetworkObjectId, this);
+        }
+
+        // 초기 위치 동기화
+        _targetPos = transform.position;
+        _targetRotY = transform.rotation.eulerAngles.y;
+
         if (IsOwner)
         {
             Camera.main.GetComponent<CameraFollow>().target = this.transform;
@@ -127,6 +141,15 @@ public class PlayerController : NetworkBehaviour
 
             playerName.Value = savedName;
             Debug.Log($"플레이어 이름 설정: {savedName}");
+        }
+    }
+
+    // 파괴될 때 등록 해제 (안 하면 에러 남)
+    public override void OnNetworkDespawn()
+    {
+        if (BatchNetworkManager.Instance != null)
+        {
+            BatchNetworkManager.Instance.UnregisterPlayer(NetworkObjectId);
         }
     }
 
@@ -152,7 +175,6 @@ public class PlayerController : NetworkBehaviour
     protected virtual void Start()
     {
         inputHandler = GetComponent<PlayerInputHandler>();
-        nt = GetComponent<NetworkTransform>();
         respawnManager = FindFirstObjectByType<RespawnManager>();
 
         // GC 최적화: WaitForSeconds 사전 생성
@@ -171,6 +193,7 @@ public class PlayerController : NetworkBehaviour
         //본인이 아닌 캐릭터, 혹은 input이 비활성화 되어있을 때는 애니메이션만 최신화
         if (!IsOwner || !inputEnabled.Value)
         {
+            InterpolateMovement();
             UpdateAnimation();
             return;
         }
@@ -224,6 +247,8 @@ public class PlayerController : NetworkBehaviour
             GrabPlayerServerRpc();
             inputHandler.ResetGrabInput();
         }
+
+        InterpolateMovement();
         UpdateAnimation();
     }
 
@@ -265,6 +290,38 @@ public class PlayerController : NetworkBehaviour
             ServerPerformanceProfiler.End("PlayerController.Holding");
         }
         ServerPerformanceProfiler.End("PlayerController.FixedUpdate");
+    }
+
+    // 매니저가 호출해주는 함수 (패킷 도착 시)
+    public void UpdateTargetState(Vector3 newPos, float newRotY)
+    {
+        _targetPos = newPos;
+        _targetRotY = newRotY;
+    }
+
+    protected void InterpolateMovement()
+    {
+        // 너무 멀면 SmoothDamp 하지 말고 그냥 강제 이동 (텔레포트로 간주)
+        float sqrDist = (transform.position - _targetPos).sqrMagnitude;
+        if (sqrDist > 9.0f) // 3 * 3 = 9
+        {
+            transform.position = _targetPos;
+            transform.rotation = Quaternion.Euler(0, _targetRotY, 0);
+            _currentVelocity = Vector3.zero;
+            return;
+        }
+
+        // 위치 보간 (부드럽게)
+        transform.position = Vector3.SmoothDamp(
+            transform.position,
+            _targetPos,
+            ref _currentVelocity,
+            smoothTime
+        );
+
+        // 회전 보간 (Y축만)
+        Quaternion targetRot = Quaternion.Euler(0, _targetRotY, 0);
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * lerpSpeed);
     }
 
     public void SetInputEnabled(bool enabled)
@@ -859,11 +916,8 @@ public class PlayerController : NetworkBehaviour
             rb.angularVelocity = Vector3.zero;
         }
 
-        // 캐릭터 텔레포트
-        if (nt != null)
-        {
-            nt.Teleport(dest.position, dest.rotation, transform.localScale);
-        }
+        transform.position = dest.position;
+        transform.rotation = dest.rotation;
 
         // 리스폰 파티클 재생
         PlayRespawnParticle();
@@ -885,11 +939,8 @@ public class PlayerController : NetworkBehaviour
             rb.angularVelocity = Vector3.zero;
         }
 
-        // 캐릭터 텔레포트
-        if (nt != null)
-        {
-            nt.Teleport(pos, rot, transform.localScale);
-        }
+        transform.position = pos;
+        transform.rotation = rot;
 
         ResetPlayerState();
     }
@@ -1110,8 +1161,7 @@ public class PlayerController : NetworkBehaviour
     #endregion
 
     // 서버에서 클라한테 시킬 Rpc 모음
-    // 주로 애니메이션 연동
-    #region ClientRPCs
+    #region clientRpcs
     [ClientRpc]
     protected void SetTriggerClientRpc(string triggerName)
     {
