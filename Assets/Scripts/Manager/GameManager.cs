@@ -344,8 +344,8 @@ public class GameManager : NetworkBehaviour
             if (playerObject == null) continue;
 
             // 봇이 아닌 실제 플레이어만 처리
-            NetworkBotIdentity botIdentity = playerObject.GetComponent<NetworkBotIdentity>();
-            if (botIdentity != null && botIdentity.IsBot) continue;
+            BotController botController = playerObject.GetComponent<BotController>();
+            if (botController != null) continue;
 
             // 순환하면서 스폰 위치 지정
             Vector3 spawnPos = gameSpawnPoints[i % gameSpawnPoints.Length].position;
@@ -386,26 +386,18 @@ public class GameManager : NetworkBehaviour
 
         currentGameState.Value = GameState.Ended;
 
+        // 매치메이킹 서버에 게임 종료 신호 전송
+        NetworkGameManager networkManager = FindObjectOfType<NetworkGameManager>();
+        if (networkManager != null)
+        {
+            networkManager.NotifyGameEnded();
+        }
+
         // 클라에 결과 화면 표시
         ShowResultsClientRpc();
 
-#if !UNITY_EDITOR
-        Debug.Log("[GameManager] Game ended – scheduling shutdown in 30 seconds");
-        StartCoroutine(DelayedShutdown(30f));   // 30초 뒤에 종료
-#endif
     }
-    private IEnumerator DelayedShutdown(float seconds)
-    {
-        Debug.Log($"[GameManager] Shutdown in {seconds} seconds... (timeScale={Time.timeScale})");
-
-        // 🔥 게임 시간이 멈춰도( timeScale = 0 ) 실시간 기준으로 기다리기
-        yield return new WaitForSecondsRealtime(seconds);
-
-#if !UNITY_EDITOR
-        Debug.Log("[GameManager] Shutting down dedicated server process now.");
-        Application.Quit();
-#endif
-    }
+    
 
 
     private IEnumerator ServerEnableBotsAfterCinematic()
@@ -528,8 +520,8 @@ public class GameManager : NetworkBehaviour
             if (playerObject == null) continue;
 
             // 봇이 아닌 실제 플레이어만 처리
-            NetworkBotIdentity botIdentity = playerObject.GetComponent<NetworkBotIdentity>();
-            if (botIdentity != null && botIdentity.IsBot) continue;
+            BotController botController = playerObject.GetComponent<BotController>();
+            if (botController != null) continue;
 
             PlayerController controller = playerObject.GetComponent<PlayerController>();
             if (controller != null)
