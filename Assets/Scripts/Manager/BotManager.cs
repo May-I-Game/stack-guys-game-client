@@ -68,19 +68,7 @@ public class BotManager : NetworkBehaviour
 
         if (IsServer)
         {
-            // 버튼 클릭 리스너 등록
-            NetworkManager.Singleton.OnClientConnectedCallback += HandleClientConnected;
-        }
-    }
-
-    private void HandleClientConnected(ulong clientId)
-    {
-        if (!IsServer) return;
-
-        // GameScene에서만, 그리고 아직 Pre-spawn 안했으면 실행
-        if (SceneManager.GetActiveScene().name == "GameScene" && !hasPreSpawned)
-        {
-            if (preSpawnManager != null)
+            if (preSpawnManager != null && !hasPreSpawned)
             {
                 StartCoroutine(PreSpawnBotsDelayed());
             }
@@ -121,12 +109,6 @@ public class BotManager : NetworkBehaviour
     public override void OnDestroy()
     {
         base.OnDestroy();
-
-        // 콜백 해제
-        if (IsServer && NetworkManager.Singleton != null)
-        {
-            NetworkManager.Singleton.OnClientConnectedCallback -= HandleClientConnected;
-        }
 
         if (Singleton == this)
         {
