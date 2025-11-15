@@ -9,6 +9,7 @@ public class BotController : PlayerController
     [SerializeField] private float updatePathInterval = 2;              // 경로 업데이트 주기
     [SerializeField] private float waypointSearchInterval = 2f;         // 웨이포인트 재탐색 주기
     [SerializeField] private float forwardThreshold = 1f;               // 전진 판정 거리
+    [SerializeField] private float updateAIInterval = 0.2f;             // AI 로직 업데이트
 
     [Header("Random Path Settings")]
     [SerializeField] private bool useRandomWaypoint = true;             // 랜덤 웨이포인트 사용
@@ -44,8 +45,9 @@ public class BotController : PlayerController
     private Transform[] waypoints;                                      // 자동으로 찾은 웨이포인트들
     private Transform currentWaypoint;                                  // 현재 목표 웨이포인트
     private bool isGoingToWaypoint = false;                             // 웨이포인트로 가는 중인가?
-    private float nextWaypointSearchTime;                               // 다음 웨이포인트 재탐색 시간
-    private float nextPathUpdateTime;                                   // 다음 업데이트 시간
+    private float nextWaypointSearchTime = 0f;                          // 다음 웨이포인트 재탐색 시간
+    private float nextPathUpdateTime = 0f;                              // 다음 업데이트 시간
+    private float nextAIUpdateTIme = 0f;                                // 다음 AI 업데이트 시간
 
     // NavMeshLink 점프 관련 변수
     private bool isTraversingLink = false;                              // NavMeshLink 통과 중인가?
@@ -152,8 +154,8 @@ public class BotController : PlayerController
                 nextPathUpdateTime = Time.time + updatePathInterval;  // 스팸 호출 방지
             }
 
-            // 목표 지점이 있으면 길찾기 로직
-            if (goalTransform != null)
+            // 목표 지점이 있으면 길찾기 로직 (주기적으로만 실행)
+            if (goalTransform != null && Time.time > nextAIUpdateTIme)
             {
                 ServerPerformanceProfiler.Start("BotController.BotUpdate");
                 UpdateBotAI();
@@ -235,6 +237,7 @@ public class BotController : PlayerController
 #endif
             nextPathUpdateTime = 0f;
             nextWaypointSearchTime = 0f;
+            nextAIUpdateTIme = 0f;
 
             // 목표 재탐색
             FindGoal();
@@ -410,7 +413,7 @@ public class BotController : PlayerController
         return true;
     }
 
-    // AI 로직 (우선순위: 열린 문 > 랜덤 웨이포인트 > Goal)
+    // AI 로직 - 점프 처리, 웨이포인트(문) 우선순위 체크, moveDir 계산 (우선순위: 열린 문 > 랜덤 웨이포인트 > Goal)
     private void UpdateBotAI()
     {
         // NavMesh 감지 및 처리
