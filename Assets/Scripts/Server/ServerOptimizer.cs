@@ -27,7 +27,7 @@ public static class ServerOptimizer
     /// </summary>
     private static void OptimizeFrameRate()
     {
-        // FixedUpdate와 동기화 (50Hz)
+        // 서버 Update Rate 제한 (클라이언트 FixedUpdate는 60Hz)
         Application.targetFrameRate = 50;
 
         // VSync 비활성화 (Headless 서버에서 불필요)
