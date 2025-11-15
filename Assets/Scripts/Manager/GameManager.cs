@@ -644,7 +644,7 @@ public class GameManager : NetworkBehaviour
         }
         if (LobbyUI != null)
         {
-            LobbyUI.SetActive(true);
+            LobbyUI.SetActive(false);
         }
         if (gameUI != null)
         {
