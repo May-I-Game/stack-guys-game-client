@@ -103,12 +103,6 @@ public class NetworkGameManager : MonoBehaviour
         Debug.Log("--- SERVER BUILD DETECTED ---");
         Debug.Log("-----  SERVER START  -----");
 
-        // 현재 씬이 이미 GameScene이 아닐 때만 로드
-        //if (SceneManager.GetActiveScene().name != gameSceneName)
-        //{
-        //    NetworkManager.Singleton.SceneManager.LoadScene(gameSceneName, LoadSceneMode.Single);
-        //}
-
         var transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
         if (transport != null)
         {
@@ -116,6 +110,9 @@ public class NetworkGameManager : MonoBehaviour
             Debug.Log("[Server] WebSocket mode enabled for WebGL clients");
         }
 
+        NetworkManager.Singleton.StartServer();
+
+        // 현재 씬이 이미 GameScene이 아닐 때만 로드
         if (SceneManager.GetActiveScene().name != gameSceneName)
         {
             NetworkManager.Singleton.SceneManager.LoadScene(gameSceneName, LoadSceneMode.Single);
