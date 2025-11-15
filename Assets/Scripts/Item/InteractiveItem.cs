@@ -18,6 +18,8 @@ public abstract class InteractiveItem : GrabbableObject
     public new void OnGrabbed(PlayerController player)
     {
         base.OnGrabbed(player);
+
+        if (!NetworkManager.Singleton.IsServer) return;
         wasThrown = false;
         thrower = null;
 
