@@ -394,7 +394,25 @@ public class GameManager : NetworkBehaviour
 
         // 클라에 결과 화면 표시
         ShowResultsClientRpc();
+
+#if !UNITY_EDITOR
+        Debug.Log("[GameManager] Game ended – scheduling shutdown in 30 seconds");
+        StartCoroutine(DelayedShutdown(30f));   // 30초 뒤에 종료
+#endif
     }
+    private IEnumerator DelayedShutdown(float seconds)
+    {
+        Debug.Log($"[GameManager] Shutdown in {seconds} seconds... (timeScale={Time.timeScale})");
+
+        // 🔥 게임 시간이 멈춰도( timeScale = 0 ) 실시간 기준으로 기다리기
+        yield return new WaitForSecondsRealtime(seconds);
+
+#if !UNITY_EDITOR
+        Debug.Log("[GameManager] Shutting down dedicated server process now.");
+        Application.Quit();
+#endif
+    }
+
 
     private IEnumerator ServerEnableBotsAfterCinematic()
     {
