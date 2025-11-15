@@ -209,9 +209,6 @@ public class GameManager : NetworkBehaviour
 
     private void CheckPlayerCount()
     {
-        // 로비에서만 실행
-        if (currentGameState.Value != GameState.Lobby) return;
-
         int playerCount = NetworkManager.Singleton.ConnectedClientsList.Count;
         currentPlayerCount.Value = playerCount;
     }
@@ -376,6 +373,7 @@ public class GameManager : NetworkBehaviour
         // 남는 자리 봇으로 스폰
         if (BotManager.Singleton != null)
         {
+            //TODO 스폰대신에 텔레포트로 변경
             BotManager.Singleton.SpawnBotsFromIndex(i, gameSpawnPoints);
         }
         else

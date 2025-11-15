@@ -53,7 +53,7 @@ public class RandomDoorTrigger : NetworkBehaviour
         // 서버에서 랜덤 결정
         int randomIndex = Random.Range(0, doorObjects.Length);
         selectedDoorIndex.Value = randomIndex;
-        Debug.Log($"[RandomDoorTrigger] 서버가 문 선택: {randomIndex} / {doorObjects.Length}개 중");
+        // Debug.Log($"[RandomDoorTrigger] 서버가 문 선택: {randomIndex} / {doorObjects.Length}개 중");
     }
 
     private void OnSelectedDoorChanged(int previousValue, int newValue)
@@ -63,7 +63,7 @@ public class RandomDoorTrigger : NetworkBehaviour
 
     private void ApplyTriggerToDoor(int doorIndex)
     {
-        Debug.Log($"[RandomDoorTrigger] ApplyTriggerToDoor 호출: doorIndex={doorIndex}, 총 문 개수={doorObjects.Length}");
+        // Debug.Log($"[RandomDoorTrigger] ApplyTriggerToDoor 호출: doorIndex={doorIndex}, 총 문 개수={doorObjects.Length}");
 
         // 모든 문의 DoubleDoorTrigger 컴포넌트 비활성화
         foreach (GameObject door in doorObjects)
@@ -71,7 +71,7 @@ public class RandomDoorTrigger : NetworkBehaviour
             if (door != null && door.TryGetComponent<DoubleDoorTrigger>(out var doorTrigger))
             {
                 doorTrigger.enabled = false;
-                Debug.Log($"[RandomDoorTrigger] {door.name} DoubleDoorTrigger 비활성화");
+                // Debug.Log($"[RandomDoorTrigger] {door.name} DoubleDoorTrigger 비활성화");
             }
             else
             {
@@ -86,7 +86,7 @@ public class RandomDoorTrigger : NetworkBehaviour
             if (selectedDoor != null && selectedDoor.TryGetComponent<DoubleDoorTrigger>(out var selectedTrigger))
             {
                 selectedTrigger.enabled = true;
-                Debug.Log($"[RandomDoorTrigger] ✓ {selectedDoor.name} DoubleDoorTrigger 활성화 완료!");
+                // Debug.Log($"[RandomDoorTrigger] ✓ {selectedDoor.name} DoubleDoorTrigger 활성화 완료!");
             }
             else
             {

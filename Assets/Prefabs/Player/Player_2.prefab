@@ -1792,6 +1792,10 @@ MonoBehaviour:
     m_Bits: 1096
   bounceForce: 5
   animator: {fileID: 7755540166501527799}
+  walkParticle: {fileID: 0}
+  jumpParticle: {fileID: 0}
+  diveLandParticle: {fileID: 0}
+  respawnParticle: {fileID: 0}
   inputSendInterval: 0.05
   inputDeltaThreshold: 0.1
   speedThreshold: 0.5
@@ -1800,7 +1804,8 @@ MonoBehaviour:
   RespawnId:
     m_InternalValue: 0
   respawnManager: {fileID: 0}
-  inputEnabled: 1
+  inputEnabled:
+    m_InternalValue: 1
 --- !u!114 &-8795291928621014513
 MonoBehaviour:
   m_ObjectHideFlags: 0

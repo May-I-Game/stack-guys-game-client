@@ -32,6 +32,13 @@ public class PlayerController : NetworkBehaviour
     [Header("Animation")]
     public Animator animator;
 
+    [Header("Particle Effects")]
+    public ParticleSystem walkParticle; // 걷기 파티클
+    public ParticleSystem jumpParticle; // 점프 파티클
+    public ParticleSystem diveLandParticle; // 다이브 착지 파티클
+    public ParticleSystem respawnParticle; // 리스폰 파티클
+    private bool isWalkParticlePlaying = false; // 파티클 재생 상태 추적
+
     [Header("Network Optimization")]
     [Tooltip("입력 전송 최소 간격 (초). 모바일 조이스틱 떨림 방지. 권장: 0.033~0.05")]
     public float inputSendInterval = 0.05f;  // 50ms = 20Hz
@@ -351,7 +358,7 @@ public class PlayerController : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void ResetDiveGroundedStateServerRpc()
     {
-        Debug.Log("다이브리셋 호출됨!!");
+        // Debug.Log("다이브리셋 호출됨!!");
         isDiveGrounded = false;
     }
 
@@ -400,7 +407,7 @@ public class PlayerController : NetworkBehaviour
         // 잡혔으면 탈출시도
         if (netIsGrabbed.Value)
         {
-            Debug.Log($"[잡기] 플레이어 탈출 시도: {escapeJumpCount}");
+            // Debug.Log($"[잡기] 플레이어 탈출 시도: {escapeJumpCount}");
             escapeJumpCount++;
             if (escapeJumpCount >= escapeRequiredJumps)
             {
@@ -423,6 +430,9 @@ public class PlayerController : NetworkBehaviour
                 {
                     rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
                 }
+
+                // 점프 파티클 재생
+                PlayJumpParticle();
 
                 netIsGrounded.Value = false; // 점프 시 강제로 false 설정
                 canDive = true; // 점프 후 다이브 가능
@@ -459,7 +469,10 @@ public class PlayerController : NetworkBehaviour
         isDiving = false;
         isDiveGrounded = true;
 
-        Debug.Log("[다이브 착지] 착지 애니메이션 재생, 조작 불가");
+        // 다이브 착지 파티클 재생
+        PlayDiveLandParticle();
+
+        // Debug.Log("[다이브 착지] 착지 애니메이션 재생, 조작 불가");
         SetTriggerClientRpc("DiveLand");
     }
 
@@ -572,9 +585,9 @@ public class PlayerController : NetworkBehaviour
         // 레이어 저장 및 비활성화 (충돌 무시용)
         heldObjectOriginLayer = otherPlayer.gameObject.layer;
         otherPlayer.gameObject.layer = LayerMask.NameToLayer("HeldObject");
-        Debug.Log($"[잡기] 오브젝트 레이어 변환: {otherPlayer.gameObject.layer}");
+        // Debug.Log($"[잡기] 오브젝트 레이어 변환: {otherPlayer.gameObject.layer}");
 
-        Debug.Log($"[잡기] 플레이어를 잡았습니다: {otherPlayer.gameObject.name}");
+        // Debug.Log($"[잡기] 플레이어를 잡았습니다: {otherPlayer.gameObject.name}");
     }
 
     private void GrabObject(GrabbableObject grabbable)
@@ -599,9 +612,9 @@ public class PlayerController : NetworkBehaviour
         // 레이어 저장 및 비활성화 (충돌 무시용)
         heldObjectOriginLayer = grabbable.gameObject.layer;
         grabbable.gameObject.layer = LayerMask.NameToLayer("HeldObject");
-        Debug.Log($"[잡기] 오브젝트 레이어 변환: {grabbable.gameObject.layer}");
+        // Debug.Log($"[잡기] 오브젝트 레이어 변환: {grabbable.gameObject.layer}");
 
-        Debug.Log($"[잡기] 오브젝트를 잡았습니다: {grabbable.name}");
+        // Debug.Log($"[잡기] 오브젝트를 잡았습니다: {grabbable.name}");
     }
 
     private void TryThrow()
@@ -609,7 +622,7 @@ public class PlayerController : NetworkBehaviour
         // 잡은게 없으면 입력 무시
         if (holdingObject == null)
         {
-            Debug.Log($"[잡기] 잡은 오브젝트가 없는데 잡기 중!!");
+            // Debug.Log($"[잡기] 잡은 오브젝트가 없는데 잡기 중!!");
             return;
         }
 
@@ -650,10 +663,10 @@ public class PlayerController : NetworkBehaviour
         }
         // 충돌 재활성화
         target.gameObject.layer = heldObjectOriginLayer;
-        Debug.Log($"[잡기] 오브젝트 레이어 변환: {target.gameObject.layer}");
+        // Debug.Log($"[잡기] 오브젝트 레이어 변환: {target.gameObject.layer}");
 
         SetTriggerClientRpc("Throw");
-        Debug.Log("[잡기] 오브젝트를 던졌습니다");
+        // Debug.Log("[잡기] 오브젝트를 던졌습니다");
     }
 
     private void ThrowObject(GrabbableObject target, Vector3 throwDirection)
@@ -672,10 +685,10 @@ public class PlayerController : NetworkBehaviour
         }
         // 충돌 재활성화
         target.gameObject.layer = heldObjectOriginLayer;
-        Debug.Log($"[잡기] 오브젝트 레이어 변환: {target.gameObject.layer}");
+        // Debug.Log($"[잡기] 오브젝트 레이어 변환: {target.gameObject.layer}");
 
         SetTriggerClientRpc("Throw");
-        Debug.Log("[잡기] 오브젝트를 던졌습니다");
+        // Debug.Log("[잡기] 오브젝트를 던졌습니다");
     }
 
     protected void PlayerHeld()
@@ -733,7 +746,7 @@ public class PlayerController : NetworkBehaviour
         }
 
         SetTriggerClientRpc("Escape");
-        Debug.Log("[탈출] 성공적으로 탈출했습니다!");
+        // Debug.Log("[탈출] 성공적으로 탈출했습니다!");
     }
 
     public void ReleaseGrab()
@@ -883,6 +896,9 @@ public class PlayerController : NetworkBehaviour
             nt.Teleport(dest.position, dest.rotation, transform.localScale);
         }
 
+        // 리스폰 파티클 재생
+        PlayRespawnParticle();
+
         ResetPlayerState();
     }
 
@@ -953,6 +969,33 @@ public class PlayerController : NetworkBehaviour
         foreach (Transform child in obj.transform)
         {
             SetLayerRecursively(child.gameObject, layer);
+        }
+    }
+
+    // 점프 파티클 재생 (로컬에서만 재생)
+    private void PlayJumpParticle()
+    {
+        if (jumpParticle != null && IsOwner)
+        {
+            jumpParticle.Play();
+        }
+    }
+
+    // 다이브 착지 파티클 재생 (로컬에서만 재생)
+    private void PlayDiveLandParticle()
+    {
+        if (diveLandParticle != null && IsOwner)
+        {
+            diveLandParticle.Play();
+        }
+    }
+
+    // 리스폰 파티클 재생 (로컬에서만 재생)
+    private void PlayRespawnParticle()
+    {
+        if (respawnParticle != null && IsOwner)
+        {
+            respawnParticle.Play();
         }
     }
     #endregion
@@ -1117,10 +1160,10 @@ public class PlayerController : NetworkBehaviour
         if (!hasParameter)
         {
             //디버깅 animator에 해당하는 parameter가 없을 경우
-            Debug.Log("현재 Animator Parameters:");
+            // Debug.Log("현재 Animator Parameters:");
             foreach (var param in animator.parameters)
             {
-                Debug.Log($"  - {param.name} ({param.type})");
+                // Debug.Log($"  - {param.name} ({param.type})");
             }
             return;
         }
@@ -1144,6 +1187,33 @@ public class PlayerController : NetworkBehaviour
             animator.SetBool("IsGrounded", netIsGrounded.Value);
             // 잡힌 상태를 애니메이터에 전달
             animator.SetBool("IsGrabbed", netIsGrabbed.Value);
+        }
+
+        // 파티클 제어: 땅에서 걷고 있을 때만 재생
+        if (walkParticle != null)
+        {
+            bool shouldPlayParticle = netIsMove.Value && netIsGrounded.Value && !netIsDeath.Value;
+
+            if (shouldPlayParticle && !isWalkParticlePlaying)
+            {
+
+                walkParticle.Play();
+                isWalkParticlePlaying = true;
+            }
+            else if (!shouldPlayParticle && isWalkParticlePlaying)
+            {
+
+                walkParticle.Stop();
+                isWalkParticlePlaying = false;
+            }
+
+            // 파티클을 플레이어 이동 반대 방향으로 향하게 설정
+            if (isWalkParticlePlaying && moveDir.magnitude > 0.1f)
+            {
+                // 이동 방향의 반대 방향으로 파티클 회전
+                Vector3 moveDirection = new Vector3(moveDir.x, 0, moveDir.y);
+                walkParticle.transform.rotation = Quaternion.LookRotation(-moveDirection);
+            }
         }
     }
     #endregion

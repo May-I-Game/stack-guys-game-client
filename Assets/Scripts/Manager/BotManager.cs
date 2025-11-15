@@ -218,7 +218,9 @@ public class BotManager : NetworkBehaviour
 
                 // 모든 클라이언트에 이름 동기화
                 nameSync.SetPlayerName(botName);
+#if UNITY_EDITOR
                 Debug.Log($"[BotManager] 봇 생성 완료: {botName}");
+#endif
             }
             else
             {
@@ -266,8 +268,9 @@ public class BotManager : NetworkBehaviour
                 botController.SetInputEnabled(true);
             }
         }
-
+#if UNITY_EDITOR
         Debug.Log($"[BotManager] {spawnedBots.Count}개의 봇 입력 활성화");
+#endif
     }
 
     public void SpawnBotsFromIndex(int startIndex, Transform[] spawnPoints)
