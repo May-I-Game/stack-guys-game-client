@@ -64,7 +64,7 @@ public class PlayerController : NetworkBehaviour
     protected bool isGrabQueued;
     private Vector3 deathPosition;  // 죽은 위치 저장용
 
-    public GameObject bodyPrefab;
+    public NetworkObject bodyPrefab;
 
     protected NetworkVariable<bool> netIsMove = new NetworkVariable<bool>(false); // 움직이는중인지
     protected NetworkVariable<bool> netIsGrounded = new NetworkVariable<bool>(true); // 땅인지
@@ -831,18 +831,14 @@ public class PlayerController : NetworkBehaviour
         // 시체 생성 (리스폰 시점에 생성하여 자연스러움)
         if (bodyPrefab != null)
         {
-            // deathPosition 대신 현재 위치 사용 (애니메이션 종료 후 누운 위치
-            GameObject bodyInstance = Instantiate(bodyPrefab, transform.position, transform.rotation);
+            NetworkObject body = NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(
+                bodyPrefab,
+                position: transform.position,
+                rotation: transform.rotation
+            );
 
             // Layer 설정: DeadBody (Layer 10) - 거리 기반 컬링 적용
-            SetLayerRecursively(bodyInstance, 10);
-
-            NetworkObject networkBody = bodyInstance.GetComponent<NetworkObject>();
-
-            if (networkBody != null)
-            {
-                networkBody.Spawn();
-            }
+            SetLayerRecursively(body.gameObject, 10);
         }
 
         // 리스폰 리스트 가져오기

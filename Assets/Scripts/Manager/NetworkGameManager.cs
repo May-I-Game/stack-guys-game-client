@@ -218,7 +218,6 @@ public class NetworkGameManager : MonoBehaviour
         {
             Debug.Log("Disconnected from server");
 #if DUMMY_CLIENT
-            //TODO 본인 클라이언트 종료
             Application.Quit();
 #else
             SceneManager.LoadScene("Login");
