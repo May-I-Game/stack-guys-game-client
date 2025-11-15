@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using Unity.Netcode.Components;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class BotManager : NetworkBehaviour
 {
@@ -13,44 +12,14 @@ public class BotManager : NetworkBehaviour
     [SerializeField] private GameObject botPrefab;
 
     [Header("Spawn Settings")]
-    [SerializeField] private int preBotCount = 100;
-    [SerializeField] private PreSpawnManager preSpawnManager;
+    [SerializeField] private int poolSize = 100;         // 풀 크기
 
     [Header("Debug Spawn Points")]
     [SerializeField] private Transform[] debugSpawnPoints;
 
-    private List<GameObject> spawnedBots = new List<GameObject>();
-    bool hasPreSpawned = false;
-
-    //[Header("Bot Settings")]
-    //[SerializeField] private int numberOfBots = 3;      // 생성할 봇 수
-    //[SerializeField] private Transform[] spawnPoints;
-    //public override void OnNetworkSpawn()
-    //{
-    //    if (IsServer)
-    //    {
-    //        // 게임이 시작될 때 봇 생성
-    //        GameManager gameManager = GameManager.instance;
-    //        if (gameManager != null)
-    //        {
-    //            // GameManager가 게임 시작하면 봇 스폰
-    //            StartCoroutine(WaitForGameStart());
-    //        }
-    //    }
-    //}
-
-    //private System.Collections.IEnumerator WaitForGameStart()
-    //{
-    //    // 게임이 Playing 상태가 될 때까지 대기
-    //    while (GameManager.instance == null || !GameManager.instance.IsGame)
-    //    {
-    //        yield return new WaitForSeconds(0.5f);
-    //    }
-
-    //    // 게임 시작 후 봇 생성
-    //    yield return new WaitForSeconds(1f);
-    //    SpawnBots();
-    //}
+    // 봇 풀링 시스템
+    private Queue<GameObject> botPool = new Queue<GameObject>();
+    private List<GameObject> activeBots = new List<GameObject>();
 
     private void Awake()
     {
@@ -60,7 +29,7 @@ public class BotManager : NetworkBehaviour
         }
         else
         {
-            Destroy(gameObject);                                // 중복된 Bot 매니저 삭제
+            Destroy(gameObject);                // 중복된 Bot 매니저 삭제
             return;
         }
     }
@@ -77,43 +46,9 @@ public class BotManager : NetworkBehaviour
                 StartCoroutine(SpawnDebugBotsDelayed());
             }
 
-            // 서버 시작할때 봇 미리 생성
-            if (preSpawnManager != null && !hasPreSpawned)
-            {
-                StartCoroutine(PreSpawnBotsDelayed());
-            }
+            // 서버 시작 시 봇 풀 초기화
+            StartCoroutine(InitializePoolDelayed());
         }
-    }
-
-    // PreSpawnPointManager가 준비될 때까지 대기 후 봇 미리 생성
-    private IEnumerator PreSpawnBotsDelayed()
-    {
-        // 이전 스폰했는지 체크
-        if (hasPreSpawned)
-        {
-            yield break;
-        }
-
-        // 0.5초 딜레이
-        yield return new WaitForSeconds(0.5f);
-
-        if (preSpawnManager == null)
-        {
-            yield break;
-        }
-
-        Transform[] prePoints = preSpawnManager.GetPreSpawnPoints();
-
-        // Pre 리스폰 포인트 체크
-        if (prePoints == null || prePoints.Length == 0)
-        {
-            yield break;
-        }
-
-        // 기존 SpawnBotsFromIndex 재활용하여 Pre-spawn 영역에 봇 생성
-        SpawnBotsFromIndex(0, prePoints);
-
-        hasPreSpawned = true;
     }
 
     // 디버깅용 봇 스폰
@@ -126,8 +61,115 @@ public class BotManager : NetworkBehaviour
         {
             if (debugSpawnPoints[i] != null)
             {
-                SpawnBot(i, debugSpawnPoints, disableInput: true);
+                CreateDebugBot(debugSpawnPoints[i]);
             }
+        }
+
+        //Debug.Log($"[BotManager] {debugSpawnPoints.Length}개의 디버그 봇 생성 완료");
+    }
+
+    // 디버그 봇 생성 (풀 사용 안 함)
+    private void CreateDebugBot(Transform spawnPoint)
+    {
+        // 90도 회전
+        Quaternion spawnRotation = spawnPoint.rotation * Quaternion.Euler(0, 90, 0);
+
+        // 봇 인스턴스 생성
+        GameObject botInstance = Instantiate(botPrefab);
+
+        // 네트워크 오브젝트 스폰
+        NetworkObject networkObject = botInstance.GetComponent<NetworkObject>();
+        if (networkObject != null)
+        {
+            networkObject.Spawn();
+
+            // DoRespawn으로 위치 설정
+            BotController botController = botInstance.GetComponent<BotController>();
+            if (botController != null)
+            {
+                botController.DoRespawn(spawnPoint.position, spawnRotation);
+
+                // 봇 이름 설정
+                PlayerNameSync nameSync = botInstance.GetComponent<PlayerNameSync>();
+                if (nameSync != null)
+                {
+                    string botName = NetworkBotIdentity.GenerateBotName();
+                    nameSync.SetPlayerName(botName);
+                }
+
+                // 입력 차단
+                botController.SetInputEnabled(false);
+            }
+
+            // activeBots에 추가 (디버그 봇도 활성화)
+            activeBots.Add(botInstance);
+        }
+        else
+        {
+            Debug.LogError("[BotManager] NetworkObject 컴포넌트가 없음");
+            Destroy(botInstance);
+        }
+    }
+
+    // 서버 시작 시 봇 풀 초기화
+    private IEnumerator InitializePoolDelayed()
+    {
+        // 0.5초 딜레이
+        yield return new WaitForSeconds(0.5f);
+
+        // 풀 크기만큼 봇 미리 생성
+        for (int i = 0; i < poolSize; i++)
+        {
+            CreateBotInPool();
+        }
+
+        //Debug.Log($"[BotManager] {poolSize}개의 봇 풀링 완료");
+    }
+
+    // 풀에 봇 생성 및 추가
+    private void CreateBotInPool()
+    {
+        // 봇 인스턴스 생성 (위치는 나중에 설정)
+        GameObject botInstance = Instantiate(botPrefab);
+
+        // 네트워크 오브젝트 스폰
+        NetworkObject networkObject = botInstance.GetComponent<NetworkObject>();
+        if (networkObject != null)
+        {
+            // 서버 소유로 스폰
+            networkObject.Spawn();
+
+            // BotController로 봇 판별 및 초기화
+            BotController botController = botInstance.GetComponent<BotController>();
+            if (botController != null)
+            {
+                // 봇 이름 설정
+                PlayerNameSync nameSync = botInstance.GetComponent<PlayerNameSync>();
+                if (nameSync != null)
+                {
+                    // 고유한 봇 이름 생성
+                    string botName = NetworkBotIdentity.GenerateBotName();
+
+                    // 모든 클라이언트에 이름 동기화
+                    nameSync.SetPlayerName(botName);
+                }
+                else
+                {
+                    Debug.LogWarning("[BotManager] PlayerNameSync 컴포넌트가 없음");
+                }
+
+                // 생성 직후 입력 차단
+                botController.SetInputEnabled(false);
+            }
+
+            // 비활성화 상태로 풀에 추가
+            botInstance.SetActive(false);
+            botPool.Enqueue(botInstance);
+        }
+        else
+        {
+            Debug.LogError("[BotManager] NetworkObject 컴포넌트가 없음");
+            Destroy(botInstance);
         }
     }
 
@@ -141,125 +183,7 @@ public class BotManager : NetworkBehaviour
         }
     }
 
-    //private void SpawnBots()
-    //{
-    //    if (!IsServer)
-    //    {
-    //        Debug.LogWarning("[BotManager] 서버만 봇을 생성할 수 있음");
-    //        return;
-    //    }
-
-    //    if (botPrefab == null)
-    //    {
-    //        Debug.LogError("[BotManager] 봇 프리팹이 설정 안됨");
-    //        return;
-    //    }
-
-    //    if (spawnPoints == null || spawnPoints.Length == 0)
-    //    {
-    //        Debug.LogError("[BotManager] 스폰 포인트가 설정 안됨");
-    //        return;
-    //    }
-
-    //    for (int i = 0; i < numberOfBots; i++)
-    //    {
-    //        SpawnBot(i);
-    //    }
-
-    //    Debug.Log($"[BotManager] {numberOfBots}개의 봇을 생성");
-    //}
-
-    private void SpawnBot(int botIndex, Transform[] spawnPointsArray = null, bool disableInput = false)
-    {
-        // 스폰 포인트 배열 (파라미터로 받은거 우선, 없으면 기존 spawnPoints 사용)
-        Transform[] pointsToUse = spawnPointsArray;
-
-        // 스폰 포인트 검증
-        if (pointsToUse == null || pointsToUse.Length == 0)
-        {
-            Debug.LogError("[BotManager] 스폰 포인트가 설정 안됨");
-            return;
-        }
-
-        // 스폰 위치 - botIndex가 배열 크기를 넘어도 안전하게 처리
-        Transform spawnPoint = pointsToUse[botIndex % pointsToUse.Length];
-
-        // 오른쪽으로 45도 회전 추가
-        Quaternion spawnRotation = spawnPoint.rotation * Quaternion.Euler(0, 90, 0);
-
-        // 봇 인스턴스 생성
-        GameObject botInstance = Instantiate(
-            botPrefab,
-            spawnPoint.position,
-            spawnRotation
-        );
-
-
-        // 봇 이름 네트워크 오브젝트로 생성 및 설정 (PlayNameSync 사용)
-        NetworkObject networkObject = botInstance.GetComponent<NetworkObject>();
-        if (networkObject != null)
-        {
-            // 서버 소유로 스폰
-            networkObject.Spawn();
-
-            // 순간이동 처리
-            BotController botController = botInstance.GetComponent<BotController>();
-            botController.DoRespawn(spawnPoint.position, spawnRotation);
-
-            PlayerNameSync nameSync = botInstance.GetComponent<PlayerNameSync>();
-            if (nameSync != null)
-            {
-                // 고유한 봇 이름 생성
-                string botName = NetworkBotIdentity.GenerateBotName();
-
-                // 모든 클라이언트에 이름 동기화
-                nameSync.SetPlayerName(botName);
-                Debug.Log($"[BotManager] 봇 생성 완료: {botName}");
-            }
-            else
-            {
-                Debug.LogWarning("[BotManager] PlayerNameSync 컴포넌트가 없음");
-            }
-
-            // 생성 직후 입력 차단(시네마틱 끝나면 활성화)
-            if (botController != null && disableInput)
-            {
-                botController.SetInputEnabled(false);
-            }
-
-            // 생성된 봇을 리스트에 추가
-            spawnedBots.Add(botInstance);
-        }
-        else
-        {
-            Debug.LogError("[BotManager] NetworkObject 컴포넌트가 없음");
-            Destroy(botInstance);
-        }
-    }
-
-    // 생성된 모든 봇의 입력을 활성화 (시네마틱 끝난 후 호출)
-    public void EnableAllBots()
-    {
-        // 서버에서만 실행
-        if (!IsServer) return;
-
-        // 생성된 모든 봇을 순회하면서 봇일때만 입력 활성화
-        foreach (var bot in spawnedBots)
-        {
-            if (bot == null) continue;
-
-
-            PlayerController botController = bot.GetComponent<PlayerController>();
-            if (botController != null)
-            {
-                // 봇의 입력 활성화
-                botController.SetInputEnabled(true);
-            }
-        }
-
-        Debug.Log($"[BotManager] {spawnedBots.Count}개의 봇 입력 활성화");
-    }
-
+    // startIndex부터 끝까지 봇 배치
     public void SpawnBotsFromIndex(int startIndex, Transform[] spawnPoints)
     {
         // 서버에서만 봇 생성 가능
@@ -278,75 +202,84 @@ public class BotManager : NetworkBehaviour
         // 생성할 봇이 없으면 종료
         if (botsToSpawn <= 0)
         {
-            Debug.Log("[BotManager] 생성할 봇이 없음 (모든 자리가 플레이어로 채워짐)");
             return;
         }
 
-        // 이미 생성한 봇이 있으면 이동만 수행
-        if (hasPreSpawned && spawnedBots.Count > 0)
+        // 풀에 충분한 봇이 있는지 확인
+        if (botPool.Count < botsToSpawn)
         {
-            Debug.Log($"[BotManager] Pre-spawn된 봇 사용 - {botsToSpawn}개 이동");
-            MovePreSpawnedBotsToGameStart(startIndex, spawnPoints);
-            return; // 새로 생성하지 않고 종료
+            botsToSpawn = botPool.Count; // 가능한 만큼만 스폰
         }
 
-        // startIndex부터 끝까지 반복하면서 각 스폰 포인트에 봇 생성
-        for (int i = startIndex; i < spawnPoints.Length; i++)
+        // startIndex부터 끝까지 반복하면서 각 스폰 포인트에 봇 배치
+        for (int i = startIndex; i < startIndex + botsToSpawn; i++)
         {
-            // i번째 스폰 포인트에 봇 생성하고, 시네마틱 동안 입력 차단
-            SpawnBot(i, spawnPoints, disableInput: true);
+            // 풀에서 봇 꺼내기
+            GameObject bot = botPool.Dequeue();
+
+            // 활성화
+            bot.SetActive(true);
+
+            // 게임 스폰 포인트로 텔레포트
+            TeleportBotToGamePosition(bot, spawnPoints[i]);
+
+            // 활성화된 봇 리스트에 추가
+            activeBots.Add(bot);
+        }
+
+        //Debug.Log($"[BotManager] {botsToSpawn}개의 봇을 게임에 배치");
+    }
+
+    // 봇을 게임 스폰 포인트로 텔레포트
+    private void TeleportBotToGamePosition(GameObject bot, Transform spawnPoint)
+    {
+        // 90도 회전
+        Vector3 targetPosition = spawnPoint.position;
+        Quaternion targetRotation = spawnPoint.rotation * Quaternion.Euler(0, 90, 0);
+
+        // NavMeshAgent 비활성화 후 이동 (NavMesh 문제 방지)
+        UnityEngine.AI.NavMeshAgent navAgent = bot.GetComponent<UnityEngine.AI.NavMeshAgent>();
+        if (navAgent != null)
+        {
+            navAgent.enabled = false;
+        }
+
+        // BotController의 DoRespawn으로 텔레포트
+        BotController botController = bot.GetComponent<BotController>();
+        if (botController != null)
+        {
+            botController.DoRespawn(targetPosition, targetRotation);
+        }
+
+        // 새로운 NavMesh에서 NavMeshAgent 재활성화
+        if (navAgent != null)
+        {
+            navAgent.enabled = true;
+            navAgent.Warp(targetPosition); // NavAgent 위치 이동
         }
     }
 
-    // 게임 시작할때 미리 생성된 봇들을 텔레포트
-    private void MovePreSpawnedBotsToGameStart(int startIndex, Transform[] spawnPoints)
+    // 생성된 모든 봇의 입력을 활성화
+    public void EnableAllBots()
     {
+        // 서버에서만 실행
         if (!IsServer) return;
 
-        // 이동할 봇 개수 계산 (스폰 포인트 - 플레이어 수)
-        int botsToMove = spawnPoints.Length - startIndex;
-
-        // spawnedBots 개수가 더 적다면 spawnedBots 개수 선택
-        botsToMove = Mathf.Min(botsToMove, spawnedBots.Count);
-
-        // 이동할 봇이 없으면 종료
-        if (botsToMove <= 0)
+        // 활성화된 모든 봇을 순회하면서 입력 활성화
+        foreach (var bot in activeBots)
         {
-            Debug.Log("[BotManager] 이동할 봇 없음");
-            return;
-        }
+            if (bot == null) continue;
 
-        // spawnedBots 봇들을 순서대로 텔레포트
-        for (int i = 0; i < botsToMove; i++)
-        {
-            int spawnIndex = startIndex + i;
-            GameObject botObj = spawnedBots[i];
-
-            // 스폰 포인트 인덱스 체크
-            if (botObj != null && spawnIndex < spawnPoints.Length)
+            // BotController가 있으면 봇임
+            BotController botController = bot.GetComponent<BotController>();
+            if (botController != null)
             {
-                // 90도 회전
-                Vector3 targetPosition = spawnPoints[spawnIndex].position;
-                Quaternion targetRotation = spawnPoints[spawnIndex].rotation * Quaternion.Euler(0, 90, 0);
-
-                // NavMeshAgent 비활성화 후 이동 (NavMesh 문제 방지)
-                UnityEngine.AI.NavMeshAgent navAgent = botObj.GetComponent<UnityEngine.AI.NavMeshAgent>();
-                if (navAgent != null)
-                {
-                    navAgent.enabled = false;
-                }
-
-                BotController bot = botObj.GetComponent<BotController>();
-                bot.DoRespawn(targetPosition, targetRotation);
-
-                // NavMeshAgent 재활성화 (새 위치의 NavMesh에 배치)
-                if (navAgent != null)
-                {
-                    navAgent.enabled = true;
-                    navAgent.Warp(targetPosition); // NavAgent 위치 이동
-                }
+                // 봇의 입력 활성화
+                botController.SetInputEnabled(true);
             }
         }
+
+        Debug.Log($"[BotManager] {activeBots.Count}개의 봇 입력 활성화");
     }
 
     // 생성된 모든 봇 정리
@@ -354,7 +287,24 @@ public class BotManager : NetworkBehaviour
     {
         if (IsServer)
         {
-            foreach (var bot in spawnedBots)
+            // 풀에 있는 모든 봇 정리
+            while (botPool.Count > 0)
+            {
+                GameObject bot = botPool.Dequeue();
+                if (bot != null)
+                {
+                    NetworkObject netObj = bot.GetComponent<NetworkObject>();
+                    if (netObj != null && netObj.IsSpawned)
+                    {
+                        netObj.Despawn();
+                    }
+
+                    Destroy(bot);
+                }
+            }
+
+            // 활성화된 봇 정리 (디버그 봇 포함)
+            foreach (var bot in activeBots)
             {
                 if (bot != null)
                 {
@@ -368,7 +318,7 @@ public class BotManager : NetworkBehaviour
                 }
             }
 
-            spawnedBots.Clear();
+            activeBots.Clear();
         }
     }
 }
