@@ -6,17 +6,22 @@ using UnityEngine;
 public struct PlayerSnapshot : INetworkSerializable
 {
     public ushort NetworkObjectId; // 누가 주인인가? (2 Byte)
-    public ushort X, Y, Z;         // 위치 (6 Byte)
+    public short X, Y, Z;         // 위치 (6 Byte)
     public ushort YRotation;       // Y회전 (2 Byte) 
+
+    // 100f : 1cm 단위 정밀도 (-327.68 ~ +327.67m)
+    // 50f  : 2cm 단위 정밀도 (-655.36 ~ +655.34m)
+    // 20f  : 5cm 단위 정밀도 (-1638.4 ~ +1638.35m)
+    private const float COMPRESS_RATIO = 50f;
 
     // 생성자로 데이터를 넣을 때 자동 압축
     public PlayerSnapshot(ulong netId, Vector3 pos, float rotY)
     {
         NetworkObjectId = (ushort)netId; // 주의: ID 65535 넘으면 오버플로우
 
-        X = Mathf.FloatToHalf(pos.x);
-        Y = Mathf.FloatToHalf(pos.y);
-        Z = Mathf.FloatToHalf(pos.z);
+        X = (short)Mathf.RoundToInt(pos.x * COMPRESS_RATIO);
+        Y = (short)Mathf.RoundToInt(pos.y * COMPRESS_RATIO);
+        Z = (short)Mathf.RoundToInt(pos.z * COMPRESS_RATIO);
 
         float normalizedRot = Mathf.Repeat(rotY, 360f);
         YRotation = (ushort)(normalizedRot / 360f * 65535f); // 0.005도 오차
@@ -28,9 +33,9 @@ public struct PlayerSnapshot : INetworkSerializable
         netId = (ulong)NetworkObjectId;
 
         pos = new Vector3(
-            Mathf.HalfToFloat(X),
-            Mathf.HalfToFloat(Y),
-            Mathf.HalfToFloat(Z)
+            X / COMPRESS_RATIO,
+            Y / COMPRESS_RATIO,
+            Z / COMPRESS_RATIO
         );
 
         rotY = (float)YRotation / 65535f * 360f;

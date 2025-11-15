@@ -347,9 +347,6 @@ public class GameManager : NetworkBehaviour
             NetworkBotIdentity botIdentity = playerObject.GetComponent<NetworkBotIdentity>();
             if (botIdentity != null && botIdentity.IsBot) continue;
 
-            NetworkTransform nt = playerObject.GetComponent<NetworkTransform>();
-            if (nt == null) continue;
-
             // 순환하면서 스폰 위치 지정
             Vector3 spawnPos = gameSpawnPoints[i % gameSpawnPoints.Length].position;
 

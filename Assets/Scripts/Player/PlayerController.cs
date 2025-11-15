@@ -42,6 +42,9 @@ public class PlayerController : NetworkBehaviour
     [Tooltip("땅 체크 간격 (프레임). 1=매프레임, 2=2프레임마다. 권장: 2")]
     public int groundCheckInterval = 2;  // 2프레임마다 체크 (50Hz → 25Hz)
 
+    public float lerpSpeed = 15f;
+    public float smoothTime = 0.1f;
+
     [Header("Player Info")]
     private NetworkVariable<FixedString32Bytes> playerName = new NetworkVariable<FixedString32Bytes>(
         "",
@@ -87,8 +90,7 @@ public class PlayerController : NetworkBehaviour
 
     protected Vector3 _targetPos;
     protected float _targetRotY;
-
-    private float _lerpSpeed = 20f;
+    private Vector3 _currentVelocity;
 
     // 리스폰 구역 Index 값
     public NetworkVariable<int> RespawnId = new(
@@ -293,12 +295,27 @@ public class PlayerController : NetworkBehaviour
 
     protected void InterpolateMovement()
     {
+        // 너무 멀면 SmoothDamp 하지 말고 그냥 강제 이동 (텔레포트로 간주)
+        float sqrDist = (transform.position - _targetPos).sqrMagnitude;
+        if (sqrDist > 9.0f) // 3 * 3 = 9
+        {
+            transform.position = _targetPos;
+            transform.rotation = Quaternion.Euler(0, _targetRotY, 0);
+            _currentVelocity = Vector3.zero;
+            return;
+        }
+
         // 위치 보간 (부드럽게)
-        transform.position = Vector3.Lerp(transform.position, _targetPos, Time.deltaTime * _lerpSpeed);
+        transform.position = Vector3.SmoothDamp(
+            transform.position,
+            _targetPos,
+            ref _currentVelocity,
+            smoothTime
+        );
 
         // 회전 보간 (Y축만)
         Quaternion targetRot = Quaternion.Euler(0, _targetRotY, 0);
-        transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * _lerpSpeed);
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * lerpSpeed);
     }
 
     public void SetInputEnabled(bool enabled)
@@ -910,7 +927,6 @@ public class PlayerController : NetworkBehaviour
 
         transform.position = dest.position;
         transform.rotation = dest.rotation;
-        TeleportClientRpc(dest.position, dest.rotation);
 
         ResetPlayerState();
     }
@@ -931,7 +947,6 @@ public class PlayerController : NetworkBehaviour
 
         transform.position = pos;
         transform.rotation = rot;
-        TeleportClientRpc(pos, rot);
 
         ResetPlayerState();
     }
@@ -1100,19 +1115,7 @@ public class PlayerController : NetworkBehaviour
     #endregion
 
     // 서버에서 클라한테 시킬 Rpc 모음
-    // 주로 애니메이션 연동
-    #region ClientRPCs
-    [ClientRpc]
-    public void TeleportClientRpc(Vector3 newPos, Quaternion newRot)
-    {
-        _targetPos = newPos;
-        _targetRotY = newRot.eulerAngles.y;
-
-        // 보간(Lerp) 없이 즉시 강제 이동
-        transform.position = newPos;
-        transform.rotation = newRot;
-    }
-
+    #region clientRpcs
     [ClientRpc]
     protected void SetTriggerClientRpc(string triggerName)
     {
